@@ -1,5 +1,7 @@
 import { ArmConfig, FetchResult, Source } from "../types";
 import { host, tbsParam, toContext } from "./util";
+import { extractAll } from "../extract";
+import { dateFromSnippet, dateFromUrl, parsePublished } from "../date";
 
 const ENDPOINT = "https://api.brightdata.com/request";
 
@@ -7,6 +9,7 @@ interface Organic {
   link: string;
   title?: string;
   description?: string;
+  last_modified_date?: string;
 }
 
 async function serpAttempt(
@@ -64,16 +67,34 @@ export async function fetchBrightData(
   }
   if (organic.length === 0 && lastErr) throw lastErr;
 
-  const sources: Source[] = organic
-    .slice(0, config.num_sources)
-    .filter((o) => o.link)
-    .map((o) => ({
+  const now = Date.now();
+  const picked = organic.slice(0, config.num_sources).filter((o) => o.link);
+
+  // Extract pass: fetch each discovered URL's real content via the Web Unlocker.
+  // `clean` (default) extracts; `raw` skips extraction and answers from snippets.
+  const contents =
+    config.extraction === "clean"
+      ? await extractAll(picked.map((o) => o.link))
+      : picked.map(() => null);
+
+  const sources: Source[] = picked.map((o, i) => {
+    const snippet = o.description ?? "";
+    // Date ladder for the Bright Data arm: native SERP field → snippet-leading
+    // date → URL-path date. (SERP `last_modified_date` is usually null; the
+    // snippet is the workhorse — see the smoke-test findings in date.ts.)
+    const published =
+      parsePublished(o.last_modified_date, now) ??
+      dateFromSnippet(snippet, now) ??
+      dateFromUrl(o.link);
+    return {
       title: o.title ?? o.link,
       url: o.link,
-      published: null,
+      published,
       domain: host(o.link),
-      snippet: o.description ?? "",
-    }));
+      snippet,
+      content: contents[i] ?? undefined,
+    };
+  });
 
   return { sources, context: toContext(sources) };
 }

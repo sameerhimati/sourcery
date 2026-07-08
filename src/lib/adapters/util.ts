@@ -14,9 +14,13 @@ export function tbsParam(f: Freshness): string {
   return { "24h": "qdr:d", "30d": "qdr:m", "1y": "qdr:y", all: "" }[f];
 }
 
-/** Numbered source list handed to the answering LLM. */
+/** Numbered source list handed to the answering LLM. Prefers extracted page
+ *  content; falls back to the SERP snippet when extraction missed. */
 export function toContext(sources: Source[]): string {
   return sources
-    .map((s, i) => `[${i + 1}] ${s.title} — ${s.snippet ?? ""} (${s.domain})`)
-    .join("\n");
+    .map((s, i) => {
+      const body = s.content ?? s.snippet ?? "";
+      return `[${i + 1}] ${s.title} (${s.domain})\n${body}`;
+    })
+    .join("\n\n");
 }

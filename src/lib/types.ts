@@ -17,6 +17,7 @@ export interface Source {
   published: string | null; // ISO date if known, else null
   domain: string;
   snippet?: string;
+  content?: string; // extracted page text (truncated), else snippet fallback
 }
 
 export interface Arm {
@@ -26,7 +27,9 @@ export interface Arm {
   answer: string;
   sources: Source[];
   latency_ms: number;
-  score: number; // 0–10 from judge
+  retrieval_score: number; // 0–10 from the retrieval judge — the PRIMARY/winner metric
+  retrieval_rationale: string;
+  score: number; // 0–10 from the answer judge — SECONDARY metric
   rationale: string;
   error?: string; // set if this arm failed; UI can show a fallback
 }
@@ -35,7 +38,9 @@ export interface Run {
   query: string;
   variable: Axis;
   arms: Arm[];
-  winner: string | null; // arm id, or null if all failed
+  // arm id of the winner, chosen by highest retrieval_score among non-errored
+  // arms; null if all failed. (Shape unchanged; semantics are now retrieval-based.)
+  winner: string | null;
 }
 
 export interface RunRequest {

@@ -13,6 +13,7 @@ import { fetchSources } from "./adapters";
 import { answer } from "./answer";
 import { judge } from "./judge";
 import { retrievalJudge } from "./retrievalJudge";
+import { MODEL } from "./controls";
 
 const DEFAULT_VALUES: Record<Axis, string[]> = {
   provider: ["bright_data", "firecrawl"],
@@ -23,12 +24,13 @@ const DEFAULT_VALUES: Record<Axis, string[]> = {
 
 const ARM_IDS = ["A", "B", "C", "D", "E"];
 
-/** Build one arm's (provider, config) by varying exactly one knob off the defaults. */
+/** Build one arm's (provider, config) by varying exactly one knob off a base config. */
 function armSpec(
   variable: Axis,
   value: string,
+  base: ArmConfig,
 ): { provider: Provider; config: ArmConfig } {
-  const config: ArmConfig = { ...DEFAULT_CONFIG };
+  const config: ArmConfig = { ...base };
   let provider: Provider = "bright_data";
   switch (variable) {
     case "provider":
@@ -62,11 +64,13 @@ export interface ArmSpec {
 export async function runArm(
   spec: ArmSpec,
   query: string,
+  model: string = MODEL,
 ): Promise<Arm> {
   const base: Arm = {
     id: spec.id,
     provider: spec.provider,
     config: spec.config,
+    model,
     answer: "",
     sources: [],
     latency_ms: 0,
@@ -81,10 +85,10 @@ export async function runArm(
     // Retrieval judge (primary) grades the sources; answer + answer judge
     // (secondary) run in parallel off the same fetched context.
     const [retrieval, ans] = await Promise.all([
-      retrievalJudge(query, sources),
-      answer(query, context),
+      retrievalJudge(query, sources, model),
+      answer(query, context, model),
     ]);
-    const { score, rationale } = await judge(query, ans, sources);
+    const { score, rationale } = await judge(query, ans, sources, model);
     return {
       ...base,
       answer: ans,
@@ -117,11 +121,21 @@ export function pickWinner(arms: Arm[]): string | null {
 export async function runEval(req: RunRequest): Promise<Run> {
   const variable: Axis = req.variable ?? "provider";
   const values = req.values?.length ? req.values : DEFAULT_VALUES[variable];
+  const model = req.model?.trim() || MODEL;
+
+  // Base config = defaults with any UI-set knobs applied, off which the varied
+  // axis is swept. (Sweeping the varied axis overrides its own knob per arm.)
+  const base: ArmConfig = {
+    ...DEFAULT_CONFIG,
+    ...(req.num_sources ? { num_sources: req.num_sources } : {}),
+    ...(req.freshness ? { freshness: req.freshness } : {}),
+    ...(req.extraction ? { extraction: req.extraction } : {}),
+  };
 
   const arms: Arm[] = await Promise.all(
     values.map((value, i) => {
-      const { provider, config } = armSpec(variable, value);
-      return runArm({ id: ARM_IDS[i] ?? `arm${i}`, provider, config }, req.query);
+      const { provider, config } = armSpec(variable, value, base);
+      return runArm({ id: ARM_IDS[i] ?? `arm${i}`, provider, config }, req.query, model);
     }),
   );
 

@@ -1,18 +1,12 @@
-import { openai, MODEL } from "./llm";
+import { openai } from "./llm";
+import { MODEL, JUDGE_SYSTEM, JUDGE_TEMP } from "./controls";
 import { Source } from "./types";
-
-const SYSTEM = `You grade a web-search agent's answer on a 0-10 scale.
-Rubric:
-- correctness: is the answer factually right per the sources?
-- freshness/relevance: does it reflect the most current, on-topic info the query implies?
-- grounding: are claims supported by the fetched sources (no hallucination)?
-Penalize claims not supported by the sources. Reward current, well-sourced answers.
-Return JSON only: {"score": <int 0-10>, "rationale": "<one sentence>"}.`;
 
 export async function judge(
   query: string,
   answerText: string,
   sources: Source[],
+  model: string = MODEL,
 ): Promise<{ score: number; rationale: string }> {
   const srcList =
     sources
@@ -23,11 +17,11 @@ export async function judge(
       .join("\n") || "(none)";
 
   const res = await openai.chat.completions.create({
-    model: MODEL,
-    temperature: 0,
+    model,
+    temperature: JUDGE_TEMP,
     response_format: { type: "json_object" },
     messages: [
-      { role: "system", content: SYSTEM },
+      { role: "system", content: JUDGE_SYSTEM },
       {
         role: "user",
         content: `Query: ${query}\n\nAnswer:\n${answerText}\n\nSources it used:\n${srcList}`,

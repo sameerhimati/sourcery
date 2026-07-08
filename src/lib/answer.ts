@@ -1,19 +1,19 @@
-import { openai, MODEL } from "./llm";
-
-const SYSTEM = `You are a web-search agent. Answer the user's query using ONLY the numbered sources provided.
-Cite sources by their domain in parentheses, e.g. (uscis.gov).
-If the sources do not cover the query, say so plainly rather than inventing facts.
-Be concise: 3-5 sentences.`;
+import { openai } from "./llm";
+import { MODEL, ANSWER_SYSTEM, ANSWER_TEMP } from "./controls";
 
 /** SAME model + prompt for every arm — only the sources (context) differ. */
-export async function answer(query: string, context: string): Promise<string> {
+export async function answer(
+  query: string,
+  context: string,
+  model: string = MODEL,
+): Promise<string> {
   if (!context.trim()) return "No sources were retrieved for this query.";
 
   const res = await openai.chat.completions.create({
-    model: MODEL,
-    temperature: 0.2,
+    model,
+    temperature: ANSWER_TEMP,
     messages: [
-      { role: "system", content: SYSTEM },
+      { role: "system", content: ANSWER_SYSTEM },
       { role: "user", content: `Query: ${query}\n\nSources:\n${context}` },
     ],
   });

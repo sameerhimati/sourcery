@@ -24,6 +24,7 @@ export interface Arm {
   id: string; // "A", "B", "C"
   provider: Provider;
   config: ArmConfig;
+  model: string; // LLM used for answer + judges (held constant across arms in a run)
   answer: string;
   sources: Source[];
   latency_ms: number;
@@ -47,6 +48,12 @@ export interface RunRequest {
   query: string;
   variable?: Axis; // default "provider"
   values?: string[]; // default depends on axis
+  // Optional overrides applied to the base config before the varied axis is
+  // swept (additive; all default to DEFAULT_CONFIG / MODEL server-side).
+  model?: string;
+  num_sources?: number;
+  freshness?: Freshness;
+  extraction?: Extraction;
 }
 
 // Internal only — carries fetched content into the answer step.

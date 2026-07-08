@@ -1,7 +1,7 @@
 import { ArmConfig, FetchResult, Source } from "../types";
 import { host, tbsParam, toContext } from "./util";
 import { extractAll } from "../extract";
-import { dateFromSnippet, dateFromUrl, parsePublished } from "../date";
+import { dateFromSnippet, dateFromUrl, dateFromContent, parsePublished } from "../date";
 
 const ENDPOINT = "https://api.brightdata.com/request";
 
@@ -85,6 +85,7 @@ export async function fetchBrightData(
     const published =
       parsePublished(o.last_modified_date, now) ??
       dateFromSnippet(snippet, now) ??
+      dateFromContent(contents[i], now) ??
       dateFromUrl(o.link);
     return {
       title: o.title ?? o.link,

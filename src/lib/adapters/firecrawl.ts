@@ -1,7 +1,7 @@
 import { ArmConfig, FetchResult, Source } from "../types";
 import { host, tbsParam, toContext } from "./util";
 import { cleanMarkdown } from "../extract";
-import { dateFromSnippet, dateFromUrl, dateFromMetadata, parsePublished } from "../date";
+import { dateFromSnippet, dateFromUrl, dateFromContent, dateFromMetadata, parsePublished } from "../date";
 
 const ENDPOINT = "https://api.firecrawl.dev/v2/search";
 
@@ -85,6 +85,7 @@ export async function fetchFirecrawl(
         dateFromMetadata(r.metadata, now) ??
         newsDates.get(normTitle(r.title)) ??
         dateFromSnippet(snippet, now) ??
+        dateFromContent(r.markdown ? cleanMarkdown(r.markdown) : undefined, now) ??
         dateFromUrl(r.url);
       return {
         title: r.title ?? r.url,

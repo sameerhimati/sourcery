@@ -92,6 +92,25 @@ export function dateFromUrl(url: string): string | null {
   return toISO(parseUrlDate(url));
 }
 
+/**
+ * Leading date inside extracted page content — articles often print the
+ * publish date near the top ("Introducing X  May 28, 2026"). Scans a short
+ * head window with the wordy/relative parsers only (no bare-year matching, to
+ * avoid grabbing copyright years).
+ */
+export function dateFromContent(
+  content: string | null | undefined,
+  now: number = Date.now(),
+): string | null {
+  if (!content) return null;
+  const head = content.slice(0, 400);
+  return (
+    toISO(parseRelative(head, now)) ??
+    toISO(parseWordyDate(head)) ??
+    null
+  );
+}
+
 const DATE_META_KEYS = [
   "article:published_time",
   "og:published_time",

@@ -1,0 +1,12 @@
+{
+  "generated_at": "2026-07-07T00:00:00.000Z",
+  "runs_per_cell": 0,
+  "heatmap": [
+    { "type": "breaking_news", "label": "breaking news", "bright_data": 0, "firecrawl": 0, "runs": 0 },
+    { "type": "how_to", "label": "how-to / explainer", "bright_data": 0, "firecrawl": 0, "runs": 0 },
+    { "type": "product_lookup", "label": "product lookup", "bright_data": 0, "firecrawl": 0, "runs": 0 },
+    { "type": "local_geo", "label": "local / geo", "bright_data": 0, "firecrawl": 0, "runs": 0 },
+    { "type": "recent_release", "label": "recent release", "bright_data": 0, "firecrawl": 0, "runs": 0 },
+    { "type": "numeric_live", "label": "numeric / live", "bright_data": 0, "firecrawl": 0, "runs": 0 }
+  ]
+}

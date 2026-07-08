@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import type { Arm, Axis, Run, Source } from "@/lib/types";
+import type { Arm, Axis, Extraction, Freshness, Run, Source } from "@/lib/types";
 import type { BatchRow, HeatRow } from "@/lib/batch";
 import {
   ageDays,
@@ -15,6 +15,14 @@ import {
   providerMeta,
   scoreText,
 } from "@/lib/viz";
+import {
+  CONTROL_STAGES,
+  EXTRACTION_OPTIONS,
+  FRESHNESS_OPTIONS,
+  MODEL,
+  MODEL_OPTIONS,
+  NUM_SOURCES,
+} from "@/lib/controls";
 import heatmapData from "@/lib/heatmap-data.json";
 import batchData from "@/lib/batch-rows.json";
 
@@ -79,7 +87,7 @@ function enrichArm(arm: Arm, winner: string | null, now: number): ArmView {
 }
 
 export default function Home() {
-  const [view, setView] = useState<"compare" | "heatmap">("compare");
+  const [view, setView] = useState<"compare" | "heatmap" | "controls">("compare");
   const [query, setQuery] = useState(
     "What is the most recent Claude model released by Anthropic, and what are its key capabilities?",
   );
@@ -88,6 +96,12 @@ export default function Home() {
   const [run, setRun] = useState<Run | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
+
+  // ─── knobs (Controls tab) — the held-constant setup, now adjustable per run ───
+  const [model, setModel] = useState<string>(MODEL);
+  const [numSources, setNumSources] = useState<number>(NUM_SOURCES.default);
+  const [freshness, setFreshness] = useState<Freshness>("all");
+  const [extraction, setExtraction] = useState<Extraction>("clean");
 
   // Captured once at mount so age/freshness math stays stable across re-renders
   // (Date.now() during render is impure). Good enough — a session is short-lived.
@@ -102,7 +116,14 @@ export default function Home() {
       const res = await fetch("/api/run", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ query, variable: axis }),
+        body: JSON.stringify({
+          query,
+          variable: axis,
+          model,
+          num_sources: numSources,
+          freshness,
+          extraction,
+        }),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -153,9 +174,16 @@ export default function Home() {
     };
   }, [run, armViews]);
 
+  // Live run plan — updates as axis/knobs change, so the controls feel wired up.
+  const planLine =
+    axis === "provider"
+      ? `arms: bright_data vs firecrawl · model ${model} · ${freshness} · ${numSources} src · ${extraction}`
+      : `arms: freshness 24h vs all · provider bright_data · model ${model} · ${numSources} src · ${extraction}`;
   const metaLine = run
-    ? `${run.arms.map((a) => a.provider).join(" vs ")} · varying ${run.variable} · retrieval judged 0–10 by AI`
-    : `bright_data vs firecrawl · varying ${axis} · retrieval judged 0–10 by AI`;
+    ? `${run.arms
+        .map((a) => `${a.provider} (${a.config.freshness})`)
+        .join(" vs ")} · model ${run.arms[0]?.model ?? model} · retrieval judged 0–10 by AI`
+    : planLine;
 
   const columnCount = run?.arms.length ?? (loading ? 2 : 2);
 
@@ -174,6 +202,7 @@ export default function Home() {
           <div style={{ display: "flex", gap: 3, background: C.surface2, border: `1px solid ${C.border}`, borderRadius: 10, padding: 3 }}>
             <TabButton active={view === "compare"} onClick={() => setView("compare")}>Comparison</TabButton>
             <TabButton active={view === "heatmap"} onClick={() => setView("heatmap")}>Scorecard</TabButton>
+            <TabButton active={view === "controls"} onClick={() => setView("controls")}>Controls</TabButton>
           </div>
         </header>
 
@@ -263,8 +292,20 @@ export default function Home() {
               </div>
             )}
           </>
-        ) : (
+        ) : view === "heatmap" ? (
           <Scorecard />
+        ) : (
+          <Controls
+            model={model}
+            setModel={setModel}
+            numSources={numSources}
+            setNumSources={setNumSources}
+            freshness={freshness}
+            setFreshness={setFreshness}
+            extraction={extraction}
+            setExtraction={setExtraction}
+            onRun={() => { setView("compare"); handleRun(); }}
+          />
         )}
       </div>
     </div>
@@ -310,7 +351,7 @@ function ArmCard({ view, expanded, onToggle }: { view: ArmView; expanded: boolea
               )}
             </div>
             <span style={{ fontFamily: MONO, fontSize: 11.5, color: C.muted2, letterSpacing: "0.01em" }}>
-              {arm.config.freshness} · {arm.config.extraction} · {(arm.latency_ms / 1000).toFixed(2)}s
+              {arm.model} · {arm.config.freshness} · {arm.config.extraction} · {arm.config.num_sources} src · {(arm.latency_ms / 1000).toFixed(2)}s
             </span>
           </div>
           {!failed && (
@@ -597,5 +638,130 @@ function ScoreCell({ score, win }: { score: number | null; win: boolean }) {
     <div style={{ padding: "12px 10px", textAlign: "center", fontFamily: MONO, fontSize: 15, fontWeight: 600, color: score === null ? "oklch(0.55 0.16 28)" : scoreText(score), background: win ? "oklch(0.72 0.13 155 / 0.1)" : "transparent" }}>
       {score === null ? "err" : score.toFixed(1)}
     </div>
+  );
+}
+
+// ─── Controls (interactive knobs + held-constant prompts) ───
+interface ControlsProps {
+  model: string;
+  setModel: (m: string) => void;
+  numSources: number;
+  setNumSources: (n: number) => void;
+  freshness: Freshness;
+  setFreshness: (f: Freshness) => void;
+  extraction: Extraction;
+  setExtraction: (e: Extraction) => void;
+  onRun: () => void;
+}
+
+const ROLE_STYLE: Record<string, { bg: string; color: string; label: string }> = {
+  primary: { bg: "oklch(0.72 0.13 155 / 0.16)", color: "oklch(0.42 0.12 155)", label: "PRIMARY · winner metric" },
+  secondary: { bg: "oklch(0.72 0.13 75 / 0.18)", color: "oklch(0.45 0.12 75)", label: "SECONDARY" },
+  shared: { bg: "oklch(0.6 0.02 250 / 0.14)", color: "#6f6858", label: "SHARED STEP" },
+};
+
+function Controls(p: ControlsProps) {
+  return (
+    <div>
+      {/* ── knobs ── */}
+      <div style={{ marginBottom: 8 }}>
+        <div style={{ fontSize: 16, fontWeight: 600, color: "#1c1a15", marginBottom: 5 }}>Retrieval controls</div>
+        <div style={{ fontSize: 13, color: C.muted }}>The knobs. Change them, then run — everything below the line is held constant across both arms.</div>
+      </div>
+
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 14, marginBottom: 18 }}>
+        <KnobCard label="Model" hint="answer + both judges, every arm">
+          <SelectKnob value={p.model} onChange={p.setModel} options={MODEL_OPTIONS.map((m) => ({ value: m, label: m }))} />
+        </KnobCard>
+
+        <KnobCard label="Sources per arm" hint={`${NUM_SOURCES.min}–${NUM_SOURCES.max} discovered & extracted`}>
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <input
+              type="range"
+              min={NUM_SOURCES.min}
+              max={NUM_SOURCES.max}
+              value={p.numSources}
+              onChange={(e) => p.setNumSources(Number(e.target.value))}
+              style={{ flex: 1, accentColor: "oklch(0.5 0.14 250)" }}
+            />
+            <span style={{ fontFamily: MONO, fontSize: 18, fontWeight: 600, color: "#1c1a15", width: 26, textAlign: "right" }}>{p.numSources}</span>
+          </div>
+        </KnobCard>
+
+        <KnobCard label="Freshness" hint="held for both arms unless you vary Freshness">
+          <SelectKnob value={p.freshness} onChange={(v) => p.setFreshness(v as Freshness)} options={FRESHNESS_OPTIONS} />
+        </KnobCard>
+
+        <KnobCard label="Extraction" hint="fetch full pages vs snippets only">
+          <div style={{ display: "flex", gap: 3, background: C.surface2, border: `1px solid ${C.border}`, borderRadius: 9, padding: 3 }}>
+            {EXTRACTION_OPTIONS.map((o) => (
+              <button
+                key={o.value}
+                onClick={() => p.setExtraction(o.value)}
+                style={{ flex: 1, padding: "8px 10px", border: "none", borderRadius: 6, cursor: "pointer", fontSize: 12, background: p.extraction === o.value ? "#ffffff" : "transparent", color: p.extraction === o.value ? "#1c1a15" : C.muted, fontFamily: "inherit", fontWeight: p.extraction === o.value ? 600 : 400 }}
+              >
+                {o.value}
+              </button>
+            ))}
+          </div>
+        </KnobCard>
+      </div>
+
+      <button
+        onClick={p.onRun}
+        style={{ height: 44, padding: "0 22px", background: "#26231d", border: "1px solid #26231d", borderRadius: 10, color: "#f4f1ea", fontSize: 14, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", boxShadow: "0 1px 2px rgba(60,50,30,0.12)" }}
+      >
+        Run with these settings →
+      </button>
+
+      {/* ── held constant ── */}
+      <div style={{ borderTop: `1px solid ${C.border}`, margin: "34px 0 22px", paddingTop: 26 }}>
+        <div style={{ fontSize: 16, fontWeight: 600, color: "#1c1a15", marginBottom: 5 }}>Held constant</div>
+        <div style={{ fontSize: 13, color: C.muted }}>Same model, prompts, and grading for every arm — so any score difference traces to retrieval, nothing else. This is exactly what runs.</div>
+      </div>
+
+      <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+        {CONTROL_STAGES.map((stage) => {
+          const rs = ROLE_STYLE[stage.role];
+          return (
+            <div key={stage.id} style={{ background: C.surface, border: `1px solid ${C.border2}`, borderRadius: 12, padding: "18px 20px", boxShadow: "0 1px 3px rgba(60,50,30,0.05)" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap", marginBottom: 8 }}>
+                <span style={{ fontSize: 15, fontWeight: 600, color: "#1c1a15" }}>{stage.title}</span>
+                <span style={{ fontFamily: MONO, fontSize: 10, letterSpacing: "0.08em", fontWeight: 600, color: rs.color, background: rs.bg, padding: "3px 8px", borderRadius: 6 }}>{rs.label}</span>
+                <span style={{ fontFamily: MONO, fontSize: 11, color: C.muted2, marginLeft: "auto" }}>temp {stage.temperature} · {stage.responseFormat}</span>
+              </div>
+              <p style={{ margin: "0 0 12px", fontSize: 13, color: C.faint, lineHeight: 1.5 }}>{stage.blurb}</p>
+              <pre style={{ margin: 0, padding: "12px 14px", background: C.surface2, border: `1px solid ${C.border2}`, borderRadius: 8, fontFamily: MONO, fontSize: 11.5, lineHeight: 1.55, color: "#3a362d", whiteSpace: "pre-wrap", wordBreak: "break-word", overflow: "auto" }}>
+                {stage.system}
+              </pre>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function KnobCard({ label, hint, children }: { label: string; hint: string; children: React.ReactNode }) {
+  return (
+    <div style={{ background: C.surface, border: `1px solid ${C.border2}`, borderRadius: 12, padding: "14px 16px", boxShadow: "0 1px 3px rgba(60,50,30,0.05)" }}>
+      <div style={{ fontSize: 13, fontWeight: 600, color: "#1c1a15", marginBottom: 2 }}>{label}</div>
+      <div style={{ fontFamily: MONO, fontSize: 10.5, color: C.muted2, marginBottom: 12 }}>{hint}</div>
+      {children}
+    </div>
+  );
+}
+
+function SelectKnob({ value, onChange, options }: { value: string; onChange: (v: string) => void; options: { value: string; label: string }[] }) {
+  return (
+    <select
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      style={{ width: "100%", padding: "9px 11px", background: C.surface2, border: `1px solid ${C.border}`, borderRadius: 8, fontFamily: MONO, fontSize: 13, color: "#1c1a15", cursor: "pointer" }}
+    >
+      {options.map((o) => (
+        <option key={o.value} value={o.value}>{o.label}</option>
+      ))}
+    </select>
   );
 }

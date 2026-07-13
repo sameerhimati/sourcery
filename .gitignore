@@ -39,3 +39,10 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# agent/session scaffolding — local only
+AGENTS.md
+CLAUDE.md
+SESSION_HANDOFF.md
+.claude/
+design/

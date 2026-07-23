@@ -14,7 +14,7 @@ import {
   median,
   providerMeta,
   scoreText,
-} from "@/lib/viz";
+} from "@core/viz";
 import {
   CONTROL_STAGES,
   EXTRACTION_OPTIONS,

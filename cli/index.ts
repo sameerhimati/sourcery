@@ -2,6 +2,7 @@
 import { Command } from "commander";
 import { registerBatch } from "./commands/batch";
 import { registerInit } from "./commands/init";
+import { registerReport } from "./commands/report";
 import { registerRun } from "./commands/run";
 
 const program = new Command();
@@ -14,6 +15,7 @@ program
 registerInit(program);
 registerRun(program);
 registerBatch(program);
+registerReport(program);
 
 program.parseAsync().catch((err) => {
   process.stderr.write(`${err instanceof Error ? err.message : String(err)}\n`);

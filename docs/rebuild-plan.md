@@ -1,7 +1,7 @@
 # sourcery — rebuild plan: from hackathon dashboard to a dev tool
 
-> Plan of record, 2026-07-23. Written after the Bean rebuild-planning session; same method:
-> name the durable core, kill the incidental shell, sequence with verifiable gates.
+> Plan of record, 2026-07-23. Method: name the durable core, kill the incidental shell,
+> sequence with verifiable gates.
 > Target: open source, PostHog-seamless — a dev adds retrieval evals to their project with
 > **one command**, the way they'd add analytics.
 
@@ -25,7 +25,7 @@ What's durable (the actual IP, all already written and working):
 What's incidental: Next.js, the tabs, the in-memory-only results, the two hardcoded providers.
 
 **Who it's for:** anyone building on web retrieval (RAG apps, research agents, crawler-fed
-agents like Bean) who is currently choosing a provider on vibes. The pitch: *"eval your
+agents) who is currently choosing a provider on vibes. The pitch: *"eval your
 retrieval layer on YOUR queries in one command."*
 
 ## Target developer experience
@@ -94,9 +94,20 @@ A tool whose own headline eval is underpowered can't tell other people to eval t
 - **S4 — Publish.** Fresh repo, npm name claimed, README-as-launch-post, Show HN / PH.
   Gate: `npx <name> run` works from a clean machine that has never seen the repo.
 
+## Where this could go: from eval to router (post-S4, the retention answer)
+
+An eval you run once is a report; an eval that emits a production artifact is infrastructure.
+The Scorecard already shows per-query-TYPE differences between providers (both collapse on
+`breaking_news`; each wins elsewhere). If those differences are stable across seeds (S2 tells
+us), then `sourcery route` can compile YOUR eval results into a routing policy — a tiny
+exported `pickProvider(query)` (classify query type → best provider from your own scorecard)
+that lives in your app. Offline eval → static routing table first; a live bandit (route,
+judge async, update) only if the static table proves out. This is what makes the tool
+*solve a problem* rather than describe one: your eval becomes your config. Not planned in
+S0–S4; recorded so the contract (per-type scores in `runs.jsonl`) keeps it possible.
+
 ## Explicitly NOT in scope
 
-- Crawling (that's Bean's M2 problem; sourcery evals *search* retrieval — Bean borrows
-  `unlock()`/`cleanMarkdown()` as parts, the projects stay separate).
+- Crawling — sourcery evals *search* retrieval, not site crawling.
 - Hosted anything. No accounts, no server, no telemetry. Local files only.
 - A prettier dashboard before S2 — the terminal + HTML report are the product surface now.

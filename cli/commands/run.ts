@@ -2,6 +2,7 @@ import type { Command } from "commander";
 import { runEval } from "@core/orchestrator";
 import type { Axis, RunRequest } from "@core/types";
 import { loadEnv, requireKeys } from "../env";
+import { loadConfig } from "../config";
 import { appendRun, toRecord, RUNS_PATH } from "../persist";
 import { renderRun } from "../format";
 
@@ -13,7 +14,6 @@ export function registerRun(program: Command): void {
     .option(
       "--variable <axis>",
       "axis to vary: provider | freshness | num_sources | extraction",
-      "provider",
     )
     .option("--values <list>", "comma-separated values for the varied axis")
     .option("--model <model>", "answer/judge model override")
@@ -24,13 +24,17 @@ export function registerRun(program: Command): void {
       // per-arm error, which the scorecard shows rather than crashing on.
       requireKeys(["OPENAI_API_KEY"]);
 
+      // Precedence: CLI flag > sourcery.config > engine default.
+      const config = await loadConfig();
+      const values = opts.values
+        ? opts.values.split(",").map((s) => s.trim()).filter(Boolean)
+        : config.values;
+
       const req: RunRequest = {
         query,
-        variable: opts.variable as Axis,
-        ...(opts.values
-          ? { values: opts.values.split(",").map((s) => s.trim()).filter(Boolean) }
-          : {}),
-        ...(opts.model ? { model: opts.model } : {}),
+        variable: (opts.variable ?? config.variable ?? "provider") as Axis,
+        ...(values ? { values } : {}),
+        ...(opts.model ?? config.model ? { model: opts.model ?? config.model } : {}),
       };
 
       const run = await runEval(req);

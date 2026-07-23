@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import { Command } from "commander";
+import { registerInit } from "./commands/init";
 import { registerRun } from "./commands/run";
 
 const program = new Command();
@@ -9,6 +10,7 @@ program
   .description("Eval your web-retrieval layer on your own queries")
   .version("0.1.0");
 
+registerInit(program);
 registerRun(program);
 
 program.parseAsync().catch((err) => {

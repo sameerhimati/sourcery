@@ -3,7 +3,7 @@ import { runEval } from "@core/orchestrator";
 import type { Axis, RunRequest } from "@core/types";
 import { loadEnv, requireKeys } from "../env";
 import { loadConfig } from "../config";
-import { appendRun, toRecord, RUNS_PATH } from "../persist";
+import { appendRecords, toRunRecord, RUNS_PATH } from "../persist";
 import { renderRun } from "../format";
 
 export function registerRun(program: Command): void {
@@ -43,7 +43,7 @@ export function registerRun(program: Command): void {
       if (opts.save !== false) {
         const ts = new Date().toISOString();
         const id = `run_${Date.now().toString(36)}`;
-        appendRun(toRecord(run, id, ts));
+        appendRecords([toRunRecord(run, id, ts)]);
         process.stdout.write(`\nsaved → ${RUNS_PATH} (${id})\n`);
       }
     });

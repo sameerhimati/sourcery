@@ -1,4 +1,5 @@
 import type { Arm, Run } from "@core/types";
+import type { BatchOutput } from "@core/batch";
 
 // Terminal scorecard — a plain-text view over a Run. Kept color-free and pure
 // (Run in, string out) so it snapshots deterministically in tests; the HTML
@@ -65,5 +66,55 @@ export function renderRun(run: Run): string {
     ...body,
     "",
     footer,
+  ].join("\n");
+}
+
+/** Render a batch's provider heatmap (avg retrieval score per query type). */
+export function renderBatch(out: BatchOutput): string {
+  const fmt = (n: number) => n.toFixed(1);
+  const rows = out.heatmap.map((h) => ({
+    label: h.label,
+    bright_data: fmt(h.bright_data),
+    firecrawl: fmt(h.firecrawl),
+    // Which provider retrieved better for this type (blank on a tie).
+    lead:
+      h.bright_data === h.firecrawl
+        ? ""
+        : h.bright_data > h.firecrawl
+          ? "Bright Data"
+          : "Firecrawl",
+  }));
+
+  const wLabel = Math.max("TYPE".length, ...rows.map((r) => r.label.length));
+  const wBd = Math.max("BRIGHT DATA".length, ...rows.map((r) => r.bright_data.length));
+  const wFc = Math.max("FIRECRAWL".length, ...rows.map((r) => r.firecrawl.length));
+
+  const header =
+    "  " +
+    pad("TYPE", wLabel) +
+    "  " +
+    pad("BRIGHT DATA", wBd) +
+    "  " +
+    pad("FIRECRAWL", wFc) +
+    "  LEADS";
+
+  const body = rows.map(
+    (r) =>
+      "  " +
+      pad(r.label, wLabel) +
+      "  " +
+      pad(r.bright_data, wBd) +
+      "  " +
+      pad(r.firecrawl, wFc) +
+      (r.lead ? `  ${r.lead}` : ""),
+  );
+
+  return [
+    `Batch — ${out.rows.length} arms, ${out.runs_per_cell} run(s)/cell`,
+    `Generated: ${out.generated_at}`,
+    "avg retrieval score (0–10) by query type:",
+    "",
+    header,
+    ...body,
   ].join("\n");
 }

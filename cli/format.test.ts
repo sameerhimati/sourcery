@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { Arm, Run } from "@core/types";
-import { renderRun } from "./format";
+import type { BatchOutput } from "@core/batch";
+import { renderBatch, renderRun } from "./format";
 
 function arm(over: Partial<Arm>): Arm {
   return {
@@ -55,5 +56,28 @@ describe("renderRun", () => {
       arms: [arm({ id: "A", error: "boom" })],
     };
     expect(renderRun(run)).toContain("Winner: none (all arms failed)");
+  });
+});
+
+describe("renderBatch", () => {
+  it("renders the provider heatmap with the per-type leader", () => {
+    const out: BatchOutput = {
+      generated_at: "2026-07-23T00:00:00.000Z",
+      runs_per_cell: 1,
+      rows: [], // rows not shown in the summary; only the aggregated heatmap is
+      heatmap: [
+        { type: "breaking_news", label: "breaking news", bright_data: 3.2, firecrawl: 4.1, runs: 1 },
+        { type: "how_to", label: "how-to / explainer", bright_data: 6.5, firecrawl: 6.5, runs: 1 },
+      ],
+    };
+    expect(renderBatch(out)).toMatchInlineSnapshot(`
+      "Batch — 0 arms, 1 run(s)/cell
+      Generated: 2026-07-23T00:00:00.000Z
+      avg retrieval score (0–10) by query type:
+
+        TYPE                BRIGHT DATA  FIRECRAWL  LEADS
+        breaking news       3.2          4.1        Firecrawl
+        how-to / explainer  6.5          6.5      "
+    `);
   });
 });

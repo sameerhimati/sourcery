@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import { Command } from "commander";
+import { registerBatch } from "./commands/batch";
 import { registerInit } from "./commands/init";
 import { registerRun } from "./commands/run";
 
@@ -12,6 +13,7 @@ program
 
 registerInit(program);
 registerRun(program);
+registerBatch(program);
 
 program.parseAsync().catch((err) => {
   process.stderr.write(`${err instanceof Error ? err.message : String(err)}\n`);

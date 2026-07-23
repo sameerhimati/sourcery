@@ -3,7 +3,7 @@ import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import type { Run } from "@core/types";
-import { appendRun, readRuns, toRecord } from "./persist";
+import { appendRecords, readRecords, toRunRecord } from "./persist";
 
 const RUN: Run = {
   query: "q",
@@ -32,12 +32,12 @@ afterEach(() => {
 });
 
 describe("persist", () => {
-  it("toRecord shapes a Run into a stable record", () => {
-    const rec = toRecord(RUN, "run_x", "2026-07-23T00:00:00.000Z");
+  it("toRunRecord shapes a Run into a stable record", () => {
+    const rec = toRunRecord(RUN, "run_x", "2026-07-23T00:00:00.000Z");
     expect(rec).toEqual({
+      mode: "run",
       id: "run_x",
       ts: "2026-07-23T00:00:00.000Z",
-      mode: "run",
       query: "q",
       variable: "provider",
       winner: "A",
@@ -45,20 +45,23 @@ describe("persist", () => {
     });
   });
 
-  it("appends across processes: readRuns sees every appended line", () => {
+  it("appends across processes: readRecords sees every appended line", () => {
     const dir = mkdtempSync(join(tmpdir(), "sourcery-"));
     tmpDirs.push(dir);
     const path = join(dir, "runs.jsonl");
 
-    appendRun(toRecord(RUN, "run_1", "2026-07-23T00:00:00.000Z"), path);
-    appendRun(toRecord(RUN, "run_2", "2026-07-23T00:01:00.000Z"), path);
+    appendRecords([toRunRecord(RUN, "run_1", "2026-07-23T00:00:00.000Z")], path);
+    appendRecords([toRunRecord(RUN, "run_2", "2026-07-23T00:01:00.000Z")], path);
 
-    const runs = readRuns(path);
-    expect(runs.map((r) => r.id)).toEqual(["run_1", "run_2"]);
-    expect(runs[0].arms[0].retrieval_score).toBe(8);
+    const runs = readRecords(path);
+    expect(runs.map((r) => (r.mode === "run" ? r.id : ""))).toEqual([
+      "run_1",
+      "run_2",
+    ]);
+    expect(runs[0].mode === "run" && runs[0].arms[0].retrieval_score).toBe(8);
   });
 
-  it("readRuns returns [] when the file is absent", () => {
-    expect(readRuns(join(tmpdir(), "does-not-exist-xyz.jsonl"))).toEqual([]);
+  it("readRecords returns [] when the file is absent", () => {
+    expect(readRecords(join(tmpdir(), "does-not-exist-xyz.jsonl"))).toEqual([]);
   });
 });

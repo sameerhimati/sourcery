@@ -1,4 +1,4 @@
-import { openai } from "./llm";
+import { getOpenAI } from "./llm";
 import { MODEL, ANSWER_SYSTEM, ANSWER_TEMP } from "./controls";
 
 /** SAME model + prompt for every arm — only the sources (context) differ. */
@@ -9,7 +9,7 @@ export async function answer(
 ): Promise<string> {
   if (!context.trim()) return "No sources were retrieved for this query.";
 
-  const res = await openai.chat.completions.create({
+  const res = await getOpenAI().chat.completions.create({
     model,
     temperature: ANSWER_TEMP,
     messages: [

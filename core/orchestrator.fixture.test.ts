@@ -36,7 +36,8 @@ vi.mock("@core/adapters", () => ({
 }));
 
 vi.mock("@core/llm", () => ({
-  openai: {
+  // Lazy getter mirrors the real module surface; returns a fake client.
+  getOpenAI: () => ({
     chat: {
       completions: {
         // The judges request JSON (response_format), the answer step doesn't —
@@ -50,7 +51,7 @@ vi.mock("@core/llm", () => ({
         }),
       },
     },
-  },
+  }),
 }));
 
 // Import AFTER the mocks are registered so the engine binds to the fakes.

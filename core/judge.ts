@@ -1,4 +1,4 @@
-import { openai } from "./llm";
+import { getOpenAI } from "./llm";
 import { MODEL, JUDGE_SYSTEM, JUDGE_TEMP } from "./controls";
 import { Source } from "./types";
 
@@ -16,7 +16,7 @@ export async function judge(
       )
       .join("\n") || "(none)";
 
-  const res = await openai.chat.completions.create({
+  const res = await getOpenAI().chat.completions.create({
     model,
     temperature: JUDGE_TEMP,
     response_format: { type: "json_object" },

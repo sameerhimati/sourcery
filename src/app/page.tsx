@@ -1,8 +1,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import type { Arm, Axis, Extraction, Freshness, Run, Source } from "@/lib/types";
-import type { BatchRow, HeatRow } from "@/lib/batch";
+import type { Arm, Axis, Extraction, Freshness, Run, Source } from "@core/types";
+import type { BatchRow, HeatRow } from "@core/batch";
 import {
   ageDays,
   ageLabel,
@@ -22,7 +22,7 @@ import {
   MODEL,
   MODEL_OPTIONS,
   NUM_SOURCES,
-} from "@/lib/controls";
+} from "@core/controls";
 import heatmapData from "@/lib/heatmap-data.json";
 import batchData from "@/lib/batch-rows.json";
 

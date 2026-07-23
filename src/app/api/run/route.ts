@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { runEval } from "@/lib/orchestrator";
-import { RunRequest } from "@/lib/types";
+import { runEval } from "@core/orchestrator";
+import { RunRequest } from "@core/types";
 
 // Arms run fetch -> answer -> judge; give them room on slow SERP calls.
 export const maxDuration = 60;

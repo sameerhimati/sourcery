@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { writeFile } from "node:fs/promises";
 import path from "node:path";
-import { runBatch, selectQueries } from "@/lib/batch";
+import { runBatch, selectQueries } from "@core/batch";
 
 // Batch is slow + credit-heavy (every query × both providers × extraction), so
 // it runs offline and commits its output; the Scorecard reads the JSON. This

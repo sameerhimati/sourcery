@@ -106,6 +106,18 @@ judge async, update) only if the static table proves out. This is what makes the
 *solve a problem* rather than describe one: your eval becomes your config. Not planned in
 S0–S4; recorded so the contract (per-type scores in `runs.jsonl`) keeps it possible.
 
+**The other half of the loop: capture, so the eval set is YOUR traffic.** A one-line wrapper
+around the app's retrieval call (`sourcery.wrap(provider)`) logs every real query to
+`.sourcery/queries.jsonl`; the eval then replays a clustered/deduped sample of *your agent's
+actual searches* across providers instead of (only) the curated 48. That's the true
+PostHog moment — instrumentation first, insight from your own traffic — and it turns a
+run-once report into a standing loop: capture always-on → periodic eval on fresh samples →
+routing table refreshed. One honest wrinkle to solve when this gets built: the stale-judge
+anti-cheat trick assumes freshness-demanding queries, and real traffic isn't all like that —
+captured queries need classification, with `retrieval_score` (source quality) carrying more
+weight than `answer_score` where the judge could answer from memory. Local files only, as
+ever: captured queries can contain user data and never leave the machine.
+
 ## Explicitly NOT in scope
 
 - Crawling — sourcery evals *search* retrieval, not site crawling.

@@ -1,6 +1,7 @@
 import { EVAL_DATASET, EvalQuery, QueryType } from "./eval-dataset";
 import { runArm } from "./orchestrator";
 import { DEFAULT_CONFIG, Provider, Source } from "./types";
+import { MODEL } from "./controls";
 import { mapWithConcurrency } from "./extract";
 
 // Offline batch eval: run every dataset query through BOTH providers (provider
@@ -90,7 +91,11 @@ export function selectQueries(perType = 0): EvalQuery[] {
 export async function runBatch(
   queries: EvalQuery[] = EVAL_DATASET,
   now: number = Date.now(),
+  opts: { model?: string; judgeModel?: string } = {},
 ): Promise<BatchOutput> {
+  const model = opts.model?.trim() || MODEL;
+  const judgeModel = opts.judgeModel?.trim() || MODEL;
+
   // Flatten to (query × provider) arms, then run bounded-concurrent.
   const jobs = queries.flatMap((q) =>
     PROVIDERS.map((provider) => ({ q, provider })),
@@ -100,6 +105,8 @@ export async function runBatch(
     const arm = await runArm(
       { id: provider, provider, config: { ...DEFAULT_CONFIG } },
       q.query,
+      model,
+      judgeModel,
     );
     const row: BatchRow = {
       queryId: q.id,

@@ -16,7 +16,11 @@ export function registerRun(program: Command): void {
       "axis to vary: provider | freshness | num_sources | extraction",
     )
     .option("--values <list>", "comma-separated values for the varied axis")
-    .option("--model <model>", "answer/judge model override")
+    .option("--model <model>", "answer model override")
+    .option(
+      "--judge <model>",
+      "judge model (grades retrieval + answer); defaults to gpt-4o-mini",
+    )
     .option("--no-save", "do not append the run to .sourcery/runs.jsonl")
     .action(async (query: string, opts: RunOptions) => {
       loadEnv();
@@ -30,11 +34,14 @@ export function registerRun(program: Command): void {
         ? opts.values.split(",").map((s) => s.trim()).filter(Boolean)
         : config.values;
 
+      const model = opts.model ?? config.model;
+      const judge = opts.judge ?? config.judge;
       const req: RunRequest = {
         query,
         variable: (opts.variable ?? config.variable ?? "provider") as Axis,
         ...(values ? { values } : {}),
-        ...(opts.model ?? config.model ? { model: opts.model ?? config.model } : {}),
+        ...(model ? { model } : {}),
+        ...(judge ? { judge_model: judge } : {}),
       };
 
       const run = await runEval(req);
@@ -50,8 +57,9 @@ export function registerRun(program: Command): void {
 }
 
 interface RunOptions {
-  variable: string;
+  variable?: string;
   values?: string;
   model?: string;
+  judge?: string;
   save?: boolean;
 }

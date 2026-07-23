@@ -58,14 +58,24 @@ export function renderRun(run: Run): string {
     ? `Winner: ${winner.id} (${label(winner.provider)}) — retrieval ${score(winner.retrieval_score)}`
     : "Winner: none (all arms failed)";
 
+  // Per-arm retrieved sources (domains) so you can see what each arm actually got.
+  const sourceLines = run.arms
+    .filter((a) => a.sources.length)
+    .map((a) => {
+      const domains = a.sources.map((s) => s.domain).join(", ");
+      return `  ${a.id} (${label(a.provider)}): ${domains}`;
+    });
+  const sources = sourceLines.length ? ["", "Sources:", ...sourceLines] : [];
+
   return [
     `Query: ${run.query}`,
-    `Varying: ${run.variable}`,
+    `Varying: ${run.variable}  ·  Judge: ${run.judge_model}`,
     "",
     header,
     ...body,
     "",
     footer,
+    ...sources,
   ].join("\n");
 }
 

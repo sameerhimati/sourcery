@@ -2,6 +2,7 @@ import { heatColor, heatText, providerMeta, scoreText } from "@core/viz";
 import { TYPE_LABELS } from "@core/batch";
 import type { BatchRow, HeatRow } from "@core/batch";
 import type { QueryType } from "@core/eval-dataset";
+import type { Arm, Source } from "@core/types";
 import type { BatchRowRecord, RunRecord, SourceryRecord } from "./persist";
 
 // Self-contained HTML report — inline CSS, no external requests, no JS. A pure
@@ -51,6 +52,26 @@ function heatmapSection(rows: BatchRow[]): string {
     <table class="heatmap"><thead><tr><th></th>${head}</tr></thead><tbody>${body}</tbody></table>`;
 }
 
+function sourceEntry(s: Source): string {
+  const date = s.published ?? "undated";
+  const body = s.content ?? s.snippet ?? "(no content extracted)";
+  const title = s.title || s.url;
+  return `<div class="src">
+      <div class="src-head"><a href="${esc(s.url)}" target="_blank" rel="noreferrer">${esc(title)}</a>
+        <span class="dom">${esc(s.domain)}</span><span class="date">${esc(date)}</span></div>
+      <pre class="src-body">${esc(body)}</pre>
+    </div>`;
+}
+
+/** Collapsible list of what one arm actually retrieved — the sources + their text. */
+function sourcesBlock(a: Arm): string {
+  if (!a.sources.length) return "";
+  return `<details class="sources">
+      <summary>${esc(providerMeta(a.provider).label)} — ${a.sources.length} source${a.sources.length === 1 ? "" : "s"} retrieved</summary>
+      ${a.sources.map(sourceEntry).join("")}
+    </details>`;
+}
+
 function runCard(r: RunRecord): string {
   const arms = r.arms
     .map((a) => {
@@ -61,14 +82,16 @@ function runCard(r: RunRecord): string {
       return `<tr${win}><td>${a.id === r.winner ? "★ " : ""}${esc(providerMeta(a.provider).label)}</td>${scores}</tr>`;
     })
     .join("");
+  const sources = r.arms.map(sourcesBlock).join("");
   return `
     <div class="card">
       <div class="q">${esc(r.query)}</div>
-      <div class="meta">varying ${esc(r.variable)} · ${new Date(r.ts).toLocaleString()}</div>
+      <div class="meta">varying ${esc(r.variable)} · judge ${esc(r.judge_model)} · ${new Date(r.ts).toLocaleString()}</div>
       <table class="arms">
         <thead><tr><th>provider</th><th>retrieval</th><th>answer</th><th>latency</th></tr></thead>
         <tbody>${arms}</tbody>
       </table>
+      ${sources}
     </div>`;
 }
 
@@ -122,6 +145,18 @@ export function buildReport(records: SourceryRecord[], generatedAt: string): str
   tr.winner td { background: #f3f7f0; }
   .err { color: #a04030; font-style: italic; }
   code { background: #f0ebe0; padding: .1rem .35rem; border-radius: 4px; }
+  details.sources { margin-top: .6rem; border-top: 1px solid #f0ebe0; padding-top: .5rem; }
+  details.sources summary { cursor: pointer; color: #6a6252; font-size: .82rem; }
+  details.sources summary:hover { color: #2a2620; }
+  .src { margin: .6rem 0 .2rem; }
+  .src-head { display: flex; gap: .6rem; align-items: baseline; flex-wrap: wrap; font-size: .85rem; }
+  .src-head a { color: #3a5a8a; text-decoration: none; font-weight: 600; }
+  .src-head a:hover { text-decoration: underline; }
+  .src-head .dom { color: #8a8272; font-family: ui-monospace, Menlo, monospace; font-size: .78rem; }
+  .src-head .date { color: #8a8272; font-size: .78rem; }
+  .src-body { margin: .3rem 0 0; padding: .6rem .75rem; background: #f7f2ea; border-radius: 6px;
+    max-height: 15rem; overflow: auto; white-space: pre-wrap; word-break: break-word;
+    font: 12px/1.5 ui-monospace, Menlo, monospace; color: #4a4436; }
 </style></head>
 <body>
   <h1>sourcery report</h1>

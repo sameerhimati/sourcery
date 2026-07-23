@@ -42,6 +42,9 @@ export interface Run {
   // arm id of the winner, chosen by highest retrieval_score among non-errored
   // arms; null if all failed. (Shape unchanged; semantics are now retrieval-based.)
   winner: string | null;
+  // Model that graded retrieval + answer. Held constant across arms; recorded
+  // because the stale-judge anti-cheat trick hinges on *which* judge scored.
+  judge_model: string;
 }
 
 export interface RunRequest {
@@ -50,7 +53,8 @@ export interface RunRequest {
   values?: string[]; // default depends on axis
   // Optional overrides applied to the base config before the varied axis is
   // swept (additive; all default to DEFAULT_CONFIG / MODEL server-side).
-  model?: string;
+  model?: string; // answer model
+  judge_model?: string; // retrieval + answer judge; defaults to MODEL, NOT to `model`
   num_sources?: number;
   freshness?: Freshness;
   extraction?: Extraction;

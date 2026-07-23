@@ -15,7 +15,8 @@ export interface RunRecord {
   query: string;
   variable: Run["variable"];
   winner: Run["winner"];
-  arms: Run["arms"]; // full per-arm detail incl. retrieval / answer scores
+  judge_model: Run["judge_model"];
+  arms: Run["arms"]; // full per-arm detail incl. retrieval / answer scores + sources
 }
 
 /** One (query × provider) row of a batch (from `sourcery batch`). */
@@ -37,6 +38,7 @@ export function toRunRecord(run: Run, id: string, ts: string): RunRecord {
     query: run.query,
     variable: run.variable,
     winner: run.winner,
+    judge_model: run.judge_model,
     arms: run.arms,
   };
 }

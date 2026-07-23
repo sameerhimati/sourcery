@@ -8,7 +8,8 @@ import type { Axis } from "@core/types";
 // overrides the engine's built-in defaults. This is also the extension seam where
 // custom query sets / providers will hang off later.
 export interface SourceryConfig {
-  model?: string; // answer + judge model
+  model?: string; // answer model
+  judge?: string; // retrieval + answer judge model (defaults to gpt-4o-mini)
   variable?: Axis; // default axis to vary in `run`
   values?: string[]; // default values for that axis
 }

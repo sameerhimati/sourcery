@@ -143,6 +143,7 @@ describe("runEval — recorded fixture (S0 zero-behavior-change gate)", () => {
             ],
           },
         ],
+        "judge_model": "gpt-4o-mini",
         "query": "what changed in the H-1B lottery?",
         "variable": "provider",
         "winner": "A",

@@ -26,8 +26,17 @@ describe("renderRun", () => {
       query: "what changed in the H-1B lottery?",
       variable: "provider",
       winner: "A",
+      judge_model: "gpt-4o-mini",
       arms: [
-        arm({ id: "A", provider: "bright_data", retrieval_score: 7, score: 6 }),
+        arm({
+          id: "A",
+          provider: "bright_data",
+          retrieval_score: 7,
+          score: 6,
+          sources: [
+            { title: "t", url: "https://a.com/x", published: "2025-01-01", domain: "a.com" },
+          ],
+        }),
         arm({
           id: "B",
           provider: "firecrawl",
@@ -38,13 +47,16 @@ describe("renderRun", () => {
 
     expect(renderRun(run)).toMatchInlineSnapshot(`
       "Query: what changed in the H-1B lottery?
-      Varying: provider
+      Varying: provider  ·  Judge: gpt-4o-mini
 
          ARM  PROVIDER     RETRIEVAL  ANSWER  LATENCY
        ★ A    Bright Data  7/10       6/10    1200ms 
          B    Firecrawl    —          —       —         (FIRECRAWL_API_KEY missing)
 
-      Winner: A (Bright Data) — retrieval 7/10"
+      Winner: A (Bright Data) — retrieval 7/10
+
+      Sources:
+        A (Bright Data): a.com"
     `);
   });
 
@@ -53,6 +65,7 @@ describe("renderRun", () => {
       query: "q",
       variable: "provider",
       winner: null,
+      judge_model: "gpt-4o-mini",
       arms: [arm({ id: "A", error: "boom" })],
     };
     expect(renderRun(run)).toContain("Winner: none (all arms failed)");

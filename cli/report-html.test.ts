@@ -9,6 +9,7 @@ const runRec: RunRecord = {
   query: 'H-1B <lottery> & "reform"?', // exercises HTML escaping
   variable: "provider",
   winner: "A",
+  judge_model: "gpt-4o-mini",
   arms: [
     {
       id: "A",
@@ -16,7 +17,15 @@ const runRec: RunRecord = {
       config: { freshness: "all", num_sources: 8, extraction: "clean" },
       model: "gpt-4o-mini",
       answer: "a",
-      sources: [],
+      sources: [
+        {
+          title: "USCIS <update>", // escaping in a source title too
+          url: "https://uscis.gov/h1b",
+          published: "2026-03-01",
+          domain: "uscis.gov",
+          content: "The H-1B registration process changed as follows…",
+        },
+      ],
       latency_ms: 1200,
       retrieval_score: 8,
       retrieval_rationale: "",
@@ -76,6 +85,13 @@ describe("buildReport", () => {
     // Heatmap aggregates the batch by type/provider.
     expect(html).toContain("breaking news");
     expect(html).toContain("Firecrawl");
+    // Retrieved sources are shown (collapsible) with their content, escaped.
+    expect(html).toContain("1 source retrieved");
+    expect(html).toContain("uscis.gov");
+    expect(html).toContain("The H-1B registration process changed");
+    expect(html).toContain("USCIS &lt;update&gt;");
+    // Judge model surfaced in the run meta.
+    expect(html).toContain("judge gpt-4o-mini");
   });
 
   it("shows an empty state when there are no records", () => {

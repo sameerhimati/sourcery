@@ -65,6 +65,7 @@ export async function runArm(
   spec: ArmSpec,
   query: string,
   model: string = MODEL,
+  judgeModel: string = MODEL,
 ): Promise<Arm> {
   const base: Arm = {
     id: spec.id,
@@ -83,12 +84,13 @@ export async function runArm(
   try {
     const { sources, context } = await fetchSources(spec.provider, query, spec.config);
     // Retrieval judge (primary) grades the sources; answer + answer judge
-    // (secondary) run in parallel off the same fetched context.
+    // (secondary) run in parallel off the same fetched context. The answer uses
+    // `model`; both judges use `judgeModel` (kept stale by default on purpose).
     const [retrieval, ans] = await Promise.all([
-      retrievalJudge(query, sources, model),
+      retrievalJudge(query, sources, judgeModel),
       answer(query, context, model),
     ]);
-    const { score, rationale } = await judge(query, ans, sources, model);
+    const { score, rationale } = await judge(query, ans, sources, judgeModel);
     return {
       ...base,
       answer: ans,
@@ -122,6 +124,9 @@ export async function runEval(req: RunRequest): Promise<Run> {
   const variable: Axis = req.variable ?? "provider";
   const values = req.values?.length ? req.values : DEFAULT_VALUES[variable];
   const model = req.model?.trim() || MODEL;
+  // Judge defaults to MODEL (the stale judge), NOT to `model` — overriding the
+  // answer model must not silently hand the judge a fresher cutoff.
+  const judgeModel = req.judge_model?.trim() || MODEL;
 
   // Base config = defaults with any UI-set knobs applied, off which the varied
   // axis is swept. (Sweeping the varied axis overrides its own knob per arm.)
@@ -135,9 +140,20 @@ export async function runEval(req: RunRequest): Promise<Run> {
   const arms: Arm[] = await Promise.all(
     values.map((value, i) => {
       const { provider, config } = armSpec(variable, value, base);
-      return runArm({ id: ARM_IDS[i] ?? `arm${i}`, provider, config }, req.query, model);
+      return runArm(
+        { id: ARM_IDS[i] ?? `arm${i}`, provider, config },
+        req.query,
+        model,
+        judgeModel,
+      );
     }),
   );
 
-  return { query: req.query, variable, arms, winner: pickWinner(arms) };
+  return {
+    query: req.query,
+    variable,
+    arms,
+    winner: pickWinner(arms),
+    judge_model: judgeModel,
+  };
 }

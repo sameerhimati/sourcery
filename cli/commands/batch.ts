@@ -1,6 +1,7 @@
 import type { Command } from "commander";
 import { runBatch, selectQueries } from "@core/batch";
 import { loadEnv, requireKeys } from "../env";
+import { loadConfig } from "../config";
 import { appendRecords, toBatchRecords, RUNS_PATH } from "../persist";
 import { renderBatch } from "../format";
 
@@ -13,10 +14,13 @@ export function registerBatch(program: Command): void {
       "cap queries per type for a quick pass (0 = full 48-query set)",
       "0",
     )
+    .option("--model <model>", "answer model override")
+    .option("--judge <model>", "judge model (defaults to gpt-4o-mini)")
     .option("--no-save", "do not append rows to .sourcery/runs.jsonl")
     .action(async (opts: BatchOptions) => {
       loadEnv();
       requireKeys(["OPENAI_API_KEY"]);
+      const config = await loadConfig();
 
       const perType = Number(opts.perType);
       const queries = selectQueries(Number.isFinite(perType) ? perType : 0);
@@ -24,7 +28,10 @@ export function registerBatch(program: Command): void {
         `Running ${queries.length} queries × 2 providers (this is slow + credit-heavy)…\n`,
       );
 
-      const out = await runBatch(queries);
+      const out = await runBatch(queries, undefined, {
+        model: opts.model ?? config.model,
+        judgeModel: opts.judge ?? config.judge,
+      });
       process.stdout.write("\n" + renderBatch(out) + "\n");
 
       if (opts.save !== false) {
@@ -39,5 +46,7 @@ export function registerBatch(program: Command): void {
 
 interface BatchOptions {
   perType: string;
+  model?: string;
+  judge?: string;
   save?: boolean;
 }

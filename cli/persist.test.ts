@@ -9,6 +9,7 @@ const RUN: Run = {
   query: "q",
   variable: "provider",
   winner: "A",
+  judge_model: "gpt-4o-mini",
   arms: [
     {
       id: "A",
@@ -41,6 +42,7 @@ describe("persist", () => {
       query: "q",
       variable: "provider",
       winner: "A",
+      judge_model: "gpt-4o-mini",
       arms: RUN.arms,
     });
   });

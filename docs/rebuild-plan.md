@@ -91,6 +91,11 @@ A tool whose own headline eval is underpowered can't tell other people to eval t
   rewritten on the stronger data. Gate: the "what I wouldn't defend" list measurably shrinks.
 - **S3 — Adapter ecosystem.** plain-fetch baseline + Tavily + Exa + authoring guide.
   Gate: a new adapter lands in <100 lines without touching core.
+  **Done 2026-07-24. Gate met:** Tavily 84 lines, Exa 83, each a self-contained file
+  plus a 7-line registry entry — no core logic touched, because `Provider` became an
+  open type over a registry rather than a closed union. Guide: `docs/providers.md`.
+  Caveat: Tavily and Exa are written to their published API shapes but have **never
+  run live** (no keys); `plain` is verified only as far as its SERP parse.
 - **S4 — Publish.** Fresh repo, npm name claimed, README-as-launch-post, Show HN / PH.
   Gate: `npx <name> run` works from a clean machine that has never seen the repo.
 

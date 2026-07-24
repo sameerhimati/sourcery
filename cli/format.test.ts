@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { Arm, Run } from "@core/types";
 import type { BatchOutput } from "@core/batch";
-import { renderBatch, renderRun } from "./format";
+import { renderBatch, renderCredibility, renderRun } from "./format";
 
 function arm(over: Partial<Arm>): Arm {
   return {
@@ -92,5 +92,38 @@ describe("renderBatch", () => {
         breaking news       3.2          4.1        Firecrawl
         how-to / explainer  6.5          6.5      "
     `);
+  });
+});
+
+describe("renderCredibility: unparseable judge verdicts", () => {
+  const base = {
+    generated_at: "2026-07-24T00:00:00.000Z",
+    seeds: 2,
+    answer_model: "m",
+    judges: ["prov/jA"],
+    n_rows: 4,
+    n_errors: 0,
+    providers: ["bright_data"],
+    n_queries: 2,
+    by_provider: [{
+      provider: "bright_data", n_queries: 2,
+      retrieval_mean: 5, retrieval_ci95: 1, answer_mean: 5, answer_ci95: 1,
+    }],
+    by_type: [],
+    agreement: [],
+    variance: { seed_std_mean: 0, judge_gap_mean: 0 },
+  };
+
+  it("stays quiet when every verdict parsed", () => {
+    const out = renderCredibility({ ...base, n_unparseable_judgements: 0 });
+    expect(out).not.toContain("unparseable");
+    // and reports the real shape rather than a hardcoded one
+    expect(out).toContain("2 queries × Bright Data × 2 seeds");
+  });
+
+  it("warns loudly that unparseable verdicts are not genuine zeros", () => {
+    const out = renderCredibility({ ...base, n_unparseable_judgements: 3 });
+    expect(out).toContain("3 judge verdict(s) were unparseable");
+    expect(out).toContain("NOT genuine zeros");
   });
 });

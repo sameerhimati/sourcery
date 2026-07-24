@@ -1,17 +1,15 @@
 import type { Arm, Run } from "@core/types";
 import type { BatchOutput } from "@core/batch";
 import type { CredibilitySummary } from "@core/credibility";
+import { ADAPTERS } from "@core/adapters";
 
 // Terminal scorecard — a plain-text view over a Run. Kept color-free and pure
 // (Run in, string out) so it snapshots deterministically in tests; the HTML
 // report is where visual polish lives.
 
-const PROVIDER_LABEL: Record<string, string> = {
-  bright_data: "Bright Data",
-  firecrawl: "Firecrawl",
-};
-
-const label = (p: string) => PROVIDER_LABEL[p] ?? p;
+// Display names come from the adapter registry so a new provider is labelled
+// correctly here without a second list to forget to update.
+const label = (p: string) => ADAPTERS[p]?.label ?? p;
 const score = (n: number) => `${n}/10`;
 
 function pad(s: string, w: number): string {
@@ -163,7 +161,11 @@ export function renderCredibility(s: CredibilitySummary): string {
 
   return [
     `Credibility run — ${s.n_rows} rows (${s.n_queries} queries × ` +
-      `${s.providers.map(label).join(" / ")} × ${s.seeds} seeds), ${s.n_errors} errors`,
+      `${s.providers.map(label).join(" / ")} × ${s.seeds} seeds), ${s.n_errors} errors` +
+      (s.n_unparseable_judgements
+        ? `\n⚠ ${s.n_unparseable_judgements} judge verdict(s) were unparseable and scored 0 — ` +
+          `these drag the means down and are NOT genuine zeros.`
+        : ""),
     `Answer: ${s.answer_model}`,
     `Judges: ${s.judges.map((j) => j.split("/").pop()).join(", ")}`,
     `Generated: ${s.generated_at}`,

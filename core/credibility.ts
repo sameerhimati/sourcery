@@ -299,6 +299,10 @@ export interface CredibilitySummary {
   n_errors: number;
   providers: Provider[]; // arms actually compared (not assumed)
   n_queries: number; // distinct queries actually attempted
+  // A judge that returns prose instead of JSON scores 0 — indistinguishable
+  // from a genuine 0 once it's a number, and it drags every mean down with it.
+  // Counted here so a corrupted headline number can't stay invisible.
+  n_unparseable_judgements: number;
   by_provider: ProviderStat[];
   by_type: TypeStat[];
   agreement: AgreementStat[];
@@ -446,6 +450,16 @@ export function summarize(
     n_errors: rows.filter((r) => r.error).length,
     providers,
     n_queries: new Set(rows.map((r) => r.queryId)).size,
+    n_unparseable_judgements: rows.reduce(
+      (n, r) =>
+        n +
+        r.judgements.filter(
+          (j) =>
+            j.retrieval_rationale.includes("unparseable") ||
+            j.answer_rationale.includes("unparseable"),
+        ).length,
+      0,
+    ),
     by_provider: providers.map((p) => providerStat(rows, p)),
     by_type: typeStats(rows, providers),
     agreement,

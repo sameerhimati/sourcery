@@ -6,8 +6,14 @@ import { CONFIG_FILES } from "../config";
 const CONFIG_TEMPLATE = `// sourcery config — plain ES module, edit freely.
 // CLI flags override these; these override the engine's built-in defaults.
 export default {
-  // Answer + judge model (OpenAI). Judge defaults to gpt-4o-mini.
-  model: "gpt-4o-mini",
+  // Answer + judge model. A "provider/model" ref picks the backend; a bare id
+  // (e.g. "gpt-4o-mini") means OpenAI. Both use the same OpenAI-compatible API.
+  model: "fireworks/accounts/fireworks/models/kimi-k2p6",
+  // Judge grades retrieval + answer. deepseek-v4-pro (temp 0, JSON) here.
+  // Note: the anti-cheat ideally wants a judge whose cutoff predates the
+  // queries — a fresh judge degrades only answer_score; retrieval_score (the
+  // primary metric) is cutoff-independent. Swap in a stale model if you have one.
+  judge: "fireworks/accounts/fireworks/models/deepseek-v4-pro",
   // Default comparison for \`sourcery run\`: vary the retrieval provider.
   variable: "provider",
   values: ["bright_data", "firecrawl"],
@@ -15,10 +21,13 @@ export default {
 `;
 
 const ENV_TEMPLATE = `# Copy to .env.local and fill in. sourcery reads these via process.env.
-# Only OPENAI_API_KEY is strictly required — it powers the answer step and both
-# judges. Missing a provider key just makes that provider's arm fail gracefully.
+# You need ONE LLM key — whichever provider your answer/judge models use.
+# OPENAI_API_KEY (default models) or FIREWORKS_API_KEY (fireworks/* models).
+# Missing a retrieval-provider key just makes that provider's arm fail gracefully.
 
+# LLM (answer + both judges) — set the one matching your chosen models.
 OPENAI_API_KEY=
+FIREWORKS_API_KEY=
 
 BRIGHTDATA_API_TOKEN=
 BRIGHTDATA_SERP_ZONE=sourcery_serp
@@ -27,8 +36,11 @@ BRIGHTDATA_UNLOCKER_ZONE=
 FIRECRAWL_API_KEY=
 `;
 
+// One LLM key is required, but which one depends on the chosen models, so both
+// are listed as optional here and the run command enforces the right one.
 const KEYS: { name: string; required: boolean }[] = [
-  { name: "OPENAI_API_KEY", required: true },
+  { name: "OPENAI_API_KEY", required: false },
+  { name: "FIREWORKS_API_KEY", required: false },
   { name: "BRIGHTDATA_API_TOKEN", required: false },
   { name: "BRIGHTDATA_SERP_ZONE", required: false },
   { name: "BRIGHTDATA_UNLOCKER_ZONE", required: false },

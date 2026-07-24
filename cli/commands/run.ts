@@ -1,6 +1,8 @@
 import type { Command } from "commander";
 import { runEval } from "@core/orchestrator";
 import type { Axis, RunRequest } from "@core/types";
+import { MODEL } from "@core/controls";
+import { requiredEnvKeys } from "@core/llm";
 import { loadEnv, requireKeys } from "../env";
 import { loadConfig } from "../config";
 import { appendRecords, toRunRecord, RUNS_PATH } from "../persist";
@@ -24,9 +26,6 @@ export function registerRun(program: Command): void {
     .option("--no-save", "do not append the run to .sourcery/runs.jsonl")
     .action(async (query: string, opts: RunOptions) => {
       loadEnv();
-      // Only OPENAI_API_KEY is hard-required; provider keys degrade into a
-      // per-arm error, which the scorecard shows rather than crashing on.
-      requireKeys(["OPENAI_API_KEY"]);
 
       // Precedence: CLI flag > sourcery.config > engine default.
       const config = await loadConfig();
@@ -36,6 +35,12 @@ export function registerRun(program: Command): void {
 
       const model = opts.model ?? config.model;
       const judge = opts.judge ?? config.judge;
+
+      // Require only the LLM key(s) the chosen answer/judge models actually
+      // need — a Fireworks-only run must not demand OPENAI_API_KEY. Unset refs
+      // fall back to the engine default (MODEL). Retrieval-provider keys stay
+      // optional: a missing one degrades into a per-arm error, not a crash.
+      requireKeys(requiredEnvKeys([model ?? MODEL, judge ?? MODEL]));
       const req: RunRequest = {
         query,
         variable: (opts.variable ?? config.variable ?? "provider") as Axis,

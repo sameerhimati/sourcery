@@ -1,4 +1,4 @@
-import { getOpenAI } from "./llm";
+import { complete } from "./llm";
 import { MODEL, JUDGE_SYSTEM, JUDGE_TEMP } from "./controls";
 import { Source } from "./types";
 
@@ -16,20 +16,19 @@ export async function judge(
       )
       .join("\n") || "(none)";
 
-  const res = await getOpenAI().chat.completions.create({
-    model,
-    temperature: JUDGE_TEMP,
-    response_format: { type: "json_object" },
-    messages: [
-      { role: "system", content: JUDGE_SYSTEM },
-      {
-        role: "user",
-        content: `Query: ${query}\n\nAnswer:\n${answerText}\n\nSources it used:\n${srcList}`,
-      },
-    ],
-  });
-
-  const raw = res.choices[0]?.message?.content ?? "{}";
+  const raw =
+    (await complete({
+      model,
+      temperature: JUDGE_TEMP,
+      jsonMode: true,
+      messages: [
+        { role: "system", content: JUDGE_SYSTEM },
+        {
+          role: "user",
+          content: `Query: ${query}\n\nAnswer:\n${answerText}\n\nSources it used:\n${srcList}`,
+        },
+      ],
+    })) || "{}";
   try {
     const p = JSON.parse(raw) as { score?: unknown; rationale?: unknown };
     const n = Math.round(Number(p.score));

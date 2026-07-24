@@ -1,4 +1,4 @@
-import { getOpenAI } from "./llm";
+import { complete } from "./llm";
 import { MODEL, RETRIEVAL_JUDGE_SYSTEM, RETRIEVAL_JUDGE_TEMP } from "./controls";
 import { Source } from "./types";
 
@@ -22,20 +22,19 @@ export async function retrievalJudge(
       })
       .join("\n\n") || "(no sources retrieved)";
 
-  const res = await getOpenAI().chat.completions.create({
-    model,
-    temperature: RETRIEVAL_JUDGE_TEMP,
-    response_format: { type: "json_object" },
-    messages: [
-      { role: "system", content: RETRIEVAL_JUDGE_SYSTEM },
-      {
-        role: "user",
-        content: `Query: ${query}\n\nFetched sources (domain — date, then extracted content):\n${srcList}`,
-      },
-    ],
-  });
-
-  const raw = res.choices[0]?.message?.content ?? "{}";
+  const raw =
+    (await complete({
+      model,
+      temperature: RETRIEVAL_JUDGE_TEMP,
+      jsonMode: true,
+      messages: [
+        { role: "system", content: RETRIEVAL_JUDGE_SYSTEM },
+        {
+          role: "user",
+          content: `Query: ${query}\n\nFetched sources (domain — date, then extracted content):\n${srcList}`,
+        },
+      ],
+    })) || "{}";
   try {
     const p = JSON.parse(raw) as { score?: unknown; rationale?: unknown };
     const n = Math.round(Number(p.score));

@@ -67,6 +67,22 @@ npm run dev
 
 Single query through both arms, or a batch across the eval set. Results render as a per-query heatmap, so you can see *which* query types each provider fails on. Both collapse on `breaking_news` (2.5 / 2.5) — the category you'd most want them to be good at.
 
+## Models
+
+The answer step and both judges run through one provider-agnostic seam, so you can point them at any OpenAI-compatible backend. A model is a `provider/model` ref; a bare id (`gpt-4o-mini`) means OpenAI.
+
+```bash
+# OpenAI (needs OPENAI_API_KEY)
+sourcery run "<query>" --model gpt-4o-mini
+
+# Fireworks (needs FIREWORKS_API_KEY) — the scaffolded default from `sourcery init`
+sourcery run "<query>" \
+  --model fireworks/accounts/fireworks/models/kimi-k2p6 \
+  --judge fireworks/accounts/fireworks/models/deepseek-v4-pro
+```
+
+You only need the LLM key for the provider you actually use — `run`/`batch` require exactly that one. Adding another OpenAI-compatible provider (Together, Groq, vLLM, …) is one row in `core/llm/`. The judge defaults to a stale model on purpose: the anti-cheat needs its cutoff to predate the queries, so a fresh judge only affects `answer_score`, never the primary `retrieval_score`.
+
 ## Stack
 
 Next.js · TypeScript · OpenAI API · Bright Data + Firecrawl adapters ([`src/lib/adapters/`](src/lib/adapters/))

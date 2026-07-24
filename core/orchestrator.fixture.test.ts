@@ -36,22 +36,14 @@ vi.mock("@core/adapters", () => ({
 }));
 
 vi.mock("@core/llm", () => ({
-  // Lazy getter mirrors the real module surface; returns a fake client.
-  getOpenAI: () => ({
-    chat: {
-      completions: {
-        // The judges request JSON (response_format), the answer step doesn't —
-        // branch on that so one mock serves all three LLM calls deterministically.
-        create: vi.fn(async (args: { response_format?: { type?: string } }) => {
-          const wantsJson = args.response_format?.type === "json_object";
-          const content = wantsJson
-            ? JSON.stringify({ score: 7, rationale: "recorded judge rationale" })
-            : "Recorded answer synthesized from the sources.";
-          return { choices: [{ message: { content } }] };
-        }),
-      },
-    },
-  }),
+  // Mock the single LLM seam. The judges request JSON (jsonMode), the answer
+  // step doesn't — branch on that so one mock serves all three calls
+  // deterministically, byte-identical to the pre-provider-layer snapshot.
+  complete: vi.fn(async (args: { jsonMode?: boolean }) =>
+    args.jsonMode
+      ? JSON.stringify({ score: 7, rationale: "recorded judge rationale" })
+      : "Recorded answer synthesized from the sources.",
+  ),
 }));
 
 // Import AFTER the mocks are registered so the engine binds to the fakes.

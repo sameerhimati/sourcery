@@ -1,5 +1,7 @@
 import type { Command } from "commander";
 import { runBatch, selectQueries } from "@core/batch";
+import { MODEL } from "@core/controls";
+import { requiredEnvKeys } from "@core/llm";
 import { loadEnv, requireKeys } from "../env";
 import { loadConfig } from "../config";
 import { appendRecords, toBatchRecords, RUNS_PATH } from "../persist";
@@ -19,8 +21,13 @@ export function registerBatch(program: Command): void {
     .option("--no-save", "do not append rows to .sourcery/runs.jsonl")
     .action(async (opts: BatchOptions) => {
       loadEnv();
-      requireKeys(["OPENAI_API_KEY"]);
       const config = await loadConfig();
+
+      // Require only the LLM key(s) the chosen answer/judge models need (unset
+      // refs fall back to the engine default). Retrieval keys stay optional.
+      const model = opts.model ?? config.model;
+      const judge = opts.judge ?? config.judge;
+      requireKeys(requiredEnvKeys([model ?? MODEL, judge ?? MODEL]));
 
       const perType = Number(opts.perType);
       const queries = selectQueries(Number.isFinite(perType) ? perType : 0);
@@ -29,8 +36,8 @@ export function registerBatch(program: Command): void {
       );
 
       const out = await runBatch(queries, undefined, {
-        model: opts.model ?? config.model,
-        judgeModel: opts.judge ?? config.judge,
+        model,
+        judgeModel: judge,
       });
       process.stdout.write("\n" + renderBatch(out) + "\n");
 

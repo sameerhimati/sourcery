@@ -153,12 +153,17 @@ keys, and the paid providers have a floor to clear.
    free option isn't merely lower quality, its **availability is
    non-deterministic**. Reliable access under sustained automated load is a
    large part of what a paid retrieval provider actually sells.
-3. **Its failures bias it upward.** Arms that error are excluded from the
+3. **It ignores the `freshness` knob.** The keyless endpoint has no dependable
+   `tbs` equivalent, so a `--variable freshness` sweep yields *identical* arms
+   for this provider and a difference of exactly zero — which reads like a
+   finding and isn't one. Don't sweep freshness against `plain`. (That you
+   can't ask the free option for recency at all is, separately, a real cost.)
+4. **Its failures bias it upward.** Arms that error are excluded from the
    aggregates, so a blocked `plain` arm silently disappears rather than scoring
    0. Its mean therefore reflects only the queries it *managed* to serve. Report
    its error rate alongside its score or the number flatters it.
 
-That third point is the general lesson, not a `plain` quirk: **an eval that drops
+That last point is the general lesson, not a `plain` quirk: **an eval that drops
 failures measures the happy path.** Check `n_errors` before believing any mean.
 
 ---

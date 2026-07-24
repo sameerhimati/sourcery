@@ -169,6 +169,12 @@ export async function fetchPlain(
   query: string,
   config: ArmConfig,
 ): Promise<FetchResult> {
+  // NOTE: `config.freshness` is deliberately ignored — the keyless endpoint has
+  // no dependable equivalent of Google's `tbs`. That means a `--variable
+  // freshness` sweep produces IDENTICAL arms for this provider and a difference
+  // of exactly zero, which reads like a finding and isn't one. Don't sweep
+  // freshness against `plain`; not being able to ask for recency is itself part
+  // of what the free option costs you.
   const hits = (await searchWithRetry(query)).slice(0, config.num_sources);
 
   const now = Date.now();

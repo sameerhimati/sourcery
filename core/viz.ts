@@ -68,9 +68,19 @@ export function heatBadge(s: number): string {
 }
 
 // Provider identity (colors + labels), ported from the mockup.
+//
+// Deliberately duplicates the labels in the adapter registry rather than
+// importing it: this module is safe to import client-side, and core/adapters
+// pulls every provider's network code in with it. Keep the labels in step with
+// `ADAPTERS` in core/adapters/index.ts — an unknown id degrades to its raw id
+// and a neutral grey, so a missed entry is cosmetic, not broken.
 export const PROVIDERS: Record<string, { label: string; color: string }> = {
   bright_data: { label: "Bright Data", color: "oklch(0.5 0.14 250)" },
   firecrawl: { label: "Firecrawl", color: "oklch(0.55 0.16 50)" },
+  tavily: { label: "Tavily", color: "oklch(0.52 0.14 160)" },
+  exa: { label: "Exa", color: "oklch(0.5 0.15 300)" },
+  // Grey on purpose — the baseline shouldn't read as a peer of the paid arms.
+  plain: { label: "Plain fetch", color: "oklch(0.55 0.03 90)" },
 };
 
 export function providerMeta(provider: string): { label: string; color: string } {

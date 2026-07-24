@@ -83,3 +83,15 @@ describe("plain: SERP parsing", () => {
     expect(parseSerp(`<!--rs--><h2><a href="/relative">x</a></h2><!--re-->`)).toEqual([]);
   });
 });
+
+// core/viz.ts duplicates provider labels so it stays client-safe. Duplication
+// without a guard drifts, so this is the guard.
+describe("viz labels track the registry", () => {
+  it("gives every registered adapter matching display identity", async () => {
+    const { PROVIDERS } = await import("../viz");
+    for (const spec of listAdapters()) {
+      expect(PROVIDERS[spec.id], `viz.ts is missing "${spec.id}"`).toBeDefined();
+      expect(PROVIDERS[spec.id].label).toBe(spec.label);
+    }
+  });
+});

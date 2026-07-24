@@ -158,7 +158,16 @@ keys, and the paid providers have a floor to clear.
    for this provider and a difference of exactly zero — which reads like a
    finding and isn't one. Don't sweep freshness against `plain`. (That you
    can't ask the free option for recency at all is, separately, a real cost.)
-4. **Its failures bias it upward.** Arms that error are excluded from the
+4. **Its 1,600-char excerpt is mostly page chrome.** Every arm truncates each
+   source to ~1,600 characters via `cleanMarkdown`, whose boilerplate filter
+   drops lines that are *markdown* links — effective on the markdown the paid
+   providers return, and a complete no-op on the plain text `stripTags` produces.
+   So where a paid arm spends its budget on article prose, `plain` often spends
+   it on the nav menu. That is a fair depiction of naive extraction, but it means
+   part of the measured gap is the truncation interacting badly with untidied
+   text, not retrieval quality alone. Don't attribute the whole gap to the
+   provider.
+5. **Its failures bias it upward.** Arms that error are excluded from the
    aggregates, so a blocked `plain` arm silently disappears rather than scoring
    0. Its mean therefore reflects only the queries it *managed* to serve. Report
    its error rate alongside its score or the number flatters it.

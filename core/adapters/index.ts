@@ -1,6 +1,6 @@
 import { ArmConfig, FetchResult, Provider } from "../types";
 import { fetchBrightData } from "./brightdata";
-import { fetchFirecrawl } from "./firecrawl";
+import { fetchFirecrawl, firecrawlHealth } from "./firecrawl";
 import { fetchPlain } from "./plain";
 import { fetchTavily } from "./tavily";
 import { fetchExa } from "./exa";
@@ -16,6 +16,13 @@ export interface AdapterSpec {
   /** One line, shown by `sourcery providers` and in docs/providers.md. */
   blurb: string;
   fetch: (query: string, config: ArmConfig) => Promise<FetchResult>;
+  /**
+   * Optional cheap probe for `sourcery providers --check`: quota, balance, or
+   * anything that decides whether a long run will actually complete. A set key
+   * is not the same as a usable account — an exhausted balance looks identical
+   * to a healthy one until the arms start failing. Must not consume quota.
+   */
+  health?: () => Promise<string>;
 }
 
 export const ADAPTERS: Record<string, AdapterSpec> = {
@@ -32,6 +39,7 @@ export const ADAPTERS: Record<string, AdapterSpec> = {
     requiredEnv: ["FIRECRAWL_API_KEY"],
     blurb: "Search + scrape in one call; returns markdown per result.",
     fetch: fetchFirecrawl,
+    health: firecrawlHealth,
   },
   tavily: {
     id: "tavily",

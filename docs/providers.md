@@ -7,7 +7,12 @@ a single registry entry — see [Writing an adapter](#writing-an-adapter).
 
 ```bash
 sourcery providers          # what's registered, and which keys you're missing
+sourcery providers --check  # ...and whether the account will actually serve a run
 ```
+
+A set key is not the same as a usable account. `--check` calls each adapter's
+optional `health()` probe — quota-neutral by contract — because an exhausted
+balance is indistinguishable from a healthy one until arms start failing.
 
 ---
 
@@ -93,8 +98,7 @@ aborts once a provider fails its first arms with zero successes.
 Check the balance before a long run:
 
 ```bash
-curl -s https://api.firecrawl.dev/v2/team/credit-usage \
-  -H "Authorization: Bearer $FIRECRAWL_API_KEY"
+sourcery providers --check   # → "OUT OF CREDITS (-17 of 1000/mo) — every arm will 402"
 ```
 
 ---

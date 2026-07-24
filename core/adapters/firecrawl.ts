@@ -4,6 +4,33 @@ import { cleanMarkdown } from "../extract";
 import { dateFromSnippet, dateFromUrl, dateFromContent, dateFromMetadata, parsePublished } from "../date";
 
 const ENDPOINT = "https://api.firecrawl.dev/v2/search";
+const CREDIT_ENDPOINT = "https://api.firecrawl.dev/v2/team/credit-usage";
+
+// Roughly what one arm costs at num_sources 8 with extraction on: the search is
+// 2 credits per 10 results, each scrape is 1. Used only to translate a raw
+// balance into "how many arms is that", which is the question you actually have.
+const CREDITS_PER_ARM = 10;
+
+/** Free, quota-neutral balance check. A key that's set but broke fails every
+ *  arm identically, and discovering that 200 arms in is expensive in time. */
+export async function firecrawlHealth(): Promise<string> {
+  const key = process.env.FIRECRAWL_API_KEY;
+  if (!key) return "FIRECRAWL_API_KEY not set";
+  const res = await fetch(CREDIT_ENDPOINT, {
+    headers: { Authorization: `Bearer ${key}` },
+  });
+  if (!res.ok) return `credit check failed: HTTP ${res.status}`;
+  const { data } = (await res.json()) as {
+    data?: { remainingCredits?: number; planCredits?: number };
+  };
+  const left = data?.remainingCredits;
+  if (typeof left !== "number") return "credit balance unavailable";
+  const arms = Math.floor(left / CREDITS_PER_ARM);
+  const plan = data?.planCredits ? ` of ${data.planCredits}/mo` : "";
+  return left <= 0
+    ? `OUT OF CREDITS (${left}${plan}) — every arm will 402`
+    : `${left} credits${plan} ≈ ${arms} arms`;
+}
 
 interface WebResult {
   title?: string;

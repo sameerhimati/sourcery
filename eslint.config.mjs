@@ -12,6 +12,11 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Not source: the bundled CLI is tsup output, and design/ is a vendored
+    // mockup. Linting them buried every real finding under ~15 phantom errors,
+    // which is the same as having no linter at all.
+    "dist/**",
+    "design/**",
   ]),
 ]);
 

@@ -22,7 +22,7 @@ import { renderCredibility } from "../format";
 export function registerCredibility(program: Command): void {
   program
     .command("credibility")
-    .description("S2: 48 × seeds × 2 providers, judge panel → CIs + judge agreement")
+    .description("S2: queries × providers × seeds, judge panel → CIs + judge agreement")
     .option("--seeds <n>", "fresh-fetch repeats per (query × provider)", "5")
     .option("--judges <list>", "comma-separated judge model refs (the panel)")
     .option("--model <model>", "answer model (held constant across arms)")
@@ -46,7 +46,7 @@ export function registerCredibility(program: Command): void {
           "Provide a judge panel: --judges <ref>,<ref> (S2 needs ≥1, ideally 2+).",
         );
       }
-      requireKeys(requiredEnvKeys([model, ...judges]));
+      requireKeys(requiredEnvKeys([model, ...judges]), [model, ...judges]);
 
       const seeds = Number(opts.seeds);
       if (!Number.isInteger(seeds) || seeds < 1) {

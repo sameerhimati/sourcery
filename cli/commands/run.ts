@@ -40,7 +40,7 @@ export function registerRun(program: Command): void {
       // need — a Fireworks-only run must not demand OPENAI_API_KEY. Unset refs
       // fall back to the engine default (MODEL). Retrieval-provider keys stay
       // optional: a missing one degrades into a per-arm error, not a crash.
-      requireKeys(requiredEnvKeys([model ?? MODEL, judge ?? MODEL]));
+      requireKeys(requiredEnvKeys([model ?? MODEL, judge ?? MODEL]), [model ?? MODEL, judge ?? MODEL]);
       const req: RunRequest = {
         query,
         variable: (opts.variable ?? config.variable ?? "provider") as Axis,

@@ -34,13 +34,23 @@ export function loadEnv(files = [".env.local", ".env"]): void {
  * for a run (answer + judges) — provider keys degrade gracefully into a per-arm
  * error, so they're warned about, not enforced.
  */
-export function requireKeys(names: string[]): void {
+export function requireKeys(names: string[], models: string[] = []): void {
   const missing = names.filter((n) => !process.env[n]?.trim());
-  if (missing.length) {
-    process.stderr.write(
-      `Missing required env: ${missing.join(", ")}\n` +
-        `Set them in .env.local (see .env.example) or your shell.\n`,
-    );
-    process.exit(1);
-  }
+  if (!missing.length) return;
+
+  // Which key you need is decided by which MODEL you chose, which is not
+  // obvious from the key name alone — the default answer/judge model is an
+  // OpenAI one, so a user holding only a Fireworks key gets told to set
+  // OPENAI_API_KEY with no hint that picking a model is the real fix.
+  const because = models.length
+    ? `\nNeeded because the answer/judge model is ${[...new Set(models)].join(" / ")}.` +
+      `\nEither set that key, or point at a provider you do have:\n` +
+      `  --model <provider>/<model>   (e.g. fireworks/accounts/fireworks/models/kimi-k2p6)\n` +
+      `  sourcery init                to scaffold a config with your models\n`
+    : "";
+  process.stderr.write(
+    `Missing required env: ${missing.join(", ")}\n` +
+      `Set them in .env.local (see .env.example) or your shell.${because}`,
+  );
+  process.exit(1);
 }

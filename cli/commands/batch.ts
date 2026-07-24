@@ -27,7 +27,7 @@ export function registerBatch(program: Command): void {
       // refs fall back to the engine default). Retrieval keys stay optional.
       const model = opts.model ?? config.model;
       const judge = opts.judge ?? config.judge;
-      requireKeys(requiredEnvKeys([model ?? MODEL, judge ?? MODEL]));
+      requireKeys(requiredEnvKeys([model ?? MODEL, judge ?? MODEL]), [model ?? MODEL, judge ?? MODEL]);
 
       const perType = Number(opts.perType);
       const queries = selectQueries(Number.isFinite(perType) ? perType : 0);

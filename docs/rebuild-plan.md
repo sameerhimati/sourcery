@@ -98,6 +98,9 @@ A tool whose own headline eval is underpowered can't tell other people to eval t
   run live** (no keys); `plain` is verified only as far as its SERP parse.
 - **S4 — Publish.** Fresh repo, npm name claimed, README-as-launch-post, Show HN / PH.
   Gate: `npx <name> run` works from a clean machine that has never seen the repo.
+  **Launch asset — an agent prompt (SKILL.md-style).** Agents are a real audience;
+  ship a copy-pasteable block that teaches one how to use the tool (Firecrawl ships
+  the same). Draft in [Launch: the agent prompt](#launch-the-agent-prompt) below.
 
 ## Where this could go: from eval to router (post-S4, the retention answer)
 
@@ -110,6 +113,56 @@ that lives in your app. Offline eval → static routing table first; a live band
 judge async, update) only if the static table proves out. This is what makes the tool
 *solve a problem* rather than describe one: your eval becomes your config. Not planned in
 S0–S4; recorded so the contract (per-type scores in `runs.jsonl`) keeps it possible.
+
+**S5 shape — MCP is the interface, the router is the capability (decided worth exploring
+2026-07-24).** Not "MCP *instead of* router" — a routing decision is a natural MCP tool, so
+MCP is likely the *right form* for the router, because agents are the actual users and MCP is
+how you reach them (Firecrawl ships an MCP server for exactly this). A spectrum, ascending in
+ambition and in "platform" risk:
+1. **Eval-as-a-tool** — `evaluate_retrieval(queries)`: an agent audits its *own* retrieval.
+   Thin wrapper over the existing `run`/`batch` functions. ~a day.
+2. **Routing-decision tool** — `which_provider(query)` → best backend from your eval data.
+   The router, expressed as MCP; cleaner than a static exported table.
+3. **Live routing proxy** — `search(query)` and sourcery routes under the hood. Now it's a
+   meta-provider service (latency, cost, key mgmt, fresh eval data) — the fullest "I built a
+   platform" version, and the one that most dilutes the sharp "I eval retrieval" story.
+
+Recommendation: scope S5 as (1)+(2) — both MCP-native, both thin, both keep the eval identity.
+Hold (3) as a stretch; don't let S5 become a hosted service before S4 ships. MCP is additive
+on top of a working CLI, never a prerequisite for launch.
+
+## Launch: the agent prompt
+
+An S4 asset — the SKILL.md-style block people paste into their agent so it knows how to drive
+sourcery. Draft (refine against the real command surface at S4):
+
+```markdown
+# Using sourcery to evaluate web retrieval
+
+sourcery compares web-retrieval providers on YOUR queries with YOUR model, so you
+can pick the retrieval backend that actually works for your task instead of guessing.
+
+## When to reach for it
+- Building RAG or a research agent and haven't validated your retrieval provider.
+- Answers are stale or wrong and you suspect retrieval, not the model.
+- Choosing between Firecrawl / Tavily / Exa / Bright Data / a keyless baseline.
+
+## Commands
+- `sourcery providers --check`              list providers; are keys + quota live?
+- `sourcery run "<query>" --values a,b`     one query, providers side by side, scored
+- `sourcery batch`                          the full eval set → per-type heatmap
+- `sourcery report`                         self-contained HTML from the run log
+
+Bring your own model: `--model <provider>/<model>` (any OpenAI-compatible backend).
+
+## How to read the output
+- retrieval_score (0–10) is PRIMARY — it grades the fetched SOURCES (fresh? on-topic?
+  real?), not the answer. This is the number to trust.
+- answer_score (0–10) is secondary — the answer built from those sources.
+- The winner is the highest retrieval_score among arms that DIDN'T error. Always
+  check the error column: a provider that fails often is worse than one that scores
+  slightly lower but always returns.
+```
 
 **The other half of the loop: capture, so the eval set is YOUR traffic.** A one-line wrapper
 around the app's retrieval call (`sourcery.wrap(provider)`) logs every real query to

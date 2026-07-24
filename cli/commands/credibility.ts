@@ -1,11 +1,17 @@
 import type { Command } from "commander";
-import { runCredibility, summarize } from "@core/credibility";
+import { runCredibility, summarize, armKey } from "@core/credibility";
 import { selectQueries } from "@core/batch";
 import { MODEL } from "@core/controls";
 import { requiredEnvKeys } from "@core/llm";
 import { loadEnv, requireKeys } from "../env";
 import { loadConfig } from "../config";
-import { writeCredibility, S2_RUNS_PATH, S2_SUMMARY_PATH } from "../persist";
+import {
+  appendCredibilityRow,
+  readCredibilityRows,
+  writeCredibilitySummary,
+  S2_RUNS_PATH,
+  S2_SUMMARY_PATH,
+} from "../persist";
 import { renderCredibility } from "../format";
 
 // S2 credibility run: the full 48 × seeds × 2 providers matrix graded by a JUDGE
@@ -21,6 +27,7 @@ export function registerCredibility(program: Command): void {
     .option("--model <model>", "answer model (held constant across arms)")
     .option("--per-type <n>", "cap queries per type for a dry run (0 = full 48)", "0")
     .option("--concurrency <n>", "pipelines in flight (higher = faster, more load)", "4")
+    .option("--resume", "skip arms already in .sourcery/s2-runs.jsonl")
     .option("--no-save", "do not write .sourcery/s2-*.{jsonl,json}")
     .action(async (opts: CredOptions) => {
       loadEnv();
@@ -49,14 +56,32 @@ export function registerCredibility(program: Command): void {
         throw new Error(`--concurrency must be a positive integer (got "${opts.concurrency}").`);
       }
       const arms = queries.length * 2 * seeds;
+      // --resume replays what's already on disk so a killed run costs minutes,
+      // not hours. Rows are appended as they land, so this always has a floor.
+      const prior = opts.resume ? readCredibilityRows() : [];
+      const done = new Set(prior.map((r) => armKey(r.queryId, r.provider, r.seed)));
       process.stdout.write(
         `Credibility run: ${queries.length} queries × 2 providers × ${seeds} seeds ` +
           `= ${arms} arms, each graded by ${judges.length} judge(s), concurrency ${concurrency}.\n` +
+          (done.size ? `Resuming: ${done.size} arms already on disk, ${arms - done.size} to go.\n` : "") +
           `This is slow + credit-heavy (fresh fetch every seed)…\n\n`,
       );
 
       const now = Date.now();
-      const rows = await runCredibility(queries, { seeds, model, judges, concurrency, now });
+      const save = opts.save !== false;
+      const fresh = await runCredibility(queries, {
+        seeds, model, judges, concurrency, now, done,
+        onRow: (row, landed, total) => {
+          if (save) appendCredibilityRow(row);
+          process.stdout.write(
+            `[${String(landed).padStart(String(total).length)}/${total}] ` +
+              `${row.provider} ${row.queryId} seed${row.seed} ` +
+              `${row.error ? `ERROR ${row.error.slice(0, 60)}` : `${row.num_sources} src ${(row.latency_ms / 1000).toFixed(1)}s`}\n`,
+          );
+        },
+      });
+
+      const rows = [...prior, ...fresh];
       const summary = summarize(rows, {
         seeds,
         answer_model: model,
@@ -64,10 +89,10 @@ export function registerCredibility(program: Command): void {
         now,
       });
 
-      process.stdout.write(renderCredibility(summary) + "\n");
+      process.stdout.write("\n" + renderCredibility(summary) + "\n");
 
-      if (opts.save !== false) {
-        writeCredibility(rows, summary);
+      if (save) {
+        writeCredibilitySummary(summary);
         process.stdout.write(
           `\nsaved → ${S2_RUNS_PATH} (${rows.length} rows) + ${S2_SUMMARY_PATH}\n`,
         );
@@ -81,5 +106,6 @@ interface CredOptions {
   model?: string;
   perType: string;
   concurrency: string;
+  resume?: boolean;
   save?: boolean;
 }

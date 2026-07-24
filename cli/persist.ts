@@ -72,18 +72,32 @@ export function appendRecords(
   appendFileSync(path, records.map((r) => JSON.stringify(r)).join("\n") + "\n");
 }
 
-/** Persist an S2 run: append raw rows to the JSONL, overwrite the summary JSON. */
-export function writeCredibility(
-  rows: CredibilityRow[],
-  summary: CredibilitySummary,
+/** Append one finished arm. Called per-row while the run is still going, so a
+ *  killed process loses at most the in-flight arms, not the whole matrix. */
+export function appendCredibilityRow(
+  row: CredibilityRow,
   runsPath = S2_RUNS_PATH,
-  summaryPath = S2_SUMMARY_PATH,
 ): void {
   const dir = dirname(runsPath);
   if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
-  if (rows.length) {
-    appendFileSync(runsPath, rows.map((r) => JSON.stringify(r)).join("\n") + "\n");
-  }
+  appendFileSync(runsPath, JSON.stringify(row) + "\n");
+}
+
+/** Read back whatever arms already landed (for --resume + final summarize). */
+export function readCredibilityRows(runsPath = S2_RUNS_PATH): CredibilityRow[] {
+  if (!existsSync(runsPath)) return [];
+  return readFileSync(runsPath, "utf8")
+    .split("\n")
+    .filter(Boolean)
+    .map((line) => JSON.parse(line) as CredibilityRow);
+}
+
+export function writeCredibilitySummary(
+  summary: CredibilitySummary,
+  summaryPath = S2_SUMMARY_PATH,
+): void {
+  const dir = dirname(summaryPath);
+  if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
   writeFileSync(summaryPath, JSON.stringify(summary, null, 2) + "\n");
 }
 

@@ -123,6 +123,16 @@ export interface CredibilityOpts {
   judges: string[]; // panel of judge model refs (≥1)
   concurrency?: number; // pipelines in flight; default DEFAULT_CONCURRENCY
   now?: number;
+  /** Called as each pipeline lands. The caller persists here — a 2h run must
+   *  survive being killed, so rows hit disk immediately, not at the end. */
+  onRow?: (row: CredibilityRow, done: number, total: number) => void;
+  /** Skip pipelines already on disk (resume). Keyed by armKey(). */
+  done?: ReadonlySet<string>;
+}
+
+/** Identity of one pipeline — the resume/dedup key. */
+export function armKey(queryId: string, provider: Provider, seed: number): string {
+  return `${queryId}|${provider}|${seed}`;
 }
 
 /**
@@ -142,11 +152,16 @@ export async function runCredibility(
 
   // Flatten to independent pipelines. Seed is just a repeat index — the variance
   // comes from a fresh fetch + a temp>0 answer, not from a threaded RNG seed.
-  const jobs = queries.flatMap((q) =>
-    PROVIDERS.flatMap((provider) =>
-      Array.from({ length: seeds }, (_, seed) => ({ q, provider, seed })),
-    ),
-  );
+  const jobs = queries
+    .flatMap((q) =>
+      PROVIDERS.flatMap((provider) =>
+        Array.from({ length: seeds }, (_, seed) => ({ q, provider, seed })),
+      ),
+    )
+    .filter(({ q, provider, seed }) => !opts.done?.has(armKey(q.id, provider, seed)));
+
+  const total = jobs.length;
+  let landed = 0;
 
   return mapWithConcurrency(jobs, concurrency, async ({ q, provider, seed }) => {
     const start = Date.now();
@@ -156,6 +171,10 @@ export async function runCredibility(
       query: q.query,
       provider,
       seed,
+    };
+    const emit = (row: CredibilityRow): CredibilityRow => {
+      opts.onRow?.(row, ++landed, total);
+      return row;
     };
     try {
       const { sources, context } = await fetchSources(provider, q.query, {
@@ -187,9 +206,9 @@ export async function runCredibility(
         latency_ms: Date.now() - start,
         judgements,
       };
-      return row;
+      return emit(row);
     } catch (e) {
-      return {
+      return emit({
         ...rowBase,
         num_sources: 0,
         num_sources_extracted: 0,
@@ -198,7 +217,7 @@ export async function runCredibility(
         latency_ms: Date.now() - start,
         judgements: [],
         error: e instanceof Error ? e.message : String(e),
-      };
+      });
     }
   });
 }

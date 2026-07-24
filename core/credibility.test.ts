@@ -6,6 +6,8 @@ import {
   pearson,
   judgeLabel,
   summarize,
+  armKey,
+  runCredibility,
   type CredibilityRow,
 } from "./credibility";
 
@@ -110,5 +112,18 @@ describe("summarize", () => {
     expect(summary.variance.seed_std_mean).toBe(0);
     // |jA-jB| = 2 on every graded arm → judge_gap_mean 2
     expect(summary.variance.judge_gap_mean).toBe(2);
+  });
+});
+
+describe("resume", () => {
+  it("skips arms already on disk — a fully-covered run does no work", async () => {
+    const queries = [{ id: "q1", type: "fresh" as const, query: "x" }];
+    const done = new Set<string>();
+    for (const p of ["bright_data", "firecrawl"] as const)
+      for (let s = 0; s < 2; s++) done.add(armKey("q1", p, s));
+
+    // If any arm survived the filter this would hit the network and fail/hang.
+    const rows = await runCredibility(queries, { judges: ["j"], seeds: 2, done });
+    expect(rows).toEqual([]);
   });
 });

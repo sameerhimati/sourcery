@@ -133,9 +133,16 @@ async function getPage(url: string): Promise<string | null> {
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
-/** A captcha interstitial comes back as a normal 200, so sniff for it. */
-function isChallenge(html: string): boolean {
-  return /<title>\s*Captcha/i.test(html) || !html.includes("results-standard");
+/**
+ * Why a 200 response has no results. Distinguishing these matters: "captcha"
+ * means wait, "markup" means the endpoint changed and parseSerp needs updating.
+ * Collapsing both into "rate-limited" would send the next person debugging this
+ * off to wait out a block that was never there.
+ */
+function challengeKind(html: string): "captcha" | "markup" | null {
+  if (/<title>\s*Captcha/i.test(html)) return "captcha";
+  if (!html.includes("results-standard")) return "markup";
+  return null;
 }
 
 async function searchWithRetry(query: string): Promise<SerpHit[]> {
@@ -150,9 +157,17 @@ async function searchWithRetry(query: string): Promise<SerpHit[]> {
       continue;
     }
     const html = await res.text();
-    if (isChallenge(html)) {
+    const kind = challengeKind(html);
+    if (kind === "captcha") {
       last = "captcha/rate-limited";
       continue;
+    }
+    if (kind === "markup") {
+      // Not retryable — retrying a layout change just wastes the budget.
+      throw new Error(
+        "Plain SERP markup no longer matches the parser (no results container). " +
+          "The keyless endpoint changed — update parseSerp in core/adapters/plain.ts.",
+      );
     }
     const hits = parseSerp(html);
     if (hits.length) return hits;

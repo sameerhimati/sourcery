@@ -147,9 +147,13 @@ keys, and the paid providers have a floor to clear.
 2. **It gets blocked, and the block compounds.** Measured behaviour: roughly ten
    queries in quick succession earns a captcha page (HTTP 200 with no results —
    not a 429), and requests made *during* the block escalate it to an outright
-   403 that outlives several minutes of quiet. Retrying into a block extends it,
-   which is why the adapter retries exactly once and then gives up rather than
-   digging. It recovers on its own after a few idle minutes.
+   403. Retrying into a block extends it, which is why the adapter retries
+   exactly once and then gives up rather than digging.
+
+   **Recovery is not quick and not guaranteed.** Measured over one session: an
+   early block lifted after ~4 idle minutes, but after further probing a block
+   survived **15 minutes of complete silence** and had not lifted. Assume a
+   block can outlast whatever you were about to do.
 
    The practical consequence: this arm is *deliberately not in any default arm
    set*. It is a zero-setup way to try the tool on a handful of queries, not a

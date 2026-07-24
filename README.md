@@ -61,18 +61,17 @@ Next run: the full 48 queries, three seeds, a second judge.
 
 ```bash
 npm install
-sourcery run "what's the latest macbook pro" --values plain,firecrawl
-```
-
-That first command needs **no retrieval API key at all** — the `plain` arm is a keyless SERP with a bare `fetch()`, there so you can see the thing work before signing up for anything. You still need one LLM key for the answer and judge steps.
-
-```bash
-sourcery init                        # scaffold .sourcery.json + .env.example
-sourcery providers                   # what's registered, what keys you're missing
+sourcery init                        # scaffold config + .env.example
+sourcery providers --check           # what's registered, what keys you need,
+                                     # and whether those accounts will serve a run
 sourcery run "<query>"               # one query, arms side by side
 sourcery batch                       # the full 48-query eval set → per-query heatmap
 sourcery report                      # self-contained HTML from the run log
 ```
+
+You need one LLM key (for the answer and judge steps) plus at least one retrieval provider's key. `providers --check` is worth running before anything long: a key being *set* doesn't mean the account still has quota, and finding that out 200 arms into a two-hour run is expensive.
+
+There's also a `plain` arm that needs no retrieval key at all — a keyless SERP with a bare `fetch()`. Treat it as a way to kick the tyres, not a benchmark: keyless search rate-limits aggressively and the block outlasts your patience. Details in [`docs/providers.md`](docs/providers.md).
 
 Every run appends to `.sourcery/runs.jsonl`, which is the contract — the terminal scorecard and the HTML report are both just views over it.
 
@@ -92,7 +91,7 @@ Five retrieval arms ship in the box:
 
 An adapter is one function — `(query, config) => { sources, context }` — plus a row in the registry. That's the whole interface, and it's about 40 lines for a typical JSON search API. Setup recipes, per-provider quirks, credit arithmetic, and a complete worked example: **[`docs/providers.md`](docs/providers.md)**.
 
-`plain` deserves one caveat up front: keyless search blocks sustained automated use, so it's for trying the tool, not for benchmarking. That unreliability is itself informative — availability under load is a large part of what a paid provider sells.
+`plain` deserves one caveat up front: keyless search blocks sustained automated use — measured here, a block survived 15 minutes of complete silence and did not lift. So it's for trying the tool, not for benchmarking. That unreliability is itself informative: availability under automated load is a large part of what a paid provider sells.
 
 ## Bring your own model
 

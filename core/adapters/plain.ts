@@ -24,12 +24,14 @@ const FETCH_CONCURRENCY = 4;
 // Keyless search rate-limits hard: hammer it and you get a captcha page (HTTP
 // 200, no results) rather than a 429. Back off and retry a few times. This is
 // the unglamorous work a paid SERP API is doing on your behalf.
-// Measured: a burst of ~10 queries earns a captcha, and a further burst earns an
-// outright 403 that persists for minutes. Retries are therefore patient (5s
-// doubling to 40s) and `plain` is deliberately NOT in any default arm set — it is
-// a zero-setup way to try the tool, not a provider to benchmark at 480 arms.
-const SERP_ATTEMPTS = 4;
-const SERP_BACKOFF_MS = 5000;
+// Measured, not guessed: ~10 queries in quick succession earns a captcha page,
+// and further requests during the block escalate it to an outright 403 that
+// outlives several minutes of quiet. Crucially, retrying INTO a block extends it
+// — so this retries once and gives up, rather than digging. `plain` is therefore
+// deliberately NOT in any default arm set: it is a zero-setup way to try the
+// tool on a handful of queries, not a provider to benchmark at 480 arms.
+const SERP_ATTEMPTS = 2;
+const SERP_BACKOFF_MS = 6000;
 
 interface SerpHit {
   url: string;
@@ -157,8 +159,9 @@ async function searchWithRetry(query: string): Promise<SerpHit[]> {
     last = "no parseable results";
   }
   throw new Error(
-    `Plain SERP failed after ${SERP_ATTEMPTS} attempts (${last}). ` +
-      `Keyless search rate-limits — this is the baseline arm working as intended.`,
+    `Plain SERP failed after ${SERP_ATTEMPTS} attempts (${last}). Keyless search ` +
+      `blocks sustained automated use, and the block extends while you retry — ` +
+      `wait a few minutes, or use a provider with an API key for real runs.`,
   );
 }
 

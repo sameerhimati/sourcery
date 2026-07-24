@@ -41,7 +41,7 @@ So the dataset is built to make that impossible:
 
 Two separate scores, because retrieval and answering fail differently: `retrieval_score` grades the *sources* (fresh? relevant? real?), `answer_score` grades the *answer built from them*. A run can retrieve well and answer badly, and you want to see which half broke.
 
-Dataset and reasoning: [`src/lib/eval-dataset.ts`](src/lib/eval-dataset.ts) · Scoring: [`src/lib/judge.ts`](src/lib/judge.ts), [`src/lib/retrievalJudge.ts`](src/lib/retrievalJudge.ts)
+Dataset and reasoning: [`core/eval-dataset.ts`](core/eval-dataset.ts) · Scoring: [`core/judge.ts`](core/judge.ts), [`core/retrievalJudge.ts`](core/retrievalJudge.ts)
 
 ---
 
@@ -61,15 +61,44 @@ Next run: the full 48 queries, three seeds, a second judge.
 
 ```bash
 npm install
-cp .env.example .env    # OPENAI_API_KEY, BRIGHT_DATA_API_KEY, FIRECRAWL_API_KEY
-npm run dev
+sourcery run "what's the latest macbook pro" --values plain,firecrawl
 ```
 
-Single query through both arms, or a batch across the eval set. Results render as a per-query heatmap, so you can see *which* query types each provider fails on. Both collapse on `breaking_news` (2.5 / 2.5) — the category you'd most want them to be good at.
+That first command needs **no retrieval API key at all** — the `plain` arm is a keyless SERP with a bare `fetch()`, there so you can see the thing work before signing up for anything. You still need one LLM key for the answer and judge steps.
 
-## Models
+```bash
+sourcery init                        # scaffold .sourcery.json + .env.example
+sourcery providers                   # what's registered, what keys you're missing
+sourcery run "<query>"               # one query, arms side by side
+sourcery batch                       # the full 48-query eval set → per-query heatmap
+sourcery report                      # self-contained HTML from the run log
+```
 
-The answer step and both judges run through one provider-agnostic seam, so you can point them at any OpenAI-compatible backend. A model is a `provider/model` ref; a bare id (`gpt-4o-mini`) means OpenAI.
+Every run appends to `.sourcery/runs.jsonl`, which is the contract — the terminal scorecard and the HTML report are both just views over it.
+
+The batch heatmap is the useful one: it shows *which query types* a provider fails on rather than a single average. Both providers collapse on `breaking_news` (2.5 / 2.5) — the category you'd most want them to be good at.
+
+## Providers
+
+Five retrieval arms ship in the box:
+
+| id | Keys needed | Shape |
+|---|---|---|
+| `bright_data` | 3 (token + 2 zone names) | Google SERP, then a separate unblocked fetch per URL |
+| `firecrawl` | 1 | search + scrape in one call |
+| `tavily` | 1 | RAG-tuned index, optional raw page content |
+| `exa` | 1 | neural index; the only arm with reliable native publish dates |
+| `plain` | **none** | keyless SERP + bare `fetch()` — the free baseline |
+
+An adapter is one function — `(query, config) => { sources, context }` — plus a row in the registry. That's the whole interface, and it's about 40 lines for a typical JSON search API. Setup recipes, per-provider quirks, credit arithmetic, and a complete worked example: **[`docs/providers.md`](docs/providers.md)**.
+
+`plain` deserves one caveat up front: keyless search blocks sustained automated use, so it's for trying the tool, not for benchmarking. That unreliability is itself informative — availability under load is a large part of what a paid provider sells.
+
+## Bring your own model
+
+**The retrieval provider is the variable. The model is yours to choose.**
+
+The answer step and both judges run through a single provider-agnostic seam, so you can point the whole eval at any OpenAI-compatible backend — including one running on your own hardware. A model is a `provider/model` ref; a bare id (`gpt-4o-mini`) means OpenAI.
 
 ```bash
 # OpenAI (needs OPENAI_API_KEY)
@@ -81,11 +110,13 @@ sourcery run "<query>" \
   --judge fireworks/accounts/fireworks/models/deepseek-v4-pro
 ```
 
-You only need the LLM key for the provider you actually use — `run`/`batch` require exactly that one. Adding another OpenAI-compatible provider (Together, Groq, vLLM, …) is one row in `core/llm/`. The judge defaults to a stale model on purpose: the anti-cheat needs its cutoff to predate the queries, so a fresh judge only affects `answer_score`, never the primary `retrieval_score`.
+This matters more than it looks. An eval of *your* retrieval stack is only meaningful if it runs the model you actually ship — and "which model is best" is a question this tool deliberately declines to answer for you. You only need the key for the provider you actually use. Adding another OpenAI-compatible backend (Together, Groq, vLLM, …) is one row in [`core/llm/`](core/llm/).
+
+The judge defaults to a stale model on purpose: the anti-cheat needs its cutoff to predate the queries, so a fresher judge only affects `answer_score`, never the primary `retrieval_score`.
 
 ## Stack
 
-Next.js · TypeScript · OpenAI API · Bright Data + Firecrawl adapters ([`src/lib/adapters/`](src/lib/adapters/))
+TypeScript · a Commander CLI over a framework-free [`core/`](core/) · Next.js dashboard · retrieval adapters in [`core/adapters/`](core/adapters/)
 
 ---
 

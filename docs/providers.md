@@ -140,12 +140,19 @@ keys, and the paid providers have a floor to clear.
    comparison. If you want to isolate the value of the extraction layer
    specifically, hold discovery constant instead: same SERP, swap only how pages
    are fetched.
-2. **It rate-limits, hard.** Roughly ten queries in quick succession earns a
-   captcha page (HTTP 200 with no results, not a 429), and continuing earns a
-   403 that persists for minutes. The adapter retries with 5s→40s backoff and
-   sniffs for the captcha interstitial, but this arm is *deliberately not in any
-   default arm set*. It is a zero-setup way to try the tool, not a provider to
-   benchmark at 480 arms.
+2. **It gets blocked, and the block compounds.** Measured behaviour: roughly ten
+   queries in quick succession earns a captcha page (HTTP 200 with no results —
+   not a 429), and requests made *during* the block escalate it to an outright
+   403 that outlives several minutes of quiet. Retrying into a block extends it,
+   which is why the adapter retries exactly once and then gives up rather than
+   digging. It recovers on its own after a few idle minutes.
+
+   The practical consequence: this arm is *deliberately not in any default arm
+   set*. It is a zero-setup way to try the tool on a handful of queries, not a
+   provider to benchmark at 480 arms. And it's a finding in its own right — the
+   free option isn't merely lower quality, its **availability is
+   non-deterministic**. Reliable access under sustained automated load is a
+   large part of what a paid retrieval provider actually sells.
 3. **Its failures bias it upward.** Arms that error are excluded from the
    aggregates, so a blocked `plain` arm silently disappears rather than scoring
    0. Its mean therefore reflects only the queries it *managed* to serve. Report

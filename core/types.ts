@@ -1,6 +1,9 @@
 // ─── Data Contract ─── shared boundary with the UI. Do not break this shape.
 
-export type Provider = "bright_data" | "firecrawl";
+// Open on purpose: providers are a registry (core/adapters), not a closed union,
+// so adding an adapter is one new file — not an edit to the shared contract.
+// Validity is checked at the registry lookup, which reports the known ids.
+export type Provider = string;
 export type Axis = "provider" | "freshness" | "num_sources" | "extraction";
 export type Freshness = "24h" | "30d" | "1y" | "all";
 export type Extraction = "clean" | "raw";

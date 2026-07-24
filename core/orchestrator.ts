@@ -9,14 +9,14 @@ import {
   Run,
   RunRequest,
 } from "./types";
-import { fetchSources } from "./adapters";
+import { fetchSources, DEFAULT_PROVIDERS } from "./adapters";
 import { answer } from "./answer";
 import { judge } from "./judge";
 import { retrievalJudge } from "./retrievalJudge";
 import { MODEL } from "./controls";
 
 const DEFAULT_VALUES: Record<Axis, string[]> = {
-  provider: ["bright_data", "firecrawl"],
+  provider: DEFAULT_PROVIDERS,
   freshness: ["24h", "all"],
   num_sources: ["3", "10"],
   extraction: ["clean", "raw"],
@@ -31,7 +31,7 @@ function armSpec(
   base: ArmConfig,
 ): { provider: Provider; config: ArmConfig } {
   const config: ArmConfig = { ...base };
-  let provider: Provider = "bright_data";
+  let provider: Provider = DEFAULT_PROVIDERS[0];
   switch (variable) {
     case "provider":
       provider = value as Provider;

@@ -3,6 +3,7 @@ import { runEval } from "@core/orchestrator";
 import type { Axis, RunRequest } from "@core/types";
 import { MODEL } from "@core/controls";
 import { requiredEnvKeys } from "@core/llm";
+import { getAdapter } from "@core/adapters";
 import { loadEnv, requireKeys } from "../env";
 import { loadConfig } from "../config";
 import { appendRecords, toRunRecord, RUNS_PATH } from "../persist";
@@ -33,6 +34,11 @@ export function registerRun(program: Command): void {
         ? opts.values.split(",").map((s) => s.trim()).filter(Boolean)
         : config.values;
 
+      // A mistyped provider should be a startup error naming the valid ids, not
+      // N identical per-arm failures the user has to read a scorecard to find.
+      const variable = (opts.variable ?? config.variable ?? "provider") as Axis;
+      if (variable === "provider" && values) values.forEach((v) => getAdapter(v));
+
       const model = opts.model ?? config.model;
       const judge = opts.judge ?? config.judge;
 
@@ -43,7 +49,7 @@ export function registerRun(program: Command): void {
       requireKeys(requiredEnvKeys([model ?? MODEL, judge ?? MODEL]), [model ?? MODEL, judge ?? MODEL]);
       const req: RunRequest = {
         query,
-        variable: (opts.variable ?? config.variable ?? "provider") as Axis,
+        variable,
         ...(values ? { values } : {}),
         ...(model ? { model } : {}),
         ...(judge ? { judge_model: judge } : {}),

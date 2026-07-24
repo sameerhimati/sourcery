@@ -33,6 +33,10 @@ vi.mock("@core/adapters", () => ({
     sources: RECORDED_SOURCES,
     context: "recorded context handed to the answering model",
   })),
+  // Pinned rather than re-exported from the real registry: this fixture asserts
+  // a byte-identical Run, so the default arms must not change under it when a
+  // new adapter is registered.
+  DEFAULT_PROVIDERS: ["bright_data", "firecrawl"],
 }));
 
 vi.mock("@core/llm", () => ({

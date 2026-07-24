@@ -30,7 +30,17 @@ async function serpAttempt(
     const text = await res.text();
     throw new Error(`Bright Data ${res.status}: ${text.slice(0, 300)}`);
   }
-  const data = (await res.json()) as { organic?: Organic[] };
+  // A 2xx does not guarantee JSON: a bad proxy exit can return a plain-text
+  // notice ("This query...") in the body, and res.json() then throws a raw
+  // SyntaxError that says nothing about which provider failed or why. Parse it
+  // ourselves so the retry loop above sees a retryable, self-describing error.
+  const body = await res.text();
+  let data: { organic?: Organic[] };
+  try {
+    data = JSON.parse(body) as { organic?: Organic[] };
+  } catch {
+    throw new Error(`Bright Data returned non-JSON: ${body.slice(0, 200)}`);
+  }
   return Array.isArray(data.organic) ? data.organic : [];
 }
 

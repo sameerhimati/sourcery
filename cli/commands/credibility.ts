@@ -1,6 +1,7 @@
 import type { Command } from "commander";
 import { runCredibility, summarize, armKey } from "@core/credibility";
 import { selectQueries } from "@core/batch";
+import { getAdapter, DEFAULT_PROVIDERS } from "@core/adapters";
 import { MODEL } from "@core/controls";
 import { requiredEnvKeys } from "@core/llm";
 import { loadEnv, requireKeys } from "../env";
@@ -27,6 +28,7 @@ export function registerCredibility(program: Command): void {
     .option("--model <model>", "answer model (held constant across arms)")
     .option("--per-type <n>", "cap queries per type for a dry run (0 = full 48)", "0")
     .option("--concurrency <n>", "pipelines in flight (higher = faster, more load)", "4")
+    .option("--providers <list>", "comma-separated provider ids to compare")
     .option("--resume", "skip arms already in .sourcery/s2-runs.jsonl")
     .option("--fail-fast <n>", "abort if a provider's first n arms all fail (0 = off)", "8")
     .option("--no-save", "do not write .sourcery/s2-*.{jsonl,json}")
@@ -56,13 +58,20 @@ export function registerCredibility(program: Command): void {
       if (!Number.isInteger(concurrency) || concurrency < 1) {
         throw new Error(`--concurrency must be a positive integer (got "${opts.concurrency}").`);
       }
-      const arms = queries.length * 2 * seeds;
+      const providers = (opts.providers ?? "")
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean);
+      // Validate up front: a typo'd id should fail now, not 200 arms in.
+      for (const p of providers) getAdapter(p);
+      const armSet = providers.length ? providers : DEFAULT_PROVIDERS;
+      const arms = queries.length * armSet.length * seeds;
       // --resume replays what's already on disk so a killed run costs minutes,
       // not hours. Rows are appended as they land, so this always has a floor.
       const prior = opts.resume ? readCredibilityRows() : [];
       const done = new Set(prior.map((r) => armKey(r.queryId, r.provider, r.seed)));
       process.stdout.write(
-        `Credibility run: ${queries.length} queries × 2 providers × ${seeds} seeds ` +
+        `Credibility run: ${queries.length} queries × ${armSet.join("/")} × ${seeds} seeds ` +
           `= ${arms} arms, each graded by ${judges.length} judge(s), concurrency ${concurrency}.\n` +
           (done.size ? `Resuming: ${done.size} arms already on disk, ${arms - done.size} to go.\n` : "") +
           `This is slow + credit-heavy (fresh fetch every seed)…\n\n`,
@@ -71,7 +80,7 @@ export function registerCredibility(program: Command): void {
       const now = Date.now();
       const save = opts.save !== false;
       const fresh = await runCredibility(queries, {
-        seeds, model, judges, concurrency, now, done,
+        seeds, model, judges, concurrency, now, done, providers: armSet,
         failFast: Number(opts.failFast) || 0,
         onRow: (row, landed, total) => {
           if (save) appendCredibilityRow(row);
@@ -108,6 +117,7 @@ interface CredOptions {
   model?: string;
   perType: string;
   concurrency: string;
+  providers?: string;
   resume?: boolean;
   failFast: string;
   save?: boolean;

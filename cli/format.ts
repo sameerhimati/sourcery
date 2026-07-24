@@ -162,7 +162,8 @@ export function renderCredibility(s: CredibilitySummary): string {
   );
 
   return [
-    `Credibility run — ${s.n_rows} rows (${s.seeds} seeds × 48 queries × 2 providers), ${s.n_errors} errors`,
+    `Credibility run — ${s.n_rows} rows (${s.n_queries} queries × ` +
+      `${s.providers.map(label).join(" / ")} × ${s.seeds} seeds), ${s.n_errors} errors`,
     `Answer: ${s.answer_model}`,
     `Judges: ${s.judges.map((j) => j.split("/").pop()).join(", ")}`,
     `Generated: ${s.generated_at}`,

@@ -160,3 +160,22 @@ describe("fail-fast on a dead provider", () => {
     expect(rows.every((r) => r.error)).toBe(true);
   });
 });
+
+describe("summary reports what actually ran", () => {
+  it("derives providers and query count from the rows, not from assumptions", () => {
+    // A single-provider run must not claim it compared two.
+    const rows = [
+      row("p1", "bright_data", 0, { a_ret: 6, b_ret: 8, a_ans: 7, b_ans: 7 }),
+      row("p2", "bright_data", 0, { a_ret: 4, b_ret: 6, a_ans: 5, b_ans: 5 }),
+    ];
+    const s = summarize(rows, {
+      seeds: 1,
+      answer_model: "m",
+      judges: ["prov/jA", "prov/jB"],
+      now: Date.UTC(2026, 6, 24),
+    });
+    expect(s.providers).toEqual(["bright_data"]);
+    expect(s.n_queries).toBe(2);
+    expect(s.by_provider).toHaveLength(1);
+  });
+});

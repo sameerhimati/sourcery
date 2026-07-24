@@ -14,14 +14,13 @@
 // Leaves the live Arm/Run/batch contracts untouched — this is a separate path.
 
 import { EVAL_DATASET, EvalQuery, QueryType } from "./eval-dataset";
-import { fetchSources } from "./adapters";
+import { fetchSources, DEFAULT_PROVIDERS } from "./adapters";
 import { answer } from "./answer";
 import { judge } from "./judge";
 import { retrievalJudge } from "./retrievalJudge";
 import { DEFAULT_CONFIG, Provider, Source } from "./types";
 import { mapWithConcurrency } from "./extract";
 
-const PROVIDERS: Provider[] = ["bright_data", "firecrawl"];
 const DEFAULT_CONCURRENCY = 4; // (query×provider×seed) pipelines in flight; retrieval-bound
 
 /** One judge model's verdict on a single arm (both scores it produced). */
@@ -130,6 +129,8 @@ export interface CredibilityOpts {
   done?: ReadonlySet<string>;
   /** Bail out if a provider's first N arms ALL fail. 0 disables. Default 8. */
   failFast?: number;
+  /** Which arms to compare. Default: the registry's default pair. */
+  providers?: Provider[];
 }
 
 /** Thrown when a provider is systematically broken (bad key, no credits, outage). */
@@ -163,12 +164,13 @@ export async function runCredibility(
   const now = opts.now ?? Date.now();
   const judges = opts.judges;
   const concurrency = opts.concurrency ?? DEFAULT_CONCURRENCY;
+  const providers = opts.providers?.length ? opts.providers : DEFAULT_PROVIDERS;
 
   // Flatten to independent pipelines. Seed is just a repeat index — the variance
   // comes from a fresh fetch + a temp>0 answer, not from a threaded RNG seed.
   const jobs = queries
     .flatMap((q) =>
-      PROVIDERS.flatMap((provider) =>
+      providers.flatMap((provider) =>
         Array.from({ length: seeds }, (_, seed) => ({ q, provider, seed })),
       ),
     )
@@ -295,6 +297,8 @@ export interface CredibilitySummary {
   judges: string[];
   n_rows: number;
   n_errors: number;
+  providers: Provider[]; // arms actually compared (not assumed)
+  n_queries: number; // distinct queries actually attempted
   by_provider: ProviderStat[];
   by_type: TypeStat[];
   agreement: AgreementStat[];
@@ -343,11 +347,17 @@ function providerStat(rows: CredibilityRow[], provider: Provider): ProviderStat 
   };
 }
 
-function typeStats(rows: CredibilityRow[]): TypeStat[] {
+/** Which arms this row set actually covers — derived, so a resumed run that
+ *  mixes provider sets still summarizes everything it has. */
+function providersIn(rows: CredibilityRow[]): Provider[] {
+  return [...new Set(rows.map((r) => r.provider))];
+}
+
+function typeStats(rows: CredibilityRow[], providers: Provider[]): TypeStat[] {
   const types = [...new Set(rows.map((r) => r.type))];
   const out: TypeStat[] = [];
   for (const type of types) {
-    for (const provider of PROVIDERS) {
+    for (const provider of providers) {
       const sub = rows.filter((r) => r.type === type);
       const ps = providerStat(sub, provider);
       out.push({ ...ps, type });
@@ -415,6 +425,7 @@ export function summarize(
   meta: { seeds: number; answer_model: string; judges: string[]; now: number },
 ): CredibilitySummary {
   const labels = meta.judges.map(judgeLabel);
+  const providers = providersIn(rows);
   // All unordered judge pairs (usually just one for a 2-judge panel).
   const pairs: [string, string][] = [];
   for (let i = 0; i < labels.length; i++)
@@ -433,8 +444,10 @@ export function summarize(
     judges: meta.judges,
     n_rows: rows.length,
     n_errors: rows.filter((r) => r.error).length,
-    by_provider: PROVIDERS.map((p) => providerStat(rows, p)),
-    by_type: typeStats(rows),
+    providers,
+    n_queries: new Set(rows.map((r) => r.queryId)).size,
+    by_provider: providers.map((p) => providerStat(rows, p)),
+    by_type: typeStats(rows, providers),
     agreement,
     variance: varianceDecomp(rows, labels),
   };

@@ -8,24 +8,36 @@ Built to answer a question I couldn't find a straight answer to: *if you're buil
 
 ## The finding
 
-12 retrieval-dependent queries through both providers. Single run, `gpt-4o-mini` as judge, scores 0–10.
+The most useful thing this eval did was **overturn its own first result.**
+
+An early pass — 12 queries, one run, a single judge — had Bright Data writing better answers than Firecrawl by 2.6 points, with a tidy mechanistic story to explain it. So I built the machinery to check whether that was real: the full 48-query set, 5 fresh fetches each, both providers, every arm graded by a **two-judge panel** — **480 arms, 417 paired verdicts, 95% confidence intervals.**
+
+Tested properly, the quality gap vanished.
 
 | | Bright Data | Firecrawl |
 |---|---:|---:|
-| **Answer quality** | **6.6** | 4.0 |
-| Retrieval quality | 4.1 | 3.7 |
-| Sources returned | 7.5 | 7.3 |
-| **Sources successfully extracted** | 2.1 | **6.3** |
-| Median source age | 339 days | 381 days |
-| Latency (median) | 22.0s | 12.4s |
+| **Retrieval quality** (0–10, 95% CI) | 4.78 ± 0.44 | 4.56 ± 0.52 |
+| **Answer quality** (0–10, 95% CI) | 6.55 ± 0.81 | 6.99 ± 0.69 |
+| Sources returned / arm | 7.7 | 8.0 |
+| Sources extracted | 33% | **90%** |
+| Median source age | 286 days | 299 days |
+| Median latency | 76s | 52s |
+| **Arm failure rate** | **25%** | **0.8%** |
+| Queries with data (of 48) | 46 | 48 |
 
-**Firecrawl extracts 3× more content and produces worse answers.**
+*Answer model (Kimi) held constant across every arm; judges are a two-model open panel (GLM + DeepSeek). Full computed summary: [`docs/s2-summary.json`](docs/s2-summary.json).*
 
-That's the result worth sitting with. Both providers *find* about the same number of sources — 7.5 vs 7.3. The difference is what happens next: Firecrawl successfully pulls text out of six of them, Bright Data manages two. And the pipeline handed **less** content wrote the better answer, by 2.6 points.
+On both quality scores the confidence intervals **overlap** — the two providers are statistically indistinguishable, and the 2.6-point answer gap from the n=12 run is gone. That gap was underpowering, not signal. An eval's first job is to not fool you, and catching my own earlier conclusion is the point of building one.
 
-More context, worse output. Whatever the answer model is doing with those extra four documents, it isn't helping.
+Three things *do* survive the intervals:
 
-**Second finding, and maybe the more useful one:** every query in the set explicitly asks for the *latest* / *current* / *newest* thing. Both providers return sources with a median age of roughly **a year**. If you're building on web retrieval and assuming you get fresh documents — measure it. You probably don't.
+1. **Reliability is the real difference.** Firecrawl failed 2 of 240 arms (0.8%). Bright Data failed 61 of 240 (25%) — its SERP endpoint intermittently returns non-JSON under concurrency, which a retry loop softens but doesn't fix. The providers tie on answer quality; they do not tie on *returning an answer at all.*
+
+2. **Firecrawl extracts far more, and it doesn't move quality.** Firecrawl pulls usable text from 90% of its sources, Bright Data from 33% — the one large gap that replicates. But it buys no measurable answer-quality edge (6.99 vs 6.55, overlapping). The earlier story that *more* extraction produced *worse* answers was noise; the honest version is that extraction volume and answer quality are decoupled here.
+
+3. **Neither is good at freshness.** Every query asks for the latest / current / newest thing; the median retrieved source is **~290 days old** for both. Fresh retrieval is an unsolved, hard problem — measured here, not asserted.
+
+And one finding about the method itself: **the judge moves the score more than the retriever does.** Re-running a query shifts retrieval_score by ~1.0 on average; swapping the judge model shifts it by ~2.0, and the two judges agree at only r=0.60. That is why the single-judge n=12 result was fragile — and why any benchmark that grades with one model and prints no interval earns side-eye.
 
 ---
 
@@ -35,7 +47,7 @@ The design problem with judging retrieval is that **the judge can cheat.** Ask a
 
 So the dataset is built to make that impossible:
 
-- **The judge is stale on purpose.** `gpt-4o-mini` has an Oct-2023 cutoff; the harness runs with a reference date of 2026-07-07. Anything answerable from memory alone is, by construction, out of date.
+- **The primary metric can't be answered from memory.** `retrieval_score` grades the *fetched sources* — fresh? on-topic? real? — not the answer, so a judge can't reward what it already knew instead of what the retriever found. (The default single-judge run also uses a stale model, `gpt-4o-mini`, Oct-2023 cutoff against a 2026 reference date, which protects the secondary `answer_score`; the credibility run swaps in a current-model panel because measuring inter-judge agreement needs capable judges.)
 - **Every query demands fresh information** — 6 categories × 8 queries: `breaking_news`, `how_to`, `product_lookup`, `local_geo`, `recent_release`, `numeric_live`.
 - **Queries are phrased as "latest / current / newest," never pinned to a version, date, or figure** — so the dataset doesn't rot as the world moves. It's still a valid eval next year.
 
@@ -47,13 +59,13 @@ Dataset and reasoning: [`core/eval-dataset.ts`](core/eval-dataset.ts) · Scoring
 
 ## What I'd defend, and what I wouldn't
 
-An eval you can't trust is worse than no eval, so:
+An eval you can't trust is worse than no eval.
 
-- **n = 12 per arm, single run, one judge model.** Enough to see a 2.6-point gap. Not enough to crown a winner, and not enough for a confidence interval worth printing.
-- No inter-judge agreement check.
-- **The extraction-vs-quality inversion is the result I'd actually defend** — it's large, mechanistically explainable, and points at a real question. Everything else here is directional.
+- **I'd defend:** the reliability gap (25% vs 0.8% over 240 arms each is not noise), the extraction gap (90% vs 33%), the shared freshness weakness (~290-day median across 46–48 queries and both judges), and that judge choice dominates re-run noise.
+- **I wouldn't defend:** any claim that one provider retrieves *better* — the confidence intervals overlap, full stop. And Bright Data's 25% failure rate is measured under this harness at concurrency 6; a gentler caller sees fewer, even though the bad-proxy-exit mechanism is real.
+- **Now closed:** the old "n=12, single run, one judge, no CIs" caveat this section used to carry. It's been replaced by 480 arms, a two-judge panel, and intervals — which, usefully, reversed the headline it was hedging.
 
-Next run: the full 48 queries, three seeds, a second judge.
+How it's built and what each control holds constant: [`docs/`](docs/).
 
 ---
 

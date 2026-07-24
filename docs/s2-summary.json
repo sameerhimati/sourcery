@@ -1,0 +1,169 @@
+{
+  "generated_at": "2026-07-24T22:30:43.019Z",
+  "seeds": 5,
+  "answer_model": "fireworks/accounts/fireworks/models/kimi-k2p6",
+  "judges": [
+    "fireworks/accounts/fireworks/models/glm-5p2",
+    "fireworks/accounts/fireworks/models/deepseek-v4-pro"
+  ],
+  "n_rows": 480,
+  "n_errors": 63,
+  "providers": [
+    "firecrawl",
+    "bright_data"
+  ],
+  "n_queries": 48,
+  "n_unparseable_judgements": 2,
+  "by_provider": [
+    {
+      "provider": "firecrawl",
+      "n_queries": 48,
+      "retrieval_mean": 4.56,
+      "retrieval_ci95": 0.52,
+      "answer_mean": 6.99,
+      "answer_ci95": 0.69
+    },
+    {
+      "provider": "bright_data",
+      "n_queries": 46,
+      "retrieval_mean": 4.78,
+      "retrieval_ci95": 0.44,
+      "answer_mean": 6.55,
+      "answer_ci95": 0.81
+    }
+  ],
+  "by_type": [
+    {
+      "provider": "firecrawl",
+      "n_queries": 8,
+      "retrieval_mean": 4.17,
+      "retrieval_ci95": 1.42,
+      "answer_mean": 7.13,
+      "answer_ci95": 1.67,
+      "type": "breaking_news"
+    },
+    {
+      "provider": "bright_data",
+      "n_queries": 8,
+      "retrieval_mean": 3.82,
+      "retrieval_ci95": 1.11,
+      "answer_mean": 6.02,
+      "answer_ci95": 1.35,
+      "type": "breaking_news"
+    },
+    {
+      "provider": "firecrawl",
+      "n_queries": 8,
+      "retrieval_mean": 4.88,
+      "retrieval_ci95": 1.11,
+      "answer_mean": 9.29,
+      "answer_ci95": 0.5,
+      "type": "how_to"
+    },
+    {
+      "provider": "bright_data",
+      "n_queries": 8,
+      "retrieval_mean": 6.11,
+      "retrieval_ci95": 0.86,
+      "answer_mean": 8.82,
+      "answer_ci95": 1.39,
+      "type": "how_to"
+    },
+    {
+      "provider": "firecrawl",
+      "n_queries": 8,
+      "retrieval_mean": 3.54,
+      "retrieval_ci95": 1.29,
+      "answer_mean": 6.51,
+      "answer_ci95": 2.36,
+      "type": "product_lookup"
+    },
+    {
+      "provider": "bright_data",
+      "n_queries": 8,
+      "retrieval_mean": 5.07,
+      "retrieval_ci95": 1.29,
+      "answer_mean": 5.86,
+      "answer_ci95": 2.72,
+      "type": "product_lookup"
+    },
+    {
+      "provider": "firecrawl",
+      "n_queries": 8,
+      "retrieval_mean": 3.84,
+      "retrieval_ci95": 1.72,
+      "answer_mean": 7.14,
+      "answer_ci95": 1.57,
+      "type": "local_geo"
+    },
+    {
+      "provider": "bright_data",
+      "n_queries": 8,
+      "retrieval_mean": 3.67,
+      "retrieval_ci95": 1.25,
+      "answer_mean": 8.41,
+      "answer_ci95": 1.01,
+      "type": "local_geo"
+    },
+    {
+      "provider": "firecrawl",
+      "n_queries": 8,
+      "retrieval_mean": 5.38,
+      "retrieval_ci95": 1.42,
+      "answer_mean": 5.15,
+      "answer_ci95": 2.29,
+      "type": "recent_release"
+    },
+    {
+      "provider": "bright_data",
+      "n_queries": 7,
+      "retrieval_mean": 4.49,
+      "retrieval_ci95": 0.95,
+      "answer_mean": 3.01,
+      "answer_ci95": 2.01,
+      "type": "recent_release"
+    },
+    {
+      "provider": "firecrawl",
+      "n_queries": 8,
+      "retrieval_mean": 5.54,
+      "retrieval_ci95": 1.76,
+      "answer_mean": 6.73,
+      "answer_ci95": 2.03,
+      "type": "numeric_live"
+    },
+    {
+      "provider": "bright_data",
+      "n_queries": 7,
+      "retrieval_mean": 5.58,
+      "retrieval_ci95": 0.99,
+      "answer_mean": 6.75,
+      "answer_ci95": 2.29,
+      "type": "numeric_live"
+    }
+  ],
+  "agreement": [
+    {
+      "metric": "retrieval",
+      "judge_a": "glm-5p2",
+      "judge_b": "deepseek-v4-pro",
+      "pearson": 0.596,
+      "mean_abs_diff": 1.96,
+      "within_1_rate": 0.468,
+      "n": 417
+    },
+    {
+      "metric": "answer",
+      "judge_a": "glm-5p2",
+      "judge_b": "deepseek-v4-pro",
+      "pearson": 0.427,
+      "mean_abs_diff": 2.53,
+      "within_1_rate": 0.564,
+      "n": 417
+    }
+  ],
+  "variance": {
+    "seed_std_mean": 1.04,
+    "judge_gap_mean": 1.962
+  }
+}

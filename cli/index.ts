@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import { Command } from "commander";
 import { registerBatch } from "./commands/batch";
+import { registerCredibility } from "./commands/credibility";
 import { registerInit } from "./commands/init";
 import { registerReport } from "./commands/report";
 import { registerRun } from "./commands/run";
@@ -15,6 +16,7 @@ program
 registerInit(program);
 registerRun(program);
 registerBatch(program);
+registerCredibility(program);
 registerReport(program);
 
 program.parseAsync().catch((err) => {

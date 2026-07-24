@@ -1,11 +1,17 @@
-import { appendFileSync, existsSync, mkdirSync, readFileSync } from "node:fs";
+import { appendFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
 import type { Run } from "@core/types";
 import type { BatchOutput, BatchRow } from "@core/batch";
+import type { CredibilityRow, CredibilitySummary } from "@core/credibility";
 
 // The JSONL file is THE contract — the terminal scorecard and HTML report are
 // just views over it. One line per record, append-only, local files only.
 export const RUNS_PATH = ".sourcery/runs.jsonl";
+
+// S2 credibility run writes to its own files, separate from the live-run
+// contract above: raw per-arm rows (append-only) + a computed summary snapshot.
+export const S2_RUNS_PATH = ".sourcery/s2-runs.jsonl";
+export const S2_SUMMARY_PATH = ".sourcery/s2-summary.json";
 
 /** A single-query run (from `sourcery run`). */
 export interface RunRecord {
@@ -64,6 +70,21 @@ export function appendRecords(
   const dir = dirname(path);
   if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
   appendFileSync(path, records.map((r) => JSON.stringify(r)).join("\n") + "\n");
+}
+
+/** Persist an S2 run: append raw rows to the JSONL, overwrite the summary JSON. */
+export function writeCredibility(
+  rows: CredibilityRow[],
+  summary: CredibilitySummary,
+  runsPath = S2_RUNS_PATH,
+  summaryPath = S2_SUMMARY_PATH,
+): void {
+  const dir = dirname(runsPath);
+  if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
+  if (rows.length) {
+    appendFileSync(runsPath, rows.map((r) => JSON.stringify(r)).join("\n") + "\n");
+  }
+  writeFileSync(summaryPath, JSON.stringify(summary, null, 2) + "\n");
 }
 
 export function readRecords(path = RUNS_PATH): SourceryRecord[] {

@@ -1,5 +1,6 @@
 import type { Arm, Run } from "@core/types";
 import type { BatchOutput } from "@core/batch";
+import type { CredibilitySummary } from "@core/credibility";
 
 // Terminal scorecard — a plain-text view over a Run. Kept color-free and pure
 // (Run in, string out) so it snapshots deterministically in tests; the HTML
@@ -126,5 +127,56 @@ export function renderBatch(out: BatchOutput): string {
     "",
     header,
     ...body,
+  ].join("\n");
+}
+
+/** Render the S2 credibility summary: per-provider means±CI, judge agreement,
+ *  and the seed-vs-judge variance decomposition. Pure (summary in, string out). */
+export function renderCredibility(s: CredibilitySummary): string {
+  const meanCi = (m: number, ci: number) => `${m.toFixed(2)} ± ${ci.toFixed(2)}`;
+
+  // Per-provider block.
+  const provRows = s.by_provider.map((p) => ({
+    provider: label(p.provider),
+    retrieval: meanCi(p.retrieval_mean, p.retrieval_ci95),
+    answer: meanCi(p.answer_mean, p.answer_ci95),
+    n: String(p.n_queries),
+  }));
+  const wP = Math.max("PROVIDER".length, ...provRows.map((r) => r.provider.length));
+  const wR = Math.max("RETRIEVAL (95% CI)".length, ...provRows.map((r) => r.retrieval.length));
+  const wA = Math.max("ANSWER (95% CI)".length, ...provRows.map((r) => r.answer.length));
+  const provHeader =
+    "  " + pad("PROVIDER", wP) + "  " + pad("RETRIEVAL (95% CI)", wR) +
+    "  " + pad("ANSWER (95% CI)", wA) + "  N";
+  const provBody = provRows.map(
+    (r) => "  " + pad(r.provider, wP) + "  " + pad(r.retrieval, wR) +
+      "  " + pad(r.answer, wA) + "  " + r.n,
+  );
+
+  // Inter-judge agreement block.
+  const agreeLines = s.agreement.map(
+    (a) =>
+      `  ${a.metric.padEnd(9)} ${a.judge_a} vs ${a.judge_b}: ` +
+      `r=${a.pearson.toFixed(2)}  mean|Δ|=${a.mean_abs_diff.toFixed(2)}  ` +
+      `within±1=${(a.within_1_rate * 100).toFixed(0)}%  (n=${a.n})`,
+  );
+
+  return [
+    `Credibility run — ${s.n_rows} rows (${s.seeds} seeds × 48 queries × 2 providers), ${s.n_errors} errors`,
+    `Answer: ${s.answer_model}`,
+    `Judges: ${s.judges.map((j) => j.split("/").pop()).join(", ")}`,
+    `Generated: ${s.generated_at}`,
+    "",
+    "Retrieval / answer score (0–10), mean over queries with 95% CI:",
+    "",
+    provHeader,
+    ...provBody,
+    "",
+    "Inter-judge agreement:",
+    ...agreeLines,
+    "",
+    "Variance decomposition (retrieval_score, the primary metric):",
+    `  seed noise (std across seeds, avg):   ${s.variance.seed_std_mean.toFixed(3)}`,
+    `  judge gap (|A−B|, avg):               ${s.variance.judge_gap_mean.toFixed(3)}`,
   ].join("\n");
 }

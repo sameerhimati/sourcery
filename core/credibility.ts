@@ -128,6 +128,20 @@ export interface CredibilityOpts {
   onRow?: (row: CredibilityRow, done: number, total: number) => void;
   /** Skip pipelines already on disk (resume). Keyed by armKey(). */
   done?: ReadonlySet<string>;
+  /** Bail out if a provider's first N arms ALL fail. 0 disables. Default 8. */
+  failFast?: number;
+}
+
+/** Thrown when a provider is systematically broken (bad key, no credits, outage). */
+export class ProviderDeadError extends Error {
+  constructor(readonly provider: Provider, readonly sample: string) {
+    super(
+      `Provider "${provider}" failed its first arms — aborting before this burns ` +
+        `hours and credits on a dead matrix. Last error: ${sample}\n` +
+        `Fix it, then re-run with --resume to keep the arms already on disk.`,
+    );
+    this.name = "ProviderDeadError";
+  }
 }
 
 /** Identity of one pipeline — the resume/dedup key. */
@@ -163,6 +177,25 @@ export async function runCredibility(
   const total = jobs.length;
   let landed = 0;
 
+  // A provider with a revoked key or an empty credit balance fails every arm
+  // identically. Without this, a 480-arm run cheerfully grinds for two hours
+  // producing nothing but 402s (learned the hard way).
+  const failFast = opts.failFast ?? 8;
+  const tally = new Map<Provider, { ok: number; fail: number; last: string }>();
+  const record = (row: CredibilityRow): void => {
+    const t = tally.get(row.provider) ?? { ok: 0, fail: 0, last: "" };
+    if (row.error) {
+      t.fail++;
+      t.last = row.error;
+    } else {
+      t.ok++;
+    }
+    tally.set(row.provider, t);
+    if (failFast > 0 && t.ok === 0 && t.fail >= failFast) {
+      throw new ProviderDeadError(row.provider, t.last.slice(0, 200));
+    }
+  };
+
   return mapWithConcurrency(jobs, concurrency, async ({ q, provider, seed }) => {
     const start = Date.now();
     const rowBase = {
@@ -172,8 +205,10 @@ export async function runCredibility(
       provider,
       seed,
     };
+    // Persist first, then check — a row that triggers the abort is still saved.
     const emit = (row: CredibilityRow): CredibilityRow => {
       opts.onRow?.(row, ++landed, total);
+      record(row);
       return row;
     };
     try {

@@ -117,7 +117,7 @@ describe("summarize", () => {
 
 describe("resume", () => {
   it("skips arms already on disk — a fully-covered run does no work", async () => {
-    const queries = [{ id: "q1", type: "fresh" as const, query: "x" }];
+    const queries = [{ id: "q1", type: "breaking_news" as const, query: "x" }];
     const done = new Set<string>();
     for (const p of ["bright_data", "firecrawl"] as const)
       for (let s = 0; s < 2; s++) done.add(armKey("q1", p, s));
@@ -125,5 +125,38 @@ describe("resume", () => {
     // If any arm survived the filter this would hit the network and fail/hang.
     const rows = await runCredibility(queries, { judges: ["j"], seeds: 2, done });
     expect(rows).toEqual([]);
+  });
+});
+
+describe("fail-fast on a dead provider", () => {
+  const q = (i: number) => ({ id: `q${i}`, type: "breaking_news" as const, query: "x" });
+
+  it("aborts once a provider has failed N arms with zero successes", async () => {
+    // No keys are set in the test env, so every fetch throws immediately —
+    // which is exactly the systematically-broken-provider case.
+    const rows: CredibilityRow[] = [];
+    await expect(
+      runCredibility([q(1), q(2), q(3), q(4), q(5)], {
+        judges: ["j"],
+        seeds: 2,
+        concurrency: 1,
+        failFast: 3,
+        onRow: (r) => rows.push(r),
+      }),
+    ).rejects.toThrow(/aborting before this burns/);
+    // Rows seen before the abort were still handed to the caller to persist.
+    expect(rows.length).toBeGreaterThanOrEqual(3);
+    expect(rows.every((r) => r.error)).toBe(true);
+  });
+
+  it("does not abort when failFast is 0", async () => {
+    const rows = await runCredibility([q(1)], {
+      judges: ["j"],
+      seeds: 1,
+      concurrency: 1,
+      failFast: 0,
+    });
+    expect(rows).toHaveLength(2); // both providers, both errored
+    expect(rows.every((r) => r.error)).toBe(true);
   });
 });

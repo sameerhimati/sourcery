@@ -28,6 +28,7 @@ export function registerCredibility(program: Command): void {
     .option("--per-type <n>", "cap queries per type for a dry run (0 = full 48)", "0")
     .option("--concurrency <n>", "pipelines in flight (higher = faster, more load)", "4")
     .option("--resume", "skip arms already in .sourcery/s2-runs.jsonl")
+    .option("--fail-fast <n>", "abort if a provider's first n arms all fail (0 = off)", "8")
     .option("--no-save", "do not write .sourcery/s2-*.{jsonl,json}")
     .action(async (opts: CredOptions) => {
       loadEnv();
@@ -71,6 +72,7 @@ export function registerCredibility(program: Command): void {
       const save = opts.save !== false;
       const fresh = await runCredibility(queries, {
         seeds, model, judges, concurrency, now, done,
+        failFast: Number(opts.failFast) || 0,
         onRow: (row, landed, total) => {
           if (save) appendCredibilityRow(row);
           process.stdout.write(
@@ -107,5 +109,6 @@ interface CredOptions {
   perType: string;
   concurrency: string;
   resume?: boolean;
+  failFast: string;
   save?: boolean;
 }

@@ -71,17 +71,23 @@ How it's built and what each control holds constant: [`docs/`](docs/).
 
 ## Run it
 
+The package is `sourcery-eval` on npm; the command it installs is `sourcery`.
+
 ```bash
-npm install
-sourcery init                        # scaffold config + .env.example
-sourcery providers --check           # what's registered, what keys you need,
+npx sourcery-eval init               # scaffold config + .env.example
+npx sourcery-eval providers --check  # what's registered, what keys you need,
                                      # and whether those accounts will serve a run
-sourcery run "<query>"               # one query, arms side by side
-sourcery batch                       # the full 48-query eval set → per-query heatmap
-sourcery report                      # self-contained HTML from the run log
+npx sourcery-eval run "<query>"      # one query, arms side by side
+npx sourcery-eval batch              # the full 48-query eval set → per-query heatmap
+npx sourcery-eval report             # self-contained HTML from the run log
 ```
 
-You need one LLM key (for the answer and judge steps) plus at least one retrieval provider's key. `providers --check` is worth running before anything long: a key being *set* doesn't mean the account still has quota, and finding that out 200 arms into a two-hour run is expensive.
+(From a clone: `npm install`, then `npm run sourcery -- run "<query>"`.)
+
+Config, env (`.env.local`), and results (`.sourcery/`) are all read and written
+relative to the directory you run from — run it where your project lives.
+
+You need one LLM key (for the answer and judge steps) plus at least one retrieval provider's key. The default arms are `bright_data` and `firecrawl`; with neither key set, a first run produces a scorecard of failed arms — honest, but not what you want. Pick the arms you have keys for instead: `--values firecrawl,tavily`. And `providers --check` is worth running before anything long: a key being *set* doesn't mean the account still has quota, and finding that out 200 arms into a two-hour run is expensive.
 
 There's also a `plain` arm that needs no retrieval key at all — a keyless SERP with a bare `fetch()`. Treat it as a way to kick the tyres, not a benchmark: keyless search rate-limits aggressively and the block outlasts your patience. Details in [`docs/providers.md`](docs/providers.md).
 
@@ -131,4 +137,4 @@ TypeScript · a Commander CLI over a framework-free [`core/`](core/) · Next.js 
 
 ---
 
-Built by [Sameer Himati](https://sameerhimati.com).
+MIT © [Sameer Himati](https://sameerhimati.com).

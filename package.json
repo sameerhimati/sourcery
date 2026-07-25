@@ -1,7 +1,30 @@
 {
-  "name": "sourcery",
+  "name": "sourcery-eval",
   "version": "0.1.0",
-  "private": true,
+  "description": "Eval harness for the web-retrieval layer: same query, same model, same judge — only the retrieval provider varies (Firecrawl, Tavily, Exa, Bright Data, keyless baseline).",
+  "keywords": [
+    "eval",
+    "retrieval",
+    "rag",
+    "web-search",
+    "benchmark",
+    "firecrawl",
+    "tavily",
+    "exa",
+    "llm"
+  ],
+  "license": "MIT",
+  "author": "Sameer Himati",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sameerhimati/sourcery.git"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -10,17 +33,15 @@
     "test": "vitest run",
     "sourcery": "tsx cli/index.ts",
     "build:cli": "tsup",
-    "prepare": "tsup"
+    "prepare": "tsup",
+    "prepublishOnly": "tsup"
   },
   "bin": {
     "sourcery": "./dist/index.js"
   },
   "dependencies": {
     "commander": "^14.0.3",
-    "next": "16.2.10",
-    "openai": "^6.45.0",
-    "react": "19.2.4",
-    "react-dom": "19.2.4"
+    "openai": "^6.45.0"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
@@ -29,6 +50,9 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.2.10",
+    "next": "16.2.10",
+    "react": "19.2.4",
+    "react-dom": "19.2.4",
     "tailwindcss": "^4",
     "tsup": "^8.5.1",
     "tsx": "^4.23.1",

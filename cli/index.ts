@@ -3,6 +3,7 @@ import { Command } from "commander";
 import { registerBatch } from "./commands/batch";
 import { registerCredibility } from "./commands/credibility";
 import { registerInit } from "./commands/init";
+import { registerMcp } from "./commands/mcp";
 import { registerProviders } from "./commands/providers";
 import { registerReport } from "./commands/report";
 import { registerRun } from "./commands/run";
@@ -20,6 +21,7 @@ registerBatch(program);
 registerCredibility(program);
 registerReport(program);
 registerProviders(program);
+registerMcp(program);
 
 program.parseAsync().catch((err) => {
   process.stderr.write(`${err instanceof Error ? err.message : String(err)}\n`);

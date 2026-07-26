@@ -40,8 +40,10 @@
     "sourcery": "./dist/index.js"
   },
   "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0",
     "commander": "^14.0.3",
-    "openai": "^6.45.0"
+    "openai": "^6.45.0",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

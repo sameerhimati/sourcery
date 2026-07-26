@@ -17,9 +17,23 @@ npm init -y >/dev/null 2>&1
 npm install --no-audit --no-fund ./sourcery-eval-*.tgz >/dev/null
 
 help_out="$(npx sourcery --help)"
-for cmd in init run batch credibility report providers; do
+for cmd in init run batch credibility report providers mcp; do
   echo "$help_out" | grep -q "$cmd" || { echo "FAIL: --help missing '$cmd'"; exit 1; }
 done
+
+# which_provider falls back to the S2 numbers when the user has no eval history
+# of their own. Those live in docs/, which `files: ["dist"]` never ships — so the
+# only reason this works is that the JSON is imported and inlined at build time.
+# Asserted here rather than in a unit test because it can only break in the
+# tarball: from the repo, the file is always on disk and everything looks fine.
+node -e '
+  const fs = require("fs");
+  const bundle = fs.readFileSync(require.resolve("sourcery-eval/dist/index.js"), "utf8");
+  if (!bundle.includes("retrieval_mean")) {
+    console.error("FAIL: reference routing data missing from the installed bundle");
+    process.exit(1);
+  }
+'
 
 set +e
 out="$(env -u OPENAI_API_KEY -u FIREWORKS_API_KEY npx sourcery run "test query" 2>&1)"

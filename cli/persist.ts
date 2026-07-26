@@ -1,76 +1,17 @@
 import { appendFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
-import type { Run } from "@core/types";
-import type { BatchOutput, BatchRow } from "@core/batch";
 import type { CredibilityRow, CredibilitySummary } from "@core/credibility";
 
-// The JSONL file is THE contract — the terminal scorecard and HTML report are
-// just views over it. One line per record, append-only, local files only.
-export const RUNS_PATH = ".sourcery/runs.jsonl";
+// The runs.jsonl contract moved to @core/records so the dashboard's API routes
+// can share it; re-exported here because it is still the CLI's write path and
+// every command imports it from "../persist".
+export { RUNS_PATH, toRunRecord, toBatchRecords, appendRecords, readRecords } from "@core/records";
+export type { RunRecord, BatchRowRecord, SourceryRecord } from "@core/records";
 
 // S2 credibility run writes to its own files, separate from the live-run
 // contract above: raw per-arm rows (append-only) + a computed summary snapshot.
 export const S2_RUNS_PATH = ".sourcery/s2-runs.jsonl";
 export const S2_SUMMARY_PATH = ".sourcery/s2-summary.json";
-
-/** A single-query run (from `sourcery run`). */
-export interface RunRecord {
-  mode: "run";
-  id: string;
-  ts: string; // ISO timestamp
-  query: string;
-  variable: Run["variable"];
-  winner: Run["winner"];
-  judge_model: Run["judge_model"];
-  arms: Run["arms"]; // full per-arm detail incl. retrieval / answer scores + sources
-}
-
-/** One (query × provider) row of a batch (from `sourcery batch`). */
-export interface BatchRowRecord {
-  mode: "batch";
-  batchId: string;
-  ts: string; // ISO timestamp of the batch
-  row: BatchRow;
-}
-
-export type SourceryRecord = RunRecord | BatchRowRecord;
-
-/** Pure: shape a Run + identity into a persistable record (testable without I/O). */
-export function toRunRecord(run: Run, id: string, ts: string): RunRecord {
-  return {
-    mode: "run",
-    id,
-    ts,
-    query: run.query,
-    variable: run.variable,
-    winner: run.winner,
-    judge_model: run.judge_model,
-    arms: run.arms,
-  };
-}
-
-/** Pure: explode a BatchOutput into one record per row under a shared batchId. */
-export function toBatchRecords(
-  out: BatchOutput,
-  batchId: string,
-): BatchRowRecord[] {
-  return out.rows.map((row: BatchRow) => ({
-    mode: "batch",
-    batchId,
-    ts: out.generated_at,
-    row,
-  }));
-}
-
-export function appendRecords(
-  records: SourceryRecord[],
-  path = RUNS_PATH,
-): void {
-  if (!records.length) return;
-  const dir = dirname(path);
-  if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
-  appendFileSync(path, records.map((r) => JSON.stringify(r)).join("\n") + "\n");
-}
 
 /** Append one finished arm. Called per-row while the run is still going, so a
  *  killed process loses at most the in-flight arms, not the whole matrix. */
@@ -99,12 +40,4 @@ export function writeCredibilitySummary(
   const dir = dirname(summaryPath);
   if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
   writeFileSync(summaryPath, JSON.stringify(summary, null, 2) + "\n");
-}
-
-export function readRecords(path = RUNS_PATH): SourceryRecord[] {
-  if (!existsSync(path)) return [];
-  return readFileSync(path, "utf8")
-    .split("\n")
-    .filter(Boolean)
-    .map((line) => JSON.parse(line) as SourceryRecord);
 }

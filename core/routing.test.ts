@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { BatchRowRecord, SourceryRecord } from "../cli/persist";
+import type { BatchRowRecord, SourceryRecord } from "./records";
 import type { QueryType } from "./eval-dataset";
 import { bestPerType, bestProviderByType } from "./routing";
 

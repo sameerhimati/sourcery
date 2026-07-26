@@ -1,8 +1,6 @@
 import type { QueryType } from "./eval-dataset";
 import type { Provider } from "./types";
-// Type-only on purpose: routing reasons over the persisted record shape, but
-// core must not depend on cli/* at runtime — `import type` erases completely.
-import type { SourceryRecord } from "../cli/persist";
+import type { SourceryRecord } from "./records";
 
 // ─── Which provider for which kind of query ───
 // Pure aggregation over whatever the user has already run. This is the seed of

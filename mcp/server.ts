@@ -4,7 +4,7 @@ import { DEFAULT_PROVIDERS, getAdapter } from "@core/adapters";
 import { runEval } from "@core/orchestrator";
 import { bestProviderByType } from "@core/routing";
 import type { Run } from "@core/types";
-import { readRecords, RUNS_PATH } from "../cli/persist";
+import { readRecords, RUNS_PATH } from "@core/records";
 import { classifyQuery } from "./classify";
 import { REFERENCE_CAVEAT, REFERENCE_ROUTING } from "./reference";
 

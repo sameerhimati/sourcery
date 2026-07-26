@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { Arm, Axis, Extraction, Freshness, Run, Source } from "@core/types";
 import type { BatchRow, HeatRow } from "@core/batch";
 import {
@@ -23,12 +23,6 @@ import {
   MODEL_OPTIONS,
   NUM_SOURCES,
 } from "@core/controls";
-import heatmapData from "@/lib/heatmap-data.json";
-import batchData from "@/lib/batch-rows.json";
-
-const HEATMAP = heatmapData.heatmap as HeatRow[];
-const RUNS_PER_CELL = heatmapData.runs_per_cell as number;
-const BATCH_ROWS = batchData.rows as BatchRow[];
 
 // ─── palette (warm paper) ───
 const C = {
@@ -480,9 +474,41 @@ interface QueryPivot {
   fcRow?: BatchRow;
 }
 
+/** GET /api/runs — the scorecard's view of .sourcery/runs.jsonl. */
+interface RunsPayload {
+  path: string;
+  records: number;
+  rows: BatchRow[];
+  heatmap: HeatRow[];
+  runs_per_cell: number;
+}
+
 function Scorecard() {
   const [sortKey, setSortKey] = useState<"type" | "bd" | "fc" | "delta">("type");
+  const [data, setData] = useState<RunsPayload | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
+  // runs.jsonl changes underneath a running dashboard — the CLI appends to it
+  // from another terminal — so fetch on mount instead of importing a snapshot.
+  useEffect(() => {
+    let live = true;
+    (async () => {
+      try {
+        const res = await fetch("/api/runs");
+        const body = await res.json();
+        if (!live) return;
+        if (!res.ok) setLoadError(body?.error ?? "Could not read the run log.");
+        else setData(body as RunsPayload);
+      } catch (e) {
+        if (live) setLoadError(e instanceof Error ? e.message : "Network error.");
+      }
+    })();
+    return () => { live = false; };
+  }, []);
+
+  const HEATMAP = useMemo(() => data?.heatmap ?? [], [data]);
+  const BATCH_ROWS = useMemo(() => data?.rows ?? [], [data]);
+  const RUNS_PER_CELL = data?.runs_per_cell ?? 0;
   const hasData = BATCH_ROWS.length > 0 && HEATMAP.some((h) => h.runs > 0);
 
   const bdVals = HEATMAP.map((r) => r.bright_data);
@@ -512,7 +538,7 @@ function Scorecard() {
       return delta(b) - delta(a);
     });
     return arr;
-  }, [sortKey]);
+  }, [BATCH_ROWS, sortKey]);
 
   return (
     <div>
@@ -521,42 +547,52 @@ function Scorecard() {
         <div style={{ fontSize: 13, color: C.muted }}>Average retrieval score by query type. Neither provider wins everything — that&apos;s the point.</div>
       </div>
 
-      {!hasData && (
-        <div style={{ background: C.surface2, border: `1px solid ${C.border}`, borderRadius: 10, padding: "14px 18px", marginBottom: 20, fontSize: 13, color: C.faint, fontFamily: MONO }}>
-          No batch data yet — run <span style={{ color: "oklch(0.5 0.14 250)" }}>POST /api/batch?perType=2</span> to populate the scorecard.
+      {loadError && (
+        <div style={{ background: "oklch(0.72 0.13 28 / 0.12)", border: "1px solid oklch(0.6 0.16 28 / 0.35)", borderRadius: 12, padding: "14px 18px", marginBottom: 20, fontSize: 14, color: "oklch(0.42 0.16 28)" }}>
+          Could not read the run log: {loadError}
         </div>
       )}
 
-      {/* heatmap */}
-      <div style={{ display: "flex", flexDirection: "column", border: `1px solid ${C.border}`, borderRadius: 13, overflow: "hidden", maxWidth: 760, background: C.surface, boxShadow: "0 1px 3px rgba(60,50,30,0.05)" }}>
-        <div style={{ display: "grid", gridTemplateColumns: "216px 1fr 1fr" }}>
-          <div style={{ padding: "15px 18px", background: C.surface2, fontFamily: MONO, fontSize: 10.5, color: C.muted2, letterSpacing: "0.03em", display: "flex", alignItems: "center" }}>query type ↓</div>
-          <HeatHeader color="oklch(0.55 0.14 250)" textColor="oklch(0.5 0.14 250)" label="Bright Data" />
-          <HeatHeader color="oklch(0.62 0.16 50)" textColor="oklch(0.55 0.16 50)" label="Firecrawl" />
-        </div>
-        {HEATMAP.map((row) => {
-          const bd = row.bright_data, fc = row.firecrawl;
-          const delta = Math.abs(bd - fc).toFixed(1);
-          return (
-            <div key={row.type} style={{ display: "grid", gridTemplateColumns: "216px 1fr 1fr", borderTop: "1px solid #eee9df" }}>
-              <div style={{ padding: "22px 18px", display: "flex", alignItems: "center", fontSize: 13.5, color: "#3a362d", background: "#f8f5ee" }}>{row.label}</div>
-              <HeatCell score={bd} win={bd > fc} delta={delta} />
-              <HeatCell score={fc} win={fc > bd} delta={delta} />
+      {!data && !loadError && (
+        <div style={{ fontFamily: MONO, fontSize: 12, color: C.muted2, padding: "10px 0" }}>reading the run log…</div>
+      )}
+
+      {data && !hasData && <NoRuns path={data.path} />}
+
+      {hasData && (
+        <>
+          {/* heatmap */}
+          <div style={{ display: "flex", flexDirection: "column", border: `1px solid ${C.border}`, borderRadius: 13, overflow: "hidden", maxWidth: 760, background: C.surface, boxShadow: "0 1px 3px rgba(60,50,30,0.05)" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "216px 1fr 1fr" }}>
+              <div style={{ padding: "15px 18px", background: C.surface2, fontFamily: MONO, fontSize: 10.5, color: C.muted2, letterSpacing: "0.03em", display: "flex", alignItems: "center" }}>query type ↓</div>
+              <HeatHeader color="oklch(0.55 0.14 250)" textColor="oklch(0.5 0.14 250)" label="Bright Data" />
+              <HeatHeader color="oklch(0.62 0.16 50)" textColor="oklch(0.55 0.16 50)" label="Firecrawl" />
             </div>
-          );
-        })}
-        <div style={{ display: "grid", gridTemplateColumns: "216px 1fr 1fr", borderTop: `1px solid ${C.border}` }}>
-          <div style={{ padding: "15px 18px", display: "flex", alignItems: "center", fontFamily: MONO, fontSize: 11, color: C.muted2, background: C.surface2, letterSpacing: "0.03em" }}>avg · wins</div>
-          <HeatFooterCell avg={avg(bdVals)} wins={bdWins} color="oklch(0.5 0.14 250)" />
-          <HeatFooterCell avg={avg(fcVals)} wins={fcWins} color="oklch(0.55 0.16 50)" />
-        </div>
-      </div>
-      <div style={{ display: "flex", alignItems: "center", gap: 11, marginTop: 16, fontFamily: MONO, fontSize: 11, color: C.muted2 }}>
-        <span>lower</span>
-        <div style={{ height: 8, width: 190, borderRadius: 4, background: "linear-gradient(90deg,oklch(0.72 0.13 28),oklch(0.93 0.03 90),oklch(0.78 0.15 150))" }} />
-        <span>higher</span>
-        <span style={{ marginLeft: 10 }}>avg retrieval score · {RUNS_PER_CELL} run{RUNS_PER_CELL === 1 ? "" : "s"} per cell</span>
-      </div>
+            {HEATMAP.map((row) => {
+              const bd = row.bright_data, fc = row.firecrawl;
+              const delta = Math.abs(bd - fc).toFixed(1);
+              return (
+                <div key={row.type} style={{ display: "grid", gridTemplateColumns: "216px 1fr 1fr", borderTop: "1px solid #eee9df" }}>
+                  <div style={{ padding: "22px 18px", display: "flex", alignItems: "center", fontSize: 13.5, color: "#3a362d", background: "#f8f5ee" }}>{row.label}</div>
+                  <HeatCell score={bd} win={bd > fc} delta={delta} />
+                  <HeatCell score={fc} win={fc > bd} delta={delta} />
+                </div>
+              );
+            })}
+            <div style={{ display: "grid", gridTemplateColumns: "216px 1fr 1fr", borderTop: `1px solid ${C.border}` }}>
+              <div style={{ padding: "15px 18px", display: "flex", alignItems: "center", fontFamily: MONO, fontSize: 11, color: C.muted2, background: C.surface2, letterSpacing: "0.03em" }}>avg · wins</div>
+              <HeatFooterCell avg={avg(bdVals)} wins={bdWins} color="oklch(0.5 0.14 250)" />
+              <HeatFooterCell avg={avg(fcVals)} wins={fcWins} color="oklch(0.55 0.16 50)" />
+            </div>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 11, marginTop: 16, fontFamily: MONO, fontSize: 11, color: C.muted2 }}>
+            <span>lower</span>
+            <div style={{ height: 8, width: 190, borderRadius: 4, background: "linear-gradient(90deg,oklch(0.72 0.13 28),oklch(0.93 0.03 90),oklch(0.78 0.15 150))" }} />
+            <span>higher</span>
+            <span style={{ marginLeft: 10 }}>avg retrieval score · {RUNS_PER_CELL} run{RUNS_PER_CELL === 1 ? "" : "s"} per cell</span>
+          </div>
+        </>
+      )}
 
       {/* per-query table */}
       {pivots.length > 0 && (
@@ -596,6 +632,24 @@ function Scorecard() {
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+/** Fresh-install state: nothing has written the contract file yet. The dashboard
+ *  never runs a batch itself (slow + credit-heavy), so point at the CLI. */
+function NoRuns({ path }: { path: string }) {
+  return (
+    <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 13, padding: "22px 24px", maxWidth: 760, boxShadow: "0 1px 3px rgba(60,50,30,0.05)" }}>
+      <div style={{ fontSize: 15, fontWeight: 600, color: "#1c1a15", marginBottom: 6 }}>No runs recorded yet</div>
+      <p style={{ margin: "0 0 14px", fontSize: 13, color: C.faint, lineHeight: 1.55 }}>
+        This scorecard is a view over <span style={{ fontFamily: MONO, fontSize: 12 }}>{path}</span>, which the CLI writes. Run either of these from the project root, then refresh:
+      </p>
+      <pre style={{ margin: 0, padding: "13px 15px", background: C.surface2, border: `1px solid ${C.border2}`, borderRadius: 9, fontFamily: MONO, fontSize: 12, lineHeight: 1.7, color: "#3a362d", whiteSpace: "pre-wrap" }}>
+{`sourcery run "what shipped in AI this week?"   # one query, every provider
+sourcery batch --per-type 2                    # the eval set → this grid`}
+      </pre>
+      <div style={{ marginTop: 12, fontSize: 12.5, color: C.muted }}>Runs you start from the Comparison tab land in the same file.</div>
     </div>
   );
 }

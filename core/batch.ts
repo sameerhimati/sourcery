@@ -6,8 +6,9 @@ import { mapWithConcurrency } from "./extract";
 
 // Offline batch eval: run every dataset query through BOTH providers (provider
 // axis, default config), then aggregate into (a) the Scorecard heatmap and (b)
-// raw per-query rows. Slow + credit-heavy, so results are committed to JSON and
-// the Scorecard reads those for instant render; /api/batch regenerates on demand.
+// raw per-query rows. Slow + credit-heavy, so it runs from the CLI (`sourcery
+// batch`) and lands in .sourcery/runs.jsonl; the dashboard re-derives the
+// heatmap from those persisted rows rather than re-running anything.
 
 const PROVIDERS: Provider[] = ["bright_data", "firecrawl"];
 const BATCH_CONCURRENCY = 4; // arms in flight across the whole batch
@@ -76,6 +77,30 @@ function avg(nums: number[]): number {
   return nums.length ? nums.reduce((s, x) => s + x, 0) / nums.length : 0;
 }
 
+/** Aggregate rows → heatmap. Average retrieval_score per (type, provider),
+ *  skipping errored arms so a single failure doesn't tank a cell. Pure, so the
+ *  dashboard can re-derive the grid from persisted rows without re-running. */
+export function deriveHeatmap(rows: BatchRow[]): HeatRow[] {
+  const present = new Set(rows.map((r) => r.type));
+  return TYPE_ORDER.filter((t) => present.has(t)).map((type) => {
+    const ok = rows.filter((r) => r.type === type && !r.error);
+    const bd = ok.filter((r) => r.provider === "bright_data").map((r) => r.retrieval_score);
+    const fc = ok.filter((r) => r.provider === "firecrawl").map((r) => r.retrieval_score);
+    return {
+      type,
+      label: TYPE_LABELS[type],
+      bright_data: Number(avg(bd).toFixed(2)),
+      firecrawl: Number(avg(fc).toFixed(2)),
+      runs: Math.max(bd.length, fc.length),
+    };
+  });
+}
+
+/** Runs behind each heatmap cell, rounded — the "N runs per cell" caption. */
+export function runsPerCell(heatmap: HeatRow[]): number {
+  return heatmap.length ? Math.round(avg(heatmap.map((h) => h.runs))) : 0;
+}
+
 /** Pick a subset: up to `perType` queries from each type (0 = all). */
 export function selectQueries(perType = 0): EvalQuery[] {
   if (!perType) return EVAL_DATASET;
@@ -125,29 +150,11 @@ export async function runBatch(
     return row;
   });
 
-  // Aggregate → heatmap. Average retrieval_score per (type, provider), skipping
-  // errored arms so a single failure doesn't tank a cell.
-  const present = new Set(rows.map((r) => r.type));
-  const heatmap: HeatRow[] = TYPE_ORDER.filter((t) => present.has(t)).map((type) => {
-    const ok = rows.filter((r) => r.type === type && !r.error);
-    const bd = ok.filter((r) => r.provider === "bright_data").map((r) => r.retrieval_score);
-    const fc = ok.filter((r) => r.provider === "firecrawl").map((r) => r.retrieval_score);
-    return {
-      type,
-      label: TYPE_LABELS[type],
-      bright_data: Number(avg(bd).toFixed(2)),
-      firecrawl: Number(avg(fc).toFixed(2)),
-      runs: Math.max(bd.length, fc.length),
-    };
-  });
-
-  const runsPerCell = heatmap.length
-    ? Math.round(avg(heatmap.map((h) => h.runs)))
-    : 0;
+  const heatmap = deriveHeatmap(rows);
 
   return {
     generated_at: new Date(now).toISOString(),
-    runs_per_cell: runsPerCell,
+    runs_per_cell: runsPerCell(heatmap),
     heatmap,
     rows,
   };

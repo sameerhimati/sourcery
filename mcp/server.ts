@@ -106,10 +106,21 @@ export function createSourceryServer({ runsPath = RUNS_PATH }: ServerOptions = {
         "no provider calls. Use this to pick a provider; use evaluate_retrieval to prove one.",
       inputSchema: {
         query: z.string().min(1).describe("the query you want a provider recommendation for"),
+        model: z
+          .string()
+          .optional()
+          .describe(
+            "model used to classify the query, e.g. gpt-4o-mini or fireworks/<model>. " +
+              "Defaults to the engine model, which is an OpenAI one — override it if " +
+              "OPENAI_API_KEY isn't the key you have.",
+          ),
       },
     },
-    async ({ query }) => {
-      const type = await classifyQuery(query);
+    async ({ query, model }) => {
+      // Classification is the only LLM call here, and it's the whole tool: with
+      // no override this is unusable for anyone whose key isn't OpenAI's, which
+      // is most people, since BYO-LLM is the point.
+      const type = await classifyQuery(query, model);
 
       // The user's own data wins whenever it covers this type — that is the
       // whole point of the tool. Reference numbers are the floor, not the goal.

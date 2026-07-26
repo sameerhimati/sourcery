@@ -147,7 +147,7 @@ describe("sourcery MCP server", () => {
       properties: Record<string, unknown>;
       required?: string[];
     };
-    expect(Object.keys(which.properties)).toEqual(["query"]);
+    expect(Object.keys(which.properties).sort()).toEqual(["model", "query"]);
     expect(which.required).toEqual(["query"]);
 
     // Descriptions are how an agent decides which tool to reach for; the cheap
@@ -193,6 +193,24 @@ describe("sourcery MCP server", () => {
     expect(out.caveat).toBe(
       "based on our 480-arm bright_data-vs-firecrawl run, not your data — " +
         "run `sourcery batch` to make this yours.",
+    );
+  });
+
+  it("which_provider classifies with the caller's model when given one", async () => {
+    // The default is an OpenAI model, so without this override the tool is
+    // unusable for anyone whose key is from anywhere else — which is the
+    // majority, BYO-LLM being the selling point.
+    const { complete } = await import("@core/llm");
+    vi.mocked(complete).mockClear();
+
+    const res = await callTool(await connect(), "which_provider", {
+      query: "what happened in the Fed meeting today?",
+      model: "fireworks/accounts/fireworks/models/kimi-k2p6",
+    });
+    expect(res.isError).toBeFalsy();
+
+    expect(vi.mocked(complete)).toHaveBeenCalledWith(
+      expect.objectContaining({ model: "fireworks/accounts/fireworks/models/kimi-k2p6" }),
     );
   });
 

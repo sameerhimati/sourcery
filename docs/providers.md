@@ -18,17 +18,31 @@ balance is indistinguishable from a healthy one until arms start failing.
 
 ## The registered adapters
 
-| id | Keys needed | Discovery | Extraction |
-|---|---|---|---|
-| `bright_data` | `BRIGHTDATA_API_TOKEN`, `BRIGHTDATA_SERP_ZONE`, `BRIGHTDATA_UNLOCKER_ZONE` | Google SERP via proxy | separate Web Unlocker call per URL |
-| `firecrawl` | `FIRECRAWL_API_KEY` | its own search endpoint | same call, via `scrapeOptions` |
-| `tavily` | `TAVILY_API_KEY` | its own index, RAG-tuned | same call, via `include_raw_content` |
-| `exa` | `EXA_API_KEY` | its own neural index | same call, via `contents.text` |
-| `plain` | *none* | keyless SERP (Mojeek) | bare `fetch()` + regex de-tagging |
+| id | Status | Keys needed | Discovery | Extraction |
+|---|---|---|---|---|
+| `bright_data` | **measured** — 240 arms | `BRIGHTDATA_API_TOKEN`, `BRIGHTDATA_SERP_ZONE`, `BRIGHTDATA_UNLOCKER_ZONE` | Google SERP via proxy | separate Web Unlocker call per URL |
+| `firecrawl` | **measured** — 240 arms | `FIRECRAWL_API_KEY` | its own search endpoint | same call, via `scrapeOptions` |
+| `tavily` | *unverified* | `TAVILY_API_KEY` | its own index, RAG-tuned | same call, via `include_raw_content` |
+| `exa` | *unverified* | `EXA_API_KEY` | its own neural index | same call, via `contents.text` |
+| `plain` | *baseline only* | *none* | keyless SERP (Mojeek) | bare `fetch()` + regex de-tagging |
 
-`tavily` and `exa` are written against each provider's current published request
-shape but **have not been exercised against the live APIs** — there were no keys
-on hand when they were written. Treat the first run of either as a smoke test.
+**What the statuses mean, because the distinction is the point of this tool:**
+
+- **measured** — this adapter has been run against the live API across the full
+  480-arm credibility set. The numbers in the README describe these two and only
+  these two.
+- **unverified** — written against the provider's current published request shape,
+  never executed against the live API: there were no keys on hand, and getting
+  them was not worth blocking a release over. The code is a good-faith reading of
+  the docs and nothing more. **Treat your first run as the smoke test**, and
+  please open an issue either way — a confirmation is as useful as a bug report.
+- **baseline only** — works, but not something to benchmark against. See
+  [`plain`](#plain--the-free-baseline) below for why.
+
+An unverified adapter is deliberately shipped rather than hidden: the interface
+is the product, and five adapters where two are honestly labelled is more useful
+than two adapters and a promise. It does mean **`--values tavily,exa` is a
+first-contact experiment, not a supported comparison.**
 
 ---
 

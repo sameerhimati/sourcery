@@ -268,6 +268,12 @@ export interface ProviderStat {
   retrieval_ci95: number; // half-width; report as mean ± ci
   answer_mean: number;
   answer_ci95: number;
+  // Reliability, kept beside quality because the scores above are computed from
+  // surviving arms only — a provider that fails half its queries and scores well
+  // on the rest looks identical to one that never fails, unless you report this.
+  n_arms: number; // arms attempted, failures included
+  n_errors: number;
+  error_rate: number; // n_errors / n_arms
 }
 
 export interface TypeStat extends ProviderStat {
@@ -341,6 +347,12 @@ function providerStat(rows: CredibilityRow[], provider: Provider): ProviderStat 
     retMeans.push(m.retrieval);
     ansMeans.push(m.answer);
   }
+  // Counted over every attempted arm, not the surviving ones above: the whole
+  // point is to catch the provider whose good scores come from a small sample
+  // of the queries it was actually asked.
+  const attempted = rows.filter((r) => r.provider === provider);
+  const errors = attempted.filter((r) => r.error).length;
+
   return {
     provider,
     n_queries: byQuery.size,
@@ -348,6 +360,9 @@ function providerStat(rows: CredibilityRow[], provider: Provider): ProviderStat 
     retrieval_ci95: Number(ci95(retMeans).toFixed(2)),
     answer_mean: Number(mean(ansMeans).toFixed(2)),
     answer_ci95: Number(ci95(ansMeans).toFixed(2)),
+    n_arms: attempted.length,
+    n_errors: errors,
+    error_rate: attempted.length ? Number((errors / attempted.length).toFixed(4)) : 0,
   };
 }
 

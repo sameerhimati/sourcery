@@ -21,7 +21,10 @@
       "retrieval_mean": 4.56,
       "retrieval_ci95": 0.52,
       "answer_mean": 6.99,
-      "answer_ci95": 0.69
+      "answer_ci95": 0.69,
+      "n_arms": 240,
+      "n_errors": 2,
+      "error_rate": 0.0083
     },
     {
       "provider": "bright_data",
@@ -29,7 +32,10 @@
       "retrieval_mean": 4.78,
       "retrieval_ci95": 0.44,
       "answer_mean": 6.55,
-      "answer_ci95": 0.81
+      "answer_ci95": 0.81,
+      "n_arms": 240,
+      "n_errors": 61,
+      "error_rate": 0.2542
     }
   ],
   "by_type": [
@@ -40,6 +46,9 @@
       "retrieval_ci95": 1.42,
       "answer_mean": 7.13,
       "answer_ci95": 1.67,
+      "n_arms": 40,
+      "n_errors": 0,
+      "error_rate": 0,
       "type": "breaking_news"
     },
     {
@@ -49,6 +58,9 @@
       "retrieval_ci95": 1.11,
       "answer_mean": 6.02,
       "answer_ci95": 1.35,
+      "n_arms": 40,
+      "n_errors": 3,
+      "error_rate": 0.075,
       "type": "breaking_news"
     },
     {
@@ -58,6 +70,9 @@
       "retrieval_ci95": 1.11,
       "answer_mean": 9.29,
       "answer_ci95": 0.5,
+      "n_arms": 40,
+      "n_errors": 0,
+      "error_rate": 0,
       "type": "how_to"
     },
     {
@@ -67,6 +82,9 @@
       "retrieval_ci95": 0.86,
       "answer_mean": 8.82,
       "answer_ci95": 1.39,
+      "n_arms": 40,
+      "n_errors": 3,
+      "error_rate": 0.075,
       "type": "how_to"
     },
     {
@@ -76,6 +94,9 @@
       "retrieval_ci95": 1.29,
       "answer_mean": 6.51,
       "answer_ci95": 2.36,
+      "n_arms": 40,
+      "n_errors": 0,
+      "error_rate": 0,
       "type": "product_lookup"
     },
     {
@@ -85,6 +106,9 @@
       "retrieval_ci95": 1.29,
       "answer_mean": 5.86,
       "answer_ci95": 2.72,
+      "n_arms": 40,
+      "n_errors": 12,
+      "error_rate": 0.3,
       "type": "product_lookup"
     },
     {
@@ -94,6 +118,9 @@
       "retrieval_ci95": 1.72,
       "answer_mean": 7.14,
       "answer_ci95": 1.57,
+      "n_arms": 40,
+      "n_errors": 0,
+      "error_rate": 0,
       "type": "local_geo"
     },
     {
@@ -103,6 +130,9 @@
       "retrieval_ci95": 1.25,
       "answer_mean": 8.41,
       "answer_ci95": 1.01,
+      "n_arms": 40,
+      "n_errors": 16,
+      "error_rate": 0.4,
       "type": "local_geo"
     },
     {
@@ -112,6 +142,9 @@
       "retrieval_ci95": 1.42,
       "answer_mean": 5.15,
       "answer_ci95": 2.29,
+      "n_arms": 40,
+      "n_errors": 0,
+      "error_rate": 0,
       "type": "recent_release"
     },
     {
@@ -121,6 +154,9 @@
       "retrieval_ci95": 0.95,
       "answer_mean": 3.01,
       "answer_ci95": 2.01,
+      "n_arms": 40,
+      "n_errors": 14,
+      "error_rate": 0.35,
       "type": "recent_release"
     },
     {
@@ -130,6 +166,9 @@
       "retrieval_ci95": 1.76,
       "answer_mean": 6.73,
       "answer_ci95": 2.03,
+      "n_arms": 40,
+      "n_errors": 2,
+      "error_rate": 0.05,
       "type": "numeric_live"
     },
     {
@@ -139,6 +178,9 @@
       "retrieval_ci95": 0.99,
       "answer_mean": 6.75,
       "answer_ci95": 2.29,
+      "n_arms": 40,
+      "n_errors": 13,
+      "error_rate": 0.325,
       "type": "numeric_live"
     }
   ],

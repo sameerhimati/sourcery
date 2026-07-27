@@ -167,10 +167,13 @@ describe("sourcery MCP server", () => {
       type: "breaking_news",
       provider: "bright_data",
       retrieval_mean: 9,
+      retrieval_ci95: 0,
       answer_mean: 8,
       n_queries: 2,
+      error_rate: 0,
       runner_up: "firecrawl",
       margin: 5,
+      decided_by: "retrieval", // a 5-point gap on consistent scores is real
       source: fixtureRuns,
       // No caveat: this IS their data.
     });

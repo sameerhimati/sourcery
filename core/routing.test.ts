@@ -178,7 +178,26 @@ describe("bestPerType", () => {
     // 2.0 apart with a ±0.5 interval: separated. The flakier provider wins on
     // merit, and reliability never gets a vote — this is the guard against
     // turning the picker into a pure uptime ranking.
-    const [top] = bestPerType([cell("flaky", 7, 7, 0.3), cell("steady", 5, 5, 0)]);
+    const [top] = bestPerType([cell("flaky", 7, 7, 0.15), cell("steady", 5, 5, 0)]);
     expect(top).toMatchObject({ provider: "flaky", decided_by: "retrieval", margin: 2 });
+  });
+
+  it("refuses a real quality win to a provider that fails too often", () => {
+    // Same 2.0 gap, but now the leader drops one call in three. Past the floor
+    // the lead stops mattering: you cannot use source quality you never receive.
+    const [top] = bestPerType([cell("flaky", 7, 7, 0.33), cell("steady", 5, 5, 0)]);
+    expect(top).toMatchObject({
+      provider: "steady",
+      decided_by: "reliability",
+      margin: -2,
+      error_rate: 0,
+    });
+  });
+
+  it("keeps the floor from firing on a rounding-sized reliability edge", () => {
+    // Both are past the floor and near-identical on it, so the quality gap is
+    // still the only thing separating them.
+    const [top] = bestPerType([cell("flaky", 7, 7, 0.33), cell("alsoflaky", 5, 5, 0.31)]);
+    expect(top).toMatchObject({ provider: "flaky", decided_by: "retrieval" });
   });
 });

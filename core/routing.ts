@@ -39,6 +39,22 @@ export interface TypeRouting extends TypeCell {
 const round2 = (n: number) => Number(n.toFixed(2));
 
 /**
+ * Above this failure rate a provider is not recommended while a materially more
+ * dependable one exists, however well it scores on the calls that do come back.
+ * One request in five returning nothing is a broken dependency, not a trade-off.
+ *
+ * A policy choice rather than a measurement — it is the one number here you might
+ * reasonably want to move. Discounting the score by the failure rate instead was
+ * tried and rejected: it rated a 30%-failure provider a hair *ahead* on
+ * product_lookup (3.55 vs 3.54), which is precisely the call this rule exists to
+ * stop the table from making.
+ */
+export const MAX_ERROR_RATE = 0.2;
+
+/** Materiality guard: a floor must not fire over a rounding-sized difference. */
+const RELIABILITY_EDGE = 0.05;
+
+/**
  * Best provider per query type.
  *
  * Ranked on retrieval_score first — the primary metric the harness is built
@@ -51,6 +67,10 @@ const round2 = (n: number) => Number(n.toFixed(2));
  * When the leader's margin is inside its own CI, the tie is broken on
  * error_rate instead, and `decided_by` says so. Remaining ties fall through to
  * answer_score, then provider id, so the table is deterministic across runs.
+ *
+ * A quality win is also refused outright when the winner fails more than
+ * MAX_ERROR_RATE of its calls and someone materially steadier is available —
+ * no source-quality edge is worth a backend that returns nothing 30% of the time.
  */
 export function bestPerType(cells: TypeCell[]): TypeRouting[] {
   const byType = new Map<QueryType, TypeCell[]>();
@@ -83,16 +103,23 @@ export function bestPerType(cells: TypeCell[]): TypeRouting[] {
       // intervals overlap and this dataset cannot order them.
       const separated = leader.retrieval_mean - chaser.retrieval_mean > leader.retrieval_ci95;
 
-      const ranked = separated
-        ? byQuality
-        : [...group].sort((a, b) => a.error_rate - b.error_rate || byQualityThenId(a, b));
+      // ...and a lead the leader is too unreliable to collect on doesn't count.
+      const unfit =
+        leader.error_rate > MAX_ERROR_RATE &&
+        leader.error_rate - chaser.error_rate > RELIABILITY_EDGE;
+
+      const ranked =
+        separated && !unfit
+          ? byQuality
+          : [...group].sort((a, b) => a.error_rate - b.error_rate || byQualityThenId(a, b));
       const [best, next] = ranked;
 
-      const decided_by = separated
-        ? ("retrieval" as const)
-        : best.error_rate !== next.error_rate
-          ? ("reliability" as const)
-          : ("inconclusive" as const);
+      const decided_by =
+        separated && !unfit
+          ? ("retrieval" as const)
+          : best.error_rate !== next.error_rate
+            ? ("reliability" as const)
+            : ("inconclusive" as const);
 
       return {
         ...best,

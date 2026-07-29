@@ -3,11 +3,10 @@ import { dirname } from "node:path";
 import type { Run } from "./types";
 import type { BatchOutput, BatchRow } from "./batch";
 
-// The JSONL file is THE contract — the terminal scorecard, the HTML report and
-// the local dashboard are just views over it. One line per record, append-only,
-// local files only. This module lives in core/ (not cli/) so the Next API routes
-// can read and append through the exact same path the CLI uses; it is Node-only
-// but Next-free, and no client component may import it.
+// The JSONL file is THE contract — the terminal scorecard and the HTML report
+// are just views over it. One line per record, append-only, local files only.
+// This module lives in core/ (not cli/) so every door onto the engine — the CLI
+// and the MCP server — reads and appends through the exact same path. Node-only.
 export const RUNS_PATH = ".sourcery/runs.jsonl";
 
 /** A single-query run (from `sourcery run`). */

@@ -66,7 +66,11 @@ export function stripTags(html: string): string {
       .replace(/<\/(p|div|li|h[1-6]|tr|section|article|br)\s*>/gi, "\n")
       .replace(/<[^>]+>/g, " "),
   )
-    .replace(/[ \t ]+/g, " ")
+    // \u00a0 is the non-breaking space that `&nbsp;` decodes to, and it is
+    // everywhere in scraped HTML. Written as an escape rather than literally:
+    // an invisible character inside a character class is unreadable and easy
+    // to delete by accident.
+    .replace(/[ \t\u00a0]+/g, " ")
     .replace(/\n[ \t]+/g, "\n")
     .replace(/\n{3,}/g, "\n\n")
     .trim();

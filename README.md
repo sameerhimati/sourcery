@@ -133,7 +133,7 @@ The judge defaults to a stale model on purpose: the anti-cheat needs its cutoff 
 
 ## Stack
 
-TypeScript · a Commander CLI over a framework-free [`core/`](core/) · Next.js dashboard · retrieval adapters in [`core/adapters/`](core/adapters/)
+TypeScript · a Commander CLI over a framework-free [`core/`](core/) · an MCP server on the same binary · retrieval adapters in [`core/adapters/`](core/adapters/)
 
 ---
 

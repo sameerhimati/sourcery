@@ -7,7 +7,7 @@ import { mapWithConcurrency } from "./extract";
 // Offline batch eval: run every dataset query through BOTH providers (provider
 // axis, default config), then aggregate into (a) the Scorecard heatmap and (b)
 // raw per-query rows. Slow + credit-heavy, so it runs from the CLI (`sourcery
-// batch`) and lands in .sourcery/runs.jsonl; the dashboard re-derives the
+// batch`) and lands in .sourcery/runs.jsonl; `sourcery report` re-derives the
 // heatmap from those persisted rows rather than re-running anything.
 
 const PROVIDERS: Provider[] = ["bright_data", "firecrawl"];
@@ -78,8 +78,8 @@ function avg(nums: number[]): number {
 }
 
 /** Aggregate rows → heatmap. Average retrieval_score per (type, provider),
- *  skipping errored arms so a single failure doesn't tank a cell. Pure, so the
- *  dashboard can re-derive the grid from persisted rows without re-running. */
+ *  skipping errored arms so a single failure doesn't tank a cell. Pure, so
+ *  `report` can re-derive the grid from persisted rows without re-running. */
 export function deriveHeatmap(rows: BatchRow[]): HeatRow[] {
   const present = new Set(rows.map((r) => r.type));
   return TYPE_ORDER.filter((t) => present.has(t)).map((type) => {

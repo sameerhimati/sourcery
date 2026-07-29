@@ -2,8 +2,8 @@ import { appendFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } fr
 import { dirname } from "node:path";
 import type { CredibilityRow, CredibilitySummary } from "@core/credibility";
 
-// The runs.jsonl contract moved to @core/records so the dashboard's API routes
-// can share it; re-exported here because it is still the CLI's write path and
+// The runs.jsonl contract lives in @core/records so every door onto the engine
+// shares one write path; re-exported here because this is still the CLI's, and
 // every command imports it from "../persist".
 export { RUNS_PATH, toRunRecord, toBatchRecords, appendRecords, readRecords } from "@core/records";
 export type { RunRecord, BatchRowRecord, SourceryRecord } from "@core/records";

@@ -21,7 +21,12 @@ import { renderCredibility } from "../format";
 // untouched. Slow + credit-heavy — start with --per-type for a dry run.
 export function registerCredibility(program: Command): void {
   program
-    .command("credibility")
+    // Hidden, not removed: this is the research instrument that produced the
+    // published finding, and the only way to regenerate docs/s2-summary.json.
+    // But it's a 480-arm, credit-heavy run that nobody should meet while
+    // learning the tool, and the panel/CI vocabulary it introduces belongs in
+    // the docs rather than in `--help`.
+    .command("credibility", { hidden: true })
     .description("S2: queries × providers × seeds, judge panel → CIs + judge agreement")
     .option("--seeds <n>", "fresh-fetch repeats per (query × provider)", "5")
     .option("--judges <list>", "comma-separated judge model refs (the panel)")

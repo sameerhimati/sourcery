@@ -40,8 +40,8 @@ set depends on. Both default to an OpenAI model, so **without an OpenAI key you
 must pass both** — `--model` alone will still fail on the judge step.
 
 Results append to `.sourcery/runs.jsonl` in the working directory. That file is
-the contract; the terminal table, the HTML report and the dashboard are views
-over it. Run commands from the project root or the history won't accumulate.
+the contract; the terminal table and the HTML report are both views over it. Run
+commands from the project root or the history won't accumulate.
 
 ### How to read the output
 - **retrieval_score (0–10) is the primary number.** It grades the SOURCES that

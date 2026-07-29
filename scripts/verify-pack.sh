@@ -7,6 +7,9 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 npm test
 npm run lint
+# vitest transpiles without typechecking, so a type error in a test fixture can
+# sit green indefinitely (one did). tsc is the only thing that catches it.
+npm run typecheck
 npm run build:cli
 
 scratch="$(mktemp -d)"
@@ -17,9 +20,16 @@ npm init -y >/dev/null 2>&1
 npm install --no-audit --no-fund ./sourcery-eval-*.tgz >/dev/null
 
 help_out="$(npx sourcery --help)"
-for cmd in init run batch credibility report providers mcp; do
+for cmd in init run batch report providers mcp; do
   echo "$help_out" | grep -q "$cmd" || { echo "FAIL: --help missing '$cmd'"; exit 1; }
 done
+
+# `credibility` is deliberately hidden from --help (research instrument, not a
+# thing to meet while learning the tool) but must still be invocable, since it's
+# the only way to regenerate docs/s2-summary.json. Assert both halves: absent
+# from help, present as a command.
+echo "$help_out" | grep -q "credibility" && { echo "FAIL: 'credibility' should be hidden from --help"; exit 1; }
+npx sourcery credibility --help >/dev/null 2>&1 || { echo "FAIL: hidden 'credibility' is not invocable"; exit 1; }
 
 # which_provider falls back to the S2 numbers when the user has no eval history
 # of their own. Those live in docs/, which `files: ["dist"]` never ships — so the

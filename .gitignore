@@ -13,12 +13,7 @@
 # testing
 /coverage
 
-# next.js
-/.next/
-/out/
-
 # production
-/build
 /dist
 
 # misc
@@ -38,12 +33,8 @@ yarn-error.log*
 # sourcery CLI local output — runs.jsonl / captured queries never leave the machine
 .sourcery/
 
-# vercel
-.vercel
-
 # typescript
 *.tsbuildinfo
-next-env.d.ts
 
 # agent/session scaffolding — local only
 AGENTS.md
@@ -51,3 +42,10 @@ CLAUDE.md
 SESSION_HANDOFF.md
 .claude/
 design/
+
+# thinking artifacts — kept on disk, never published. A plan with unchecked
+# milestones and a landscape survey read as "unfinished" in a public repo; the
+# findings they earned live in the README and docs/providers.md instead.
+docs/rebuild-plan.md
+docs/landscape.md
+.next/

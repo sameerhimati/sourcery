@@ -3,7 +3,7 @@ import { deriveHeatmap, runsPerCell, selectQueries, type BatchRow } from "./batc
 import type { QueryType } from "./eval-dataset";
 import type { Provider } from "./types";
 
-// The dashboard re-derives the heatmap from persisted rows while `sourcery
+// `sourcery report` re-derives the heatmap from persisted rows while `sourcery
 // batch` derives it in-process — same function, so these tests pin the shape
 // both paths depend on.
 function row(

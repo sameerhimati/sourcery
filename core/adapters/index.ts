@@ -64,7 +64,7 @@ export const ADAPTERS: Record<string, AdapterSpec> = {
   },
 };
 
-/** The pair `batch` and the dashboard compare by default. */
+/** The pair `batch` and the MCP tools compare by default. */
 export const DEFAULT_PROVIDERS: Provider[] = ["bright_data", "firecrawl"];
 
 export function listAdapters(): AdapterSpec[] {

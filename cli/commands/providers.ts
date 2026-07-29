@@ -1,5 +1,6 @@
 import type { Command } from "commander";
 import { listAdapters, missingEnv } from "@core/adapters";
+import { cacheStats } from "@core/fetch-cache";
 import { loadEnv } from "../env";
 
 // `sourcery providers` — the registry, rendered. Answers the two questions a new
@@ -32,10 +33,18 @@ export function registerProviders(program: Command): void {
       }));
 
       const ready = specs.filter((s) => !missingEnv(s.id).length).length;
+      // Reported unprompted: a cached fetch is free but 24h stale, and someone
+      // reading a scorecard deserves to know which of those they're looking at.
+      const { live, expired } = cacheStats();
+      const cacheLine = live
+        ? `\nFetch cache:      ${live} live (reused free, <24h old)` +
+          `${expired ? `, ${expired} expired` : ""} — bypass with --no-cache\n`
+        : "";
       process.stdout.write(
         `Retrieval providers (${ready}/${specs.length} ready):\n\n` +
           lines.join("\n") +
-          `\n\nCompare any two:  sourcery run "<query>" --values <a>,<b>\n` +
+          cacheLine +
+          `\nCompare any two:  sourcery run "<query>" --values <a>,<b>\n` +
           `Add your own:     see docs/providers.md\n`,
       );
     });

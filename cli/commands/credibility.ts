@@ -4,6 +4,7 @@ import { selectQueries } from "@core/batch";
 import { getAdapter, DEFAULT_PROVIDERS } from "@core/adapters";
 import { MODEL } from "@core/controls";
 import { requiredEnvKeys } from "@core/llm";
+import { setCacheEnabled } from "@core/fetch-cache";
 import { loadEnv, requireKeys } from "../env";
 import { loadConfig } from "../config";
 import {
@@ -37,8 +38,10 @@ export function registerCredibility(program: Command): void {
     .option("--resume", "skip arms already in .sourcery/s2-runs.jsonl")
     .option("--fail-fast <n>", "abort if a provider's first n arms all fail (0 = off)", "8")
     .option("--no-save", "do not write .sourcery/s2-*.{jsonl,json}")
+    .option("--no-cache", "always fetch live; ignore fetches cached in the last 24h")
     .action(async (opts: CredOptions) => {
       loadEnv();
+      setCacheEnabled(opts.cache !== false);
       const config = await loadConfig();
 
       const model = opts.model ?? config.model ?? MODEL;
@@ -126,4 +129,5 @@ interface CredOptions {
   resume?: boolean;
   failFast: string;
   save?: boolean;
+  cache?: boolean;
 }

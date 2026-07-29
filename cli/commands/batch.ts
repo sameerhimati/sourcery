@@ -2,6 +2,7 @@ import type { Command } from "commander";
 import { runBatch, selectQueries } from "@core/batch";
 import { MODEL } from "@core/controls";
 import { requiredEnvKeys } from "@core/llm";
+import { setCacheEnabled } from "@core/fetch-cache";
 import { loadEnv, requireKeys } from "../env";
 import { loadConfig } from "../config";
 import { appendRecords, toBatchRecords, RUNS_PATH } from "../persist";
@@ -19,8 +20,10 @@ export function registerBatch(program: Command): void {
     .option("--model <model>", "answer model override")
     .option("--judge <model>", "judge model (defaults to gpt-4o-mini)")
     .option("--no-save", "do not append rows to .sourcery/runs.jsonl")
+    .option("--no-cache", "always fetch live; ignore fetches cached in the last 24h")
     .action(async (opts: BatchOptions) => {
       loadEnv();
+      setCacheEnabled(opts.cache !== false);
       const config = await loadConfig();
 
       // Require only the LLM key(s) the chosen answer/judge models need (unset
@@ -56,4 +59,5 @@ interface BatchOptions {
   model?: string;
   judge?: string;
   save?: boolean;
+  cache?: boolean;
 }

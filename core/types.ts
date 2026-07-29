@@ -36,6 +36,13 @@ export interface Arm {
   score: number; // 0–10 from the answer judge — SECONDARY metric
   rationale: string;
   error?: string; // set if this arm failed; UI can show a fallback
+  // When the SOURCES were retrieved, and whether they came from the fetch cache.
+  // Every freshness number in this eval is computed off these sources, so a
+  // reused fetch must be distinguishable from a live one — otherwise a re-judge
+  // reports yesterday's source ages as today's. Optional: runs.jsonl lines
+  // written before the cache existed are still valid records.
+  fetched_at?: string; // ISO
+  from_cache?: boolean;
 }
 
 export interface Run {

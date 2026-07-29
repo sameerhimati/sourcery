@@ -4,6 +4,7 @@ import type { Axis, RunRequest } from "@core/types";
 import { MODEL } from "@core/controls";
 import { requiredEnvKeys } from "@core/llm";
 import { getAdapter } from "@core/adapters";
+import { setCacheEnabled } from "@core/fetch-cache";
 import { loadEnv, requireKeys } from "../env";
 import { loadConfig } from "../config";
 import { appendRecords, toRunRecord, RUNS_PATH } from "../persist";
@@ -25,8 +26,10 @@ export function registerRun(program: Command): void {
       "judge model (grades retrieval + answer); defaults to gpt-4o-mini",
     )
     .option("--no-save", "do not append the run to .sourcery/runs.jsonl")
+    .option("--no-cache", "always fetch live; ignore fetches cached in the last 24h")
     .action(async (query: string, opts: RunOptions) => {
       loadEnv();
+      setCacheEnabled(opts.cache !== false);
 
       // Precedence: CLI flag > sourcery.config > engine default.
       const config = await loadConfig();
@@ -73,4 +76,5 @@ interface RunOptions {
   model?: string;
   judge?: string;
   save?: boolean;
+  cache?: boolean;
 }

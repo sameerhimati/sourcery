@@ -29,9 +29,14 @@ const RECORDED_SOURCES: Source[] = [
 vi.mock("@core/adapters", () => ({
   // Same recorded retrieval for every provider — provider-invariance is exactly
   // what makes the two arms comparable, and keeps the snapshot deterministic.
+  // The cache provenance is pinned to a fixed live fetch: the real fetchSources
+  // always sets both, so a mock that omitted them would snapshot a shape the
+  // engine never actually produces.
   fetchSources: vi.fn(async () => ({
     sources: RECORDED_SOURCES,
     context: "recorded context handed to the answering model",
+    fetched_at: "2026-01-01T00:00:00.000Z",
+    from_cache: false,
   })),
   // Pinned rather than re-exported from the real registry: this fixture asserts
   // a byte-identical Run, so the default arms must not change under it when a
@@ -77,6 +82,8 @@ describe("runEval — recorded fixture (S0 zero-behavior-change gate)", () => {
               "freshness": "all",
               "num_sources": 8,
             },
+            "fetched_at": "2026-01-01T00:00:00.000Z",
+            "from_cache": false,
             "id": "A",
             "latency_ms": 0,
             "model": "gpt-4o-mini",
@@ -111,6 +118,8 @@ describe("runEval — recorded fixture (S0 zero-behavior-change gate)", () => {
               "freshness": "all",
               "num_sources": 8,
             },
+            "fetched_at": "2026-01-01T00:00:00.000Z",
+            "from_cache": false,
             "id": "B",
             "latency_ms": 0,
             "model": "gpt-4o-mini",

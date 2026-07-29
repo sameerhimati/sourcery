@@ -1,4 +1,5 @@
 import { ArmConfig, FetchResult, Provider } from "../types";
+import { readCached, writeCached } from "../fetch-cache";
 import { fetchBrightData } from "./brightdata";
 import { fetchFirecrawl, firecrawlHealth } from "./firecrawl";
 import { fetchPlain } from "./plain";
@@ -86,10 +87,24 @@ export function missingEnv(provider: Provider): string[] {
   return getAdapter(provider).requiredEnv.filter((k) => !process.env[k]);
 }
 
-export function fetchSources(
+/**
+ * The one metered step in an arm, and therefore the one place the cache lives —
+ * both callers (`runArm` for run/batch, and the credibility matrix) come through
+ * here, so neither has to know about it. `fetched_at` is returned so callers can
+ * record how old the sources really are: the freshness metrics are computed off
+ * these sources, and a reused fetch must never look like a live one.
+ */
+export async function fetchSources(
   provider: Provider,
   query: string,
   config: ArmConfig,
-): Promise<FetchResult> {
-  return getAdapter(provider).fetch(query, config);
+  seed = 0,
+): Promise<FetchResult & { fetched_at: string; from_cache: boolean }> {
+  const hit = readCached(provider, query, config, seed);
+  if (hit) return { ...hit, from_cache: true };
+
+  const fetched_at = new Date().toISOString();
+  const result = await getAdapter(provider).fetch(query, config);
+  writeCached(provider, query, config, result, seed, fetched_at);
+  return { ...result, fetched_at, from_cache: false };
 }

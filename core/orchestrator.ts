@@ -82,7 +82,11 @@ export async function runArm(
   };
   const start = Date.now();
   try {
-    const { sources, context } = await fetchSources(spec.provider, query, spec.config);
+    const { sources, context, fetched_at, from_cache } = await fetchSources(
+      spec.provider,
+      query,
+      spec.config,
+    );
     // Retrieval judge (primary) grades the sources; answer + answer judge
     // (secondary) run in parallel off the same fetched context. The answer uses
     // `model`; both judges use `judgeModel` (kept stale by default on purpose).
@@ -99,6 +103,8 @@ export async function runArm(
       retrieval_rationale: retrieval.rationale,
       score,
       rationale,
+      fetched_at,
+      from_cache,
       latency_ms: Date.now() - start,
     };
   } catch (e) {

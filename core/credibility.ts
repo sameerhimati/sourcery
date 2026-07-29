@@ -46,6 +46,11 @@ export interface CredibilityRow {
   latency_ms: number;
   judgements: Judgement[];
   error?: string;
+  // median_source_age_days above is only meaningful relative to WHEN the sources
+  // were fetched. Recorded so a re-judge over cached fetches can't pass off
+  // yesterday's ages as today's. Optional: pre-cache rows are still valid.
+  fetched_at?: string;
+  from_cache?: boolean;
 }
 
 // ─── stats helpers (pure) ───
@@ -214,9 +219,15 @@ export async function runCredibility(
       return row;
     };
     try {
-      const { sources, context } = await fetchSources(provider, q.query, {
-        ...DEFAULT_CONFIG,
-      });
+      // `seed` is passed to the cache so each repeat keeps its own entry. Sharing
+      // one across seeds would zero out seed_std_mean — the exact number this
+      // matrix exists to measure.
+      const { sources, context, fetched_at, from_cache } = await fetchSources(
+        provider,
+        q.query,
+        { ...DEFAULT_CONFIG },
+        seed,
+      );
       const ans = await answer(q.query, context, model);
       // Every judge grades the SAME sources + answer for this seed, in parallel.
       const judgements = await Promise.all(
@@ -241,6 +252,8 @@ export async function runCredibility(
         median_source_age_days: medianAgeDays(sources, now),
         domains: sources.map((s) => s.domain),
         latency_ms: Date.now() - start,
+        fetched_at,
+        from_cache,
         judgements,
       };
       return emit(row);

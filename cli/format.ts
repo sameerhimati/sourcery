@@ -2,6 +2,7 @@ import type { Arm, Run } from "@core/types";
 import type { BatchOutput } from "@core/batch";
 import type { CredibilitySummary } from "@core/credibility";
 import { ADAPTERS } from "@core/adapters";
+import { providerMeta } from "@core/viz";
 
 // Terminal scorecard — a plain-text view over a Run. Kept color-free and pure
 // (Run in, string out) so it snapshots deterministically in tests; the HTML
@@ -78,43 +79,44 @@ export function renderRun(run: Run): string {
   ].join("\n");
 }
 
-/** Render a batch's provider heatmap (avg retrieval score per query type). */
+/** Render a batch's provider heatmap (avg retrieval score per query type).
+ *  Columns are whatever providers the batch actually ran — one column each,
+ *  however many that is. */
 export function renderBatch(out: BatchOutput): string {
   const fmt = (n: number) => n.toFixed(1);
-  const rows = out.heatmap.map((h) => ({
-    label: h.label,
-    bright_data: fmt(h.bright_data),
-    firecrawl: fmt(h.firecrawl),
-    // Which provider retrieved better for this type (blank on a tie).
-    lead:
-      h.bright_data === h.firecrawl
-        ? ""
-        : h.bright_data > h.firecrawl
-          ? "Bright Data"
-          : "Firecrawl",
-  }));
+  const providers = out.providers?.length ? out.providers : Object.keys(out.heatmap[0]?.scores ?? {});
+  const heads = providers.map((p) => providerMeta(p).label.toUpperCase());
+
+  const rows = out.heatmap.map((h) => {
+    const cells = providers.map((p) => fmt(h.scores[p] ?? 0));
+    // Which provider retrieved better for this type. Blank on a tie — including
+    // a tie at the top between three or more, which a single "leads" name
+    // would otherwise misreport as a clean win.
+    const best = Math.max(...providers.map((p) => h.scores[p] ?? 0));
+    const winners = providers.filter((p) => (h.scores[p] ?? 0) === best);
+    return {
+      label: h.label,
+      cells,
+      lead: winners.length === 1 ? providerMeta(winners[0]).label : "",
+    };
+  });
 
   const wLabel = Math.max("TYPE".length, ...rows.map((r) => r.label.length));
-  const wBd = Math.max("BRIGHT DATA".length, ...rows.map((r) => r.bright_data.length));
-  const wFc = Math.max("FIRECRAWL".length, ...rows.map((r) => r.firecrawl.length));
+  const wCols = providers.map((_, i) =>
+    Math.max(heads[i].length, ...rows.map((r) => r.cells[i].length)),
+  );
 
   const header =
     "  " +
     pad("TYPE", wLabel) +
-    "  " +
-    pad("BRIGHT DATA", wBd) +
-    "  " +
-    pad("FIRECRAWL", wFc) +
+    heads.map((h, i) => "  " + pad(h, wCols[i])).join("") +
     "  LEADS";
 
   const body = rows.map(
     (r) =>
       "  " +
       pad(r.label, wLabel) +
-      "  " +
-      pad(r.bright_data, wBd) +
-      "  " +
-      pad(r.firecrawl, wFc) +
+      r.cells.map((c, i) => "  " + pad(c, wCols[i])).join("") +
       (r.lead ? `  ${r.lead}` : ""),
   );
 

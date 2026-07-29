@@ -1,16 +1,20 @@
 import { EVAL_DATASET, EvalQuery, QueryType } from "./eval-dataset";
 import { runArm } from "./orchestrator";
 import { DEFAULT_CONFIG, Provider, Source } from "./types";
+import { DEFAULT_PROVIDERS } from "./adapters";
 import { MODEL } from "./controls";
 import { mapWithConcurrency } from "./extract";
 
-// Offline batch eval: run every dataset query through BOTH providers (provider
-// axis, default config), then aggregate into (a) the Scorecard heatmap and (b)
+// Offline batch eval: run every dataset query through a set of providers
+// (provider axis, default config), then aggregate into (a) the heatmap and (b)
 // raw per-query rows. Slow + credit-heavy, so it runs from the CLI (`sourcery
 // batch`) and lands in .sourcery/runs.jsonl; `sourcery report` re-derives the
 // heatmap from those persisted rows rather than re-running anything.
+//
+// The provider set is a parameter, not a constant. It used to be hardcoded to
+// bright_data + firecrawl, which meant the other three registered adapters could
+// never appear in a heatmap however many keys you held.
 
-const PROVIDERS: Provider[] = ["bright_data", "firecrawl"];
 const BATCH_CONCURRENCY = 4; // arms in flight across the whole batch
 
 // Human labels for the heatmap rows (design uses prose, not snake_case keys).
@@ -50,14 +54,20 @@ export interface BatchRow {
 export interface HeatRow {
   type: QueryType;
   label: string;
-  bright_data: number; // avg retrieval score
-  firecrawl: number;
-  runs: number; // runs per cell
+  // avg retrieval score per provider. A map, not two named fields: while this
+  // was `{ bright_data, firecrawl }` no third provider could be plotted, which
+  // meant tavily/exa were structurally excluded from every heatmap and from the
+  // routing table derived off it — a shape decision quietly deciding which
+  // providers the tool was allowed to have an opinion about.
+  scores: Record<string, number>;
+  runs: number; // runs per cell (max across providers)
 }
 
 export interface BatchOutput {
   generated_at: string;
   runs_per_cell: number;
+  /** Provider ids plotted, in column order — the heatmap's x-axis. */
+  providers: string[];
   heatmap: HeatRow[];
   rows: BatchRow[];
 }
@@ -80,19 +90,25 @@ function avg(nums: number[]): number {
 /** Aggregate rows → heatmap. Average retrieval_score per (type, provider),
  *  skipping errored arms so a single failure doesn't tank a cell. Pure, so
  *  `report` can re-derive the grid from persisted rows without re-running. */
-export function deriveHeatmap(rows: BatchRow[]): HeatRow[] {
+/** Provider ids present in `rows`, in first-seen order — the heatmap's columns. */
+export function providersIn(rows: BatchRow[]): string[] {
+  const seen: string[] = [];
+  for (const r of rows) if (!seen.includes(r.provider)) seen.push(r.provider);
+  return seen;
+}
+
+export function deriveHeatmap(rows: BatchRow[], providers = providersIn(rows)): HeatRow[] {
   const present = new Set(rows.map((r) => r.type));
   return TYPE_ORDER.filter((t) => present.has(t)).map((type) => {
     const ok = rows.filter((r) => r.type === type && !r.error);
-    const bd = ok.filter((r) => r.provider === "bright_data").map((r) => r.retrieval_score);
-    const fc = ok.filter((r) => r.provider === "firecrawl").map((r) => r.retrieval_score);
-    return {
-      type,
-      label: TYPE_LABELS[type],
-      bright_data: Number(avg(bd).toFixed(2)),
-      firecrawl: Number(avg(fc).toFixed(2)),
-      runs: Math.max(bd.length, fc.length),
-    };
+    const scores: Record<string, number> = {};
+    let runs = 0;
+    for (const p of providers) {
+      const xs = ok.filter((r) => r.provider === p).map((r) => r.retrieval_score);
+      scores[p] = Number(avg(xs).toFixed(2));
+      runs = Math.max(runs, xs.length);
+    }
+    return { type, label: TYPE_LABELS[type], scores, runs };
   });
 }
 
@@ -116,14 +132,15 @@ export function selectQueries(perType = 0): EvalQuery[] {
 export async function runBatch(
   queries: EvalQuery[] = EVAL_DATASET,
   now: number = Date.now(),
-  opts: { model?: string; judgeModel?: string } = {},
+  opts: { model?: string; judgeModel?: string; providers?: string[] } = {},
 ): Promise<BatchOutput> {
   const model = opts.model?.trim() || MODEL;
   const judgeModel = opts.judgeModel?.trim() || MODEL;
+  const providers = opts.providers?.length ? opts.providers : DEFAULT_PROVIDERS;
 
   // Flatten to (query × provider) arms, then run bounded-concurrent.
   const jobs = queries.flatMap((q) =>
-    PROVIDERS.map((provider) => ({ q, provider })),
+    providers.map((provider) => ({ q, provider })),
   );
 
   const rows = await mapWithConcurrency(jobs, BATCH_CONCURRENCY, async ({ q, provider }) => {
@@ -150,11 +167,14 @@ export async function runBatch(
     return row;
   });
 
-  const heatmap = deriveHeatmap(rows);
+  // Pass `providers` explicitly rather than deriving from rows: a provider whose
+  // every arm failed still deserves a column of zeros, not silent omission.
+  const heatmap = deriveHeatmap(rows, providers);
 
   return {
     generated_at: new Date(now).toISOString(),
     runs_per_cell: runsPerCell(heatmap),
+    providers,
     heatmap,
     rows,
   };

@@ -77,10 +77,21 @@ describe("renderBatch", () => {
     const out: BatchOutput = {
       generated_at: "2026-07-23T00:00:00.000Z",
       runs_per_cell: 1,
+      providers: ["bright_data", "firecrawl"],
       rows: [], // rows not shown in the summary; only the aggregated heatmap is
       heatmap: [
-        { type: "breaking_news", label: "breaking news", bright_data: 3.2, firecrawl: 4.1, runs: 1 },
-        { type: "how_to", label: "how-to / explainer", bright_data: 6.5, firecrawl: 6.5, runs: 1 },
+        {
+          type: "breaking_news",
+          label: "breaking news",
+          scores: { bright_data: 3.2, firecrawl: 4.1 },
+          runs: 1,
+        },
+        {
+          type: "how_to",
+          label: "how-to / explainer",
+          scores: { bright_data: 6.5, firecrawl: 6.5 },
+          runs: 1,
+        },
       ],
     };
     expect(renderBatch(out)).toMatchInlineSnapshot(`
@@ -91,6 +102,40 @@ describe("renderBatch", () => {
         TYPE                BRIGHT DATA  FIRECRAWL  LEADS
         breaking news       3.2          4.1        Firecrawl
         how-to / explainer  6.5          6.5      "
+    `);
+  });
+
+  it("widens to however many providers ran, and names the single leader", () => {
+    const out: BatchOutput = {
+      generated_at: "2026-07-29T00:00:00.000Z",
+      runs_per_cell: 2,
+      providers: ["firecrawl", "tavily", "exa"],
+      rows: [],
+      heatmap: [
+        {
+          type: "breaking_news",
+          label: "breaking news",
+          scores: { firecrawl: 2.5, tavily: 3.0, exa: 7.0 },
+          runs: 2,
+        },
+        // A three-way tie at the top must print no leader: naming one of them
+        // would report a clean win that the numbers don't show.
+        {
+          type: "how_to",
+          label: "how-to / explainer",
+          scores: { firecrawl: 5.0, tavily: 5.0, exa: 5.0 },
+          runs: 2,
+        },
+      ],
+    };
+    expect(renderBatch(out)).toMatchInlineSnapshot(`
+      "Batch — 0 arms, 2 run(s)/cell
+      Generated: 2026-07-29T00:00:00.000Z
+      avg retrieval score (0–10) by query type:
+
+        TYPE                FIRECRAWL  TAVILY  EXA  LEADS
+        breaking news       2.5        3.0     7.0  Exa
+        how-to / explainer  5.0        5.0     5.0"
     `);
   });
 });

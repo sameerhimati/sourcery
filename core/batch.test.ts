@@ -37,8 +37,25 @@ describe("deriveHeatmap", () => {
       row("how_to", "firecrawl", 5),
     ]);
     expect(heat).toEqual([
-      { type: "how_to", label: "how-to / explainer", bright_data: 7.5, firecrawl: 5.5, runs: 2 },
+      {
+        type: "how_to",
+        label: "how-to / explainer",
+        scores: { bright_data: 7.5, firecrawl: 5.5 },
+        runs: 2,
+      },
     ]);
+  });
+
+  it("plots any number of providers, not just two", () => {
+    // The reason `scores` is a map. While HeatRow named bright_data and firecrawl
+    // as fields, the other three registered adapters could never be plotted —
+    // the type was silently deciding which providers the tool had opinions about.
+    const [cell] = deriveHeatmap([
+      row("how_to", "firecrawl", 6),
+      row("how_to", "tavily", 3),
+      row("how_to", "exa", 7),
+    ]);
+    expect(cell.scores).toEqual({ firecrawl: 6, tavily: 3, exa: 7 });
   });
 
   it("skips errored arms so one failure doesn't tank a cell", () => {
@@ -47,14 +64,26 @@ describe("deriveHeatmap", () => {
       row("breaking_news", "bright_data", 0, "429 rate limited"),
       row("breaking_news", "firecrawl", 4),
     ]);
-    expect(cell.bright_data).toBe(9); // not (9+0)/2
+    expect(cell.scores.bright_data).toBe(9); // not (9+0)/2
     expect(cell.runs).toBe(1); // max of the two providers' surviving counts
   });
 
-  it("scores a cell 0 when a provider has no surviving arms for that type", () => {
+  it("scores 0 for a requested provider with no surviving arms", () => {
+    // runBatch passes its provider list explicitly, so a provider whose every
+    // arm failed still gets a column of zeros rather than vanishing from the
+    // grid — "it failed" and "it wasn't run" must not look identical.
+    const [cell] = deriveHeatmap([row("local_geo", "firecrawl", 6)], [
+      "bright_data",
+      "firecrawl",
+    ]);
+    expect(cell.scores.bright_data).toBe(0);
+    expect(cell.scores.firecrawl).toBe(6);
+  });
+
+  it("omits a provider entirely when the column list is derived from the rows", () => {
+    // `report` reads history it didn't run, so it derives columns from the data.
     const [cell] = deriveHeatmap([row("local_geo", "firecrawl", 6)]);
-    expect(cell.bright_data).toBe(0);
-    expect(cell.firecrawl).toBe(6);
+    expect(Object.keys(cell.scores)).toEqual(["firecrawl"]);
   });
 
   it("emits only the types present, in dataset order — not input order", () => {

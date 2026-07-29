@@ -1,7 +1,6 @@
 import { heatColor, heatText, providerMeta, scoreText } from "@core/viz";
-import { TYPE_LABELS } from "@core/batch";
-import type { BatchRow, HeatRow } from "@core/batch";
-import type { QueryType } from "@core/eval-dataset";
+import { deriveHeatmap, providersIn } from "@core/batch";
+import type { BatchRow } from "@core/batch";
 import type { Arm, Source } from "@core/types";
 import type { BatchRowRecord, RunRecord, SourceryRecord } from "./persist";
 
@@ -14,33 +13,19 @@ const esc = (s: string): string =>
 const scoreCell = (n: number): string =>
   `<span class="score" style="color:${scoreText(n)}">${n}/10</span>`;
 
-/** Re-aggregate persisted rows into the same heatmap runBatch would produce. */
-function aggregate(rows: BatchRow[]): { providers: string[]; heat: HeatRow[] } {
-  const providers = [...new Set(rows.map((r) => r.provider))];
-  const types = [...new Set(rows.map((r) => r.type))] as QueryType[];
-  const avg = (ns: number[]) => (ns.length ? ns.reduce((s, x) => s + x, 0) / ns.length : 0);
-  const heat = types.map((type) => {
-    const ok = rows.filter((r) => r.type === type && !r.error);
-    const cell: HeatRow = {
-      type,
-      label: TYPE_LABELS[type] ?? type,
-      bright_data: Number(avg(ok.filter((r) => r.provider === "bright_data").map((r) => r.retrieval_score)).toFixed(2)),
-      firecrawl: Number(avg(ok.filter((r) => r.provider === "firecrawl").map((r) => r.retrieval_score)).toFixed(2)),
-      runs: ok.length,
-    };
-    return cell;
-  });
-  return { providers, heat };
-}
-
 function heatmapSection(rows: BatchRow[]): string {
-  const { providers, heat } = aggregate(rows);
+  // deriveHeatmap is imported rather than reimplemented here. This file used to
+  // carry its own copy, which had already drifted (it counted runs per cell
+  // differently) and needed an `as unknown as Record<string, number>` cast to
+  // read provider columns out of a type that named only two of them.
+  const providers = providersIn(rows);
+  const heat = deriveHeatmap(rows, providers);
   const head = providers.map((p) => `<th>${esc(providerMeta(p).label)}</th>`).join("");
   const body = heat
     .map((h) => {
       const cells = providers
         .map((p) => {
-          const v = (h as unknown as Record<string, number>)[p] ?? 0;
+          const v = h.scores[p] ?? 0;
           return `<td class="heat" style="background:${heatColor(v)};color:${heatText()}">${v.toFixed(1)}</td>`;
         })
         .join("");

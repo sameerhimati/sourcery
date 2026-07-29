@@ -85,34 +85,71 @@ One call does discovery and extraction together — `scrapeOptions` on the searc
 request returns each result's markdown inline. That's the pitch, and it's why
 this arm is roughly half the latency of Bright Data.
 
-**Credit math, because it will bite you.** Published rates:
+**Credit math, because it bit me.** Unit rates:
 
-- search — **2 credits per 10 results**
+- search — **2 credits**, per source type, per 10 results
 - scrape — **1 credit per page**
 
-So one arm at `num_sources: 8` with extraction on costs about **10 credits**
-(2 for the search, 8 for the scrapes). Which means:
+The trap is the *per source type* clause. `fetchFirecrawl` requests
+`sources: ["web", "news"]` — news is where the native `publishedDate` values come
+from, and the freshness metric leans on them. But asking for two source types
+buys **two searches and two sets of scrapes.** So one arm at `num_sources: 8`
+with extraction on is:
 
-| Run | Firecrawl arms | ≈ credits |
-|---|---:|---:|
-| `run` (one query, one arm) | 1 | 10 |
-| `batch` (48 queries) | 48 | ~480 |
-| `credibility --seeds 5` | 240 | **~2,400** |
+```
+2 searches × 2 credits  +  16 pages × 1 credit  =  20 credits
+```
+
+not the 10 this doc and `firecrawl.ts` both claimed for months.
+
+**Measured, 2026-07-29.** Three controlled `/v2/search` calls at `limit: 8`,
+diffing `remainingCredits` before and after each:
+
+| Request | Cost | What it isolates |
+|---|---:|---|
+| `sources: ["web"]`, no `scrapeOptions` | **2** | search alone |
+| `sources: ["web"]` + markdown scrapes | **10** | +8 → 1 credit per page |
+| `sources: ["web","news"]` + scrapes | **20** | +10 → a second search *and* 8 more scrapes |
+
+The third row is exactly what the adapter sends. Cross-checked against the
+account's activity log, where real arms billed **20 to 65** credits — 20 is the
+floor, and it climbs when a query surfaces pages Firecrawl has to escalate to a
+heavier browser path to read (government statistics sites were the worst). Cost
+is a property of the *targets a query happens to surface*, not of the query.
+
+So the real budget, at `num_sources: 8`:
+
+| Run | Firecrawl arms | ≈ credits (floor) | hard targets (~3×) |
+|---|---:|---:|---:|
+| `run` (one query, one arm) | 1 | 20 | 60 |
+| `batch` (48 queries) | 48 | ~960 | ~2,900 |
+| `credibility --seeds 5` | 240 | **~4,800** | ~14,400 |
 
 Plans are Free 1,000/mo · Hobby $16/mo 5,000 · Standard $83/mo 100,000.
 
-**A full 5-seed credibility run does not fit in the free tier and never did** —
-2,400 needed against 1,000 available. A 2-seed run (~960) technically fits a
-fresh month with no margin for a retry. This is worth internalizing before
-planning a big run, because the failure mode is ugly: the API returns
-`402 Insufficient credits` per request, so without the circuit breaker a 480-arm
-run grinds for hours producing nothing but errors. `sourcery credibility` now
-aborts once a provider fails its first arms with zero successes.
+**This is where a 5,000/mo plan went.** A full 5-seed credibility run costs
+~4,800 at the floor — it consumes an entire Hobby month by itself, and it does
+not fit the free tier at any seed count above 2. The old flat estimate of 10
+reported *twice* the runway that existed, so `providers --check` said "≈ 500
+arms" on a balance that covered 250. The failure mode is ugly: the API returns
+`402 Insufficient credits` per request, so a 480-arm run grinds for hours
+producing nothing but errors. `sourcery credibility` now aborts once a provider
+fails its first arms with zero successes.
 
-Check the balance before a long run:
+Two ways to cut the bill, if you need to:
+
+- **`extraction: "raw"`** drops the scrapes entirely — 20 → 4 credits per arm.
+  You lose the extracted page text, so `retrieval_score` gets thinner evidence.
+- **Dropping `"news"`** from `sources` halves it — 20 → 10. But that's where the
+  reliable publish dates live, so the freshness numbers degrade to the date
+  ladder used by the other adapters. Not recommended for a run you intend to
+  publish; reasonable while iterating.
+
+Check the balance before a long run — it now quotes a range, because the
+optimistic end is the only thing a floor-cost estimate can honestly promise:
 
 ```bash
-sourcery providers --check   # → "OUT OF CREDITS (-17 of 1000/mo) — every arm will 402"
+sourcery providers --check   # → "932 credits of 5000/mo ≈ 15-46 arms at 20+/arm"
 ```
 
 ---

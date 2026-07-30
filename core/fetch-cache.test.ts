@@ -47,6 +47,15 @@ describe("cacheKey", () => {
     expect(cacheKey("firecrawl", "q", { ...DEFAULT_CONFIG, extraction: "raw" }, 0)).not.toBe(base);
   });
 
+  it("cannot be forged by a query that mimics a field boundary", () => {
+    // Why fields are joined on NUL and not a space. With a printable separator,
+    // a query ending in the next field's value could produce the same joined
+    // string as a different tuple — two distinct requests, one cache entry.
+    const a = cacheKey("firecrawl", "node lts", DEFAULT_CONFIG, 0);
+    const b = cacheKey("firecrawl", "node lts all 8 clean 0", DEFAULT_CONFIG, 0);
+    expect(a).not.toBe(b);
+  });
+
   it("is stable across config property order", () => {
     const reordered = {
       extraction: DEFAULT_CONFIG.extraction,

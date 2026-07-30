@@ -4,6 +4,9 @@ import { MODEL } from "@core/controls";
 import { requiredEnvKeys } from "@core/llm";
 import { setCacheEnabled } from "@core/fetch-cache";
 import { DEFAULT_PROVIDERS, getAdapter } from "@core/adapters";
+import { budgetBlock, estimate, renderEstimate } from "@core/preflight";
+import { DEFAULT_CONFIG } from "@core/types";
+import { confirm } from "../confirm";
 import { loadEnv, requireKeys } from "../env";
 import { loadConfig } from "../config";
 import { appendRecords, toBatchRecords, RUNS_PATH } from "../persist";
@@ -26,6 +29,12 @@ export function registerBatch(program: Command): void {
     )
     .option("--no-save", "do not append rows to .sourcery/runs.jsonl")
     .option("--no-cache", "always fetch live; ignore fetches cached in the last 24h")
+    .option(
+      "--max-credits <n>",
+      "refuse to start if the run could exceed this many provider credits",
+    )
+    .option("-y, --yes", "skip the cost confirmation prompt")
+    .option("--dry-run", "print the cost estimate and exit without running anything")
     .action(async (opts: BatchOptions) => {
       loadEnv();
       setCacheEnabled(opts.cache !== false);
@@ -55,6 +64,34 @@ export function registerBatch(program: Command): void {
           `— slow + credit-heavy…\n`,
       );
 
+      // Cost BEFORE spending, not after. One arm per query per provider here
+      // (batch is single-seed), so armsPerProvider is just the query count.
+      const est = await estimate(running, queries.length, DEFAULT_CONFIG);
+      process.stdout.write("\n" + renderEstimate(est) + "\n");
+
+      const block = budgetBlock(est, opts.maxCredits ? Number(opts.maxCredits) : undefined);
+      if (block) {
+        process.stderr.write(`\n${block}\n`);
+        process.exit(1);
+      }
+      // Costed but not run. The confirmation prompt auto-proceeds when stdin is
+      // not a TTY (so pipes and CI don't hang), which means there was otherwise
+      // no way to ask "what would this cost?" without risking spending it.
+      if (opts.dryRun) {
+        process.stdout.write("\n--dry-run: nothing spent, nothing run.\n");
+        return;
+      }
+      if (est.overBalance.length) {
+        process.stderr.write(
+          `\n⚠ ${est.overBalance.join(", ")} may run out mid-run — the arms that ` +
+            `land after that will 402 and score as failures, not as low scores.\n`,
+        );
+      }
+      if (!opts.yes && est.totalMax > 0 && !(await confirm("\nProceed?"))) {
+        process.stdout.write("Aborted — nothing spent.\n");
+        return;
+      }
+
       const out = await runBatch(queries, undefined, {
         model,
         judgeModel: judge,
@@ -79,4 +116,7 @@ interface BatchOptions {
   providers?: string;
   save?: boolean;
   cache?: boolean;
+  maxCredits?: string;
+  yes?: boolean;
+  dryRun?: boolean;
 }

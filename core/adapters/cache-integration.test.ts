@@ -15,7 +15,12 @@ import { setCacheDir, setCacheEnabled } from "../fetch-cache";
 
 let calls = 0;
 
-vi.mock("./firecrawl", () => ({
+// Only `fetchFirecrawl` is replaced — everything else (the credit model, the
+// balance probe) comes from the real module via importOriginal. Restating the
+// whole surface here meant this file broke the moment firecrawl.ts gained an
+// export, which has nothing to do with what these tests actually check.
+vi.mock("./firecrawl", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("./firecrawl")>()),
   fetchFirecrawl: (): Promise<FetchResult> => {
     calls++;
     return Promise.resolve({
@@ -23,7 +28,6 @@ vi.mock("./firecrawl", () => ({
       context: "ctx",
     });
   },
-  firecrawlHealth: () => Promise.resolve("ok"),
 }));
 
 let dir: string;

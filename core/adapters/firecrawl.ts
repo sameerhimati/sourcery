@@ -29,7 +29,7 @@ const SOURCE_TYPES = 2;
 // query happens to surface, not of the query itself. Government statistics pages
 // were the expensive ones. Reported as a range because a budget gauge that only
 // ever quotes the optimistic end is the thing that stranded a run mid-flight.
-const HARD_TARGET_MULTIPLIER = 3;
+export const HARD_TARGET_MULTIPLIER = 3;
 
 /** Floor cost of one arm under `config` — exact when every page scrapes cleanly. */
 export function creditsPerArm(config: Pick<ArmConfig, "num_sources" | "extraction">): number {
@@ -51,6 +51,24 @@ export function armsAffordable(
     min: Math.floor(credits / (floor * HARD_TARGET_MULTIPLIER)),
     max: Math.floor(credits / floor),
   };
+}
+
+/** Live credit balance, or null when it can't be read. Free and quota-neutral.
+ *  Separate from `firecrawlHealth` because a pre-flight estimate needs the
+ *  NUMBER, not a sentence about it. */
+export async function firecrawlBalance(): Promise<number | null> {
+  const key = process.env.FIRECRAWL_API_KEY;
+  if (!key) return null;
+  try {
+    const res = await fetch(CREDIT_ENDPOINT, {
+      headers: { Authorization: `Bearer ${key}` },
+    });
+    if (!res.ok) return null;
+    const { data } = (await res.json()) as { data?: { remainingCredits?: number } };
+    return typeof data?.remainingCredits === "number" ? data.remainingCredits : null;
+  } catch {
+    return null;
+  }
 }
 
 /** Free, quota-neutral balance check. A key that's set but broke fails every

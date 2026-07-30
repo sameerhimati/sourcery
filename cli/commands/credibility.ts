@@ -5,6 +5,9 @@ import { getAdapter, DEFAULT_PROVIDERS } from "@core/adapters";
 import { MODEL } from "@core/controls";
 import { requiredEnvKeys } from "@core/llm";
 import { setCacheEnabled } from "@core/fetch-cache";
+import { budgetBlock, estimate, renderEstimate } from "@core/preflight";
+import { DEFAULT_CONFIG, type Provider } from "@core/types";
+import { confirm } from "../confirm";
 import { loadEnv, requireKeys } from "../env";
 import { loadConfig } from "../config";
 import {
@@ -39,6 +42,12 @@ export function registerCredibility(program: Command): void {
     .option("--fail-fast <n>", "abort if a provider's first n arms all fail (0 = off)", "8")
     .option("--no-save", "do not write .sourcery/s2-*.{jsonl,json}")
     .option("--no-cache", "always fetch live; ignore fetches cached in the last 24h")
+    .option(
+      "--max-credits <n>",
+      "refuse to start if the run could exceed this many provider credits",
+    )
+    .option("-y, --yes", "skip the cost confirmation prompt")
+    .option("--dry-run", "print the cost estimate and exit without running anything")
     .action(async (opts: CredOptions) => {
       loadEnv();
       setCacheEnabled(opts.cache !== false);
@@ -85,6 +94,47 @@ export function registerCredibility(program: Command): void {
           `This is slow + credit-heavy (fresh fetch every seed)…\n\n`,
       );
 
+      // This is the run that consumed a 5000/mo Firecrawl plan without warning,
+      // so it is the one that most needs a number up front. Count arms PER
+      // PROVIDER and net off anything --resume will replay from disk for free.
+      const remainingPerProvider = Object.fromEntries(
+        armSet.map((p) => [
+          p,
+          queries.length * seeds -
+            queries.reduce(
+              (n, q) =>
+                n +
+                Array.from({ length: seeds }, (_, s) => s).filter((s) =>
+                  done.has(armKey(q.id, p as Provider, s)),
+                ).length,
+              0,
+            ),
+        ]),
+      );
+      const est = await estimate(armSet, remainingPerProvider, DEFAULT_CONFIG);
+      process.stdout.write(renderEstimate(est) + "\n");
+
+      const block = budgetBlock(est, opts.maxCredits ? Number(opts.maxCredits) : undefined);
+      if (block) {
+        process.stderr.write(`\n${block}\n`);
+        process.exit(1);
+      }
+      if (opts.dryRun) {
+        process.stdout.write("\n--dry-run: nothing spent, nothing run.\n");
+        return;
+      }
+      if (est.overBalance.length) {
+        process.stderr.write(
+          `\n⚠ ${est.overBalance.join(", ")} may run out mid-run. --fail-fast catches a\n` +
+            `  provider that is dead on arrival, but not one that dies halfway.\n`,
+        );
+      }
+      if (!opts.yes && est.totalMax > 0 && !(await confirm("\nProceed?"))) {
+        process.stdout.write("Aborted — nothing spent.\n");
+        return;
+      }
+      process.stdout.write("\n");
+
       const now = Date.now();
       const save = opts.save !== false;
       const fresh = await runCredibility(queries, {
@@ -130,4 +180,7 @@ interface CredOptions {
   failFast: string;
   save?: boolean;
   cache?: boolean;
+  maxCredits?: string;
+  yes?: boolean;
+  dryRun?: boolean;
 }

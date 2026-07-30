@@ -1,7 +1,13 @@
 import { ArmConfig, FetchResult, Provider } from "../types";
 import { readCached, writeCached } from "../fetch-cache";
 import { fetchBrightData } from "./brightdata";
-import { fetchFirecrawl, firecrawlHealth } from "./firecrawl";
+import {
+  creditsPerArm,
+  fetchFirecrawl,
+  firecrawlBalance,
+  firecrawlHealth,
+  HARD_TARGET_MULTIPLIER,
+} from "./firecrawl";
 import { fetchPlain } from "./plain";
 import { fetchTavily } from "./tavily";
 import { fetchExa } from "./exa";
@@ -24,6 +30,23 @@ export interface AdapterSpec {
    * to a healthy one until the arms start failing. Must not consume quota.
    */
   health?: () => Promise<string>;
+  /**
+   * Optional cost model, for the pre-flight estimate. Present only for providers
+   * metered in a countable balance you can exhaust mid-run — today just
+   * Firecrawl. Bright Data bills bandwidth, Tavily and Exa have their own
+   * quotas, and `plain` is free, so none of them can answer "will this run
+   * finish?" in a single number, and claiming otherwise would be worse than
+   * saying nothing.
+   */
+  cost?: {
+    /** Floor credits for one arm at this config. */
+    perArm: (config: Pick<ArmConfig, "num_sources" | "extraction">) => number;
+    /** Live remaining balance, or null if unreadable. Must not consume quota. */
+    balance: () => Promise<number | null>;
+    /** Multiple of `perArm` an unlucky arm can reach, for the pessimistic end. */
+    hardTargetMultiplier: number;
+    unit: string;
+  };
 }
 
 export const ADAPTERS: Record<string, AdapterSpec> = {
@@ -41,6 +64,12 @@ export const ADAPTERS: Record<string, AdapterSpec> = {
     blurb: "Search + scrape in one call; returns markdown per result.",
     fetch: fetchFirecrawl,
     health: firecrawlHealth,
+    cost: {
+      perArm: creditsPerArm,
+      balance: firecrawlBalance,
+      hardTargetMultiplier: HARD_TARGET_MULTIPLIER,
+      unit: "credits",
+    },
   },
   tavily: {
     id: "tavily",

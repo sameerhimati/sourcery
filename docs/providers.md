@@ -152,6 +152,25 @@ optimistic end is the only thing a floor-cost estimate can honestly promise:
 sourcery providers --check   # → "932 credits of 5000/mo ≈ 15-46 arms at 20+/arm"
 ```
 
+Better, price the specific run you're about to start. `batch` and `credibility`
+both cost themselves up front against the live balance:
+
+```bash
+sourcery batch --per-type 1 --providers firecrawl,tavily,exa --dry-run
+#   firecrawl       6 arms  120-360 credits  932 left
+#   tavily          6 arms  unmetered (own quota / free)
+#   exa             6 arms  unmetered (own quota / free)
+#                total: 120-360 credits
+```
+
+`--max-credits <n>` refuses to start when the run *could* exceed `n`. It checks
+the **pessimistic** end deliberately: a run that only fits if every page scrapes
+cleanly is a run that strands itself on the first hard target, which is exactly
+how the credit overrun above happened. `--dry-run` costs it and exits; `--yes`
+skips the confirmation. Only Firecrawl reports a number — Bright Data bills
+bandwidth, Tavily and Exa meter their own quotas, and `plain` is free, so they
+show as *unmetered* rather than being guessed at.
+
 ---
 
 ## Tavily

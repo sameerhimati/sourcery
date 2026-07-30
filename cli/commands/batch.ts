@@ -2,10 +2,10 @@ import type { Command } from "commander";
 import { runBatch, selectQueries } from "@core/batch";
 import { MODEL } from "@core/controls";
 import { requiredEnvKeys } from "@core/llm";
-import { setCacheEnabled } from "@core/fetch-cache";
+import { readCached, setCacheEnabled } from "@core/fetch-cache";
 import { DEFAULT_PROVIDERS, getAdapter } from "@core/adapters";
 import { budgetBlock, estimate, renderEstimate } from "@core/preflight";
-import { DEFAULT_CONFIG } from "@core/types";
+import { DEFAULT_CONFIG, type Provider } from "@core/types";
 import { confirm } from "../prompt";
 import { loadEnv, requireKeys } from "../env";
 import { loadConfig } from "../config";
@@ -64,10 +64,30 @@ export function registerBatch(program: Command): void {
           `— slow + credit-heavy…\n`,
       );
 
-      // Cost BEFORE spending, not after. One arm per query per provider here
-      // (batch is single-seed), so armsPerProvider is just the query count.
-      const est = await estimate(running, queries.length, DEFAULT_CONFIG);
+      // Cost BEFORE spending, not after — and count only the arms that will
+      // actually hit the network. A cached fetch is free, so quoting the full
+      // arm count would refuse runs that cost nothing, which is how a --max-credits
+      // ceiling turns from a safety net into an obstacle. (Learned the hard way:
+      // a killed run left 21 of 24 fetches cached, and the estimate still asked
+      // for the full 120-360.)
+      const armsPerProvider = Object.fromEntries(
+        running.map((p) => [
+          p,
+          queries.filter(
+            (q) => readCached(p as Provider, q.query, DEFAULT_CONFIG, 0) === null,
+          ).length,
+        ]),
+      );
+      const cached = queries.length * running.length -
+        Object.values(armsPerProvider).reduce((s, n) => s + n, 0);
+      const est = await estimate(running, armsPerProvider, DEFAULT_CONFIG);
       process.stdout.write("\n" + renderEstimate(est) + "\n");
+      if (cached) {
+        process.stdout.write(
+          `  ${cached} of ${queries.length * running.length} arms already cached ` +
+            `(<24h old) — those cost nothing. --no-cache to refetch.\n`,
+        );
+      }
 
       const block = budgetBlock(est, opts.maxCredits ? Number(opts.maxCredits) : undefined);
       if (block) {

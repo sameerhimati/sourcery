@@ -3,6 +3,7 @@ import type { BatchOutput } from "@core/batch";
 import type { CredibilitySummary } from "@core/credibility";
 import { ADAPTERS } from "@core/adapters";
 import { providerMeta } from "@core/viz";
+import { SEED_NOISE } from "@core/controls";
 
 // Terminal scorecard — a plain-text view over a Run. Kept color-free and pure
 // (Run in, string out) so it snapshots deterministically in tests; the HTML
@@ -89,15 +90,24 @@ export function renderBatch(out: BatchOutput): string {
 
   const rows = out.heatmap.map((h) => {
     const cells = providers.map((p) => fmt(h.scores[p] ?? 0));
-    // Which provider retrieved better for this type. Blank on a tie — including
-    // a tie at the top between three or more, which a single "leads" name
-    // would otherwise misreport as a clean win.
-    const best = Math.max(...providers.map((p) => h.scores[p] ?? 0));
+    // Which provider retrieved better for this type — but only when the gap is
+    // big enough to mean anything. Blank on a tie, including a tie at the top
+    // among three or more, which a single "leads" name would misreport as a
+    // clean win.
+    const scores = providers.map((p) => h.scores[p] ?? 0);
+    const best = Math.max(...scores);
+    const runnerUp = Math.max(...scores.filter((s) => s !== best), -Infinity);
     const winners = providers.filter((p) => (h.scores[p] ?? 0) === best);
+    const gap = Number.isFinite(runnerUp) ? best - runnerUp : Infinity;
     return {
       label: h.label,
       cells,
-      lead: winners.length === 1 ? providerMeta(winners[0]).label : "",
+      // A gap under the re-run noise floor is not a lead, it's a coin flip. This
+      // column read as a verdict while the "1 run(s)/cell" caption did all the
+      // hedging — the exact mistake the 480-arm run exists to catch, committed
+      // by the tool that reported it.
+      lead: winners.length === 1 && gap >= SEED_NOISE ? providerMeta(winners[0]).label : "",
+      tooClose: winners.length === 1 && gap < SEED_NOISE,
     };
   });
 
@@ -117,8 +127,17 @@ export function renderBatch(out: BatchOutput): string {
       "  " +
       pad(r.label, wLabel) +
       r.cells.map((c, i) => "  " + pad(c, wCols[i])).join("") +
-      (r.lead ? `  ${r.lead}` : ""),
+      (r.lead ? `  ${r.lead}` : r.tooClose ? "  too close to call" : ""),
   );
+
+  // Say what the reader is looking at. A single run per cell cannot separate a
+  // provider difference from re-run noise, and the table should admit that
+  // rather than let a confident-looking grid imply otherwise.
+  const caveat =
+    out.runs_per_cell <= 1
+      ? `\n1 run per cell: re-running the same query moves this score by ~${SEED_NOISE.toFixed(1)}\n` +
+        `on its own, so treat single-run gaps as a hint about where to look, not a result.`
+      : "";
 
   return [
     `Batch — ${out.rows.length} arms, ${out.runs_per_cell} run(s)/cell`,
@@ -127,6 +146,7 @@ export function renderBatch(out: BatchOutput): string {
     "",
     header,
     ...body,
+    caveat,
   ].join("\n");
 }
 

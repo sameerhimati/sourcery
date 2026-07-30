@@ -33,6 +33,20 @@ export const EXTRACTION_OPTIONS: { value: Extraction; label: string }[] = [
 
 export const NUM_SOURCES = { min: 3, max: 12, default: 8 };
 
+/**
+ * How much `retrieval_score` moves on its own when you re-run the same query
+ * against the same provider — i.e. the noise floor of a single measurement.
+ *
+ * MEASURED, not chosen: `seed_std_mean` from the 480-arm credibility run
+ * (48 queries × 2 providers × 5 fresh fetches). See docs/s2-summary.json.
+ *
+ * Exported because a gap smaller than this is not a result, and anything that
+ * reports a winner needs to know where that line sits. The published headline —
+ * a 0.22 quality gap that looked real at n=12 — was five times smaller than
+ * this number, which is the whole reason it turned out to be nothing.
+ */
+export const SEED_NOISE = 1.04;
+
 export const ANSWER_TEMP = 0.2;
 export const ANSWER_SYSTEM = `You are a web-search agent. Answer the user's query using ONLY the numbered sources provided.
 Cite sources by their domain in parentheses, e.g. (uscis.gov).

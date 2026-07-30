@@ -100,8 +100,11 @@ describe("renderBatch", () => {
       avg retrieval score (0–10) by query type:
 
         TYPE                BRIGHT DATA  FIRECRAWL  LEADS
-        breaking news       3.2          4.1        Firecrawl
-        how-to / explainer  6.5          6.5      "
+        breaking news       3.2          4.1        too close to call
+        how-to / explainer  6.5          6.5      
+
+      1 run per cell: re-running the same query moves this score by ~1.0
+      on its own, so treat single-run gaps as a hint about where to look, not a result."
     `);
   });
 
@@ -135,8 +138,51 @@ describe("renderBatch", () => {
 
         TYPE                FIRECRAWL  TAVILY  EXA  LEADS
         breaking news       2.5        3.0     7.0  Exa
-        how-to / explainer  5.0        5.0     5.0"
+        how-to / explainer  5.0        5.0     5.0
+      "
     `);
+  });
+});
+
+describe("renderBatch: the noise floor", () => {
+  // SEED_NOISE (1.04) is measured: re-running the same query against the same
+  // provider moves retrieval_score by that much on its own. So a smaller gap is
+  // not a lead. The old table named a winner on a 0.9 gap while the
+  // "1 run(s)/cell" caption did all the hedging — the exact error the 480-arm
+  // run exists to catch, committed by the tool that reported it.
+  const out = (a: number, b: number, runs = 1): BatchOutput => ({
+    generated_at: "2026-07-29T00:00:00.000Z",
+    runs_per_cell: runs,
+    providers: ["firecrawl", "tavily"],
+    rows: [],
+    heatmap: [
+      { type: "breaking_news", label: "breaking news", scores: { firecrawl: a, tavily: b }, runs },
+    ],
+  });
+
+  it("names no leader when the gap is under the noise floor", () => {
+    const t = renderBatch(out(4.1, 3.2)); // gap 0.9
+    expect(t).toContain("too close to call");
+    expect(t).not.toContain("Firecrawl\n");
+  });
+
+  it("names the leader once the gap clears the noise floor", () => {
+    expect(renderBatch(out(5.0, 3.2))).toMatch(/3\.2 +Firecrawl/); // gap 1.8
+  });
+
+  it("treats a gap exactly at the floor as real", () => {
+    expect(renderBatch(out(4.24, 3.2))).toMatch(/Firecrawl/); // gap 1.04
+  });
+
+  it("says nothing on an exact tie — not 'too close', which implies a near-winner", () => {
+    const t = renderBatch(out(5.0, 5.0));
+    expect(t).not.toContain("too close");
+    expect(t).not.toContain("Firecrawl  ");
+  });
+
+  it("warns about single-run cells, and stops once there are repeats", () => {
+    expect(renderBatch(out(5.0, 3.2, 1))).toContain("1 run per cell");
+    expect(renderBatch(out(5.0, 3.2, 5))).not.toContain("1 run per cell");
   });
 });
 

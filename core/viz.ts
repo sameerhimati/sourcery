@@ -41,22 +41,31 @@ export function median(nums: number[]): number | null {
   return s.length % 2 ? s[m] : Math.round((s[m - 1] + s[m]) / 2);
 }
 
+// Midpoint of every score scale. 5/10 is "middling" and should look middling —
+// amber. This used to be 7 for the heatmap, which made everything below it red:
+// on real data (scores cluster between 1 and 7) that rendered the entire grid as
+// one alarming block, so a 5 and a 1 were indistinguishable and the eye had
+// nothing to compare. A scale that flags everything flags nothing.
+const MID_SCORE = 5;
+
 /** Score 0–10 → red→green oklch text color. */
 export function scoreText(s: number): string {
-  const t = Math.max(0, Math.min(1, (s - 5) / 5));
+  const t = Math.max(0, Math.min(1, (s - MID_SCORE) / MID_SCORE));
   const hue = 28 + t * (150 - 28);
   return `oklch(0.5 0.15 ${hue})`;
 }
 
-/** Heatmap cell background. */
+/** Heatmap cell background: red (0) → amber (5) → green (10). */
 export function heatColor(s: number): string {
-  const mid = 7;
-  if (s >= mid) {
-    const t = (s - mid) / (10 - mid);
-    return `oklch(${0.94 - t * 0.07} ${0.05 + t * 0.09} 150)`;
-  }
-  const t = (mid - s) / mid;
-  return `oklch(${0.94 - t * 0.03} ${0.05 + t * 0.1} 30)`;
+  const clamped = Math.max(0, Math.min(10, s));
+  // Hue ramps red(30) → amber(85) → green(150). Chroma dips at the midpoint so
+  // amber reads as neutral rather than as a third alarming colour.
+  const t = clamped / 10;
+  const hue = clamped <= MID_SCORE
+    ? 30 + (clamped / MID_SCORE) * (85 - 30)
+    : 85 + ((clamped - MID_SCORE) / (10 - MID_SCORE)) * (150 - 85);
+  const distanceFromMid = Math.abs(t - 0.5) * 2; // 0 at amber, 1 at either end
+  return `oklch(${0.95 - distanceFromMid * 0.05} ${0.045 + distanceFromMid * 0.085} ${hue})`;
 }
 
 export function heatText(): string {
@@ -64,7 +73,7 @@ export function heatText(): string {
 }
 
 export function heatBadge(s: number): string {
-  return s >= 7 ? "oklch(0.5 0.14 150)" : "oklch(0.55 0.18 30)";
+  return s >= MID_SCORE ? "oklch(0.5 0.14 150)" : "oklch(0.55 0.18 30)";
 }
 
 // Provider identity (colors + labels), ported from the mockup.

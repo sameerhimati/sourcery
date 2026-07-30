@@ -7,7 +7,7 @@ import { requiredEnvKeys } from "@core/llm";
 import { setCacheEnabled } from "@core/fetch-cache";
 import { budgetBlock, estimate, renderEstimate } from "@core/preflight";
 import { DEFAULT_CONFIG, type Provider } from "@core/types";
-import { confirm } from "../confirm";
+import { confirm } from "../prompt";
 import { loadEnv, requireKeys } from "../env";
 import { loadConfig } from "../config";
 import {

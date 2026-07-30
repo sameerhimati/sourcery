@@ -6,7 +6,7 @@ import { setCacheEnabled } from "@core/fetch-cache";
 import { DEFAULT_PROVIDERS, getAdapter } from "@core/adapters";
 import { budgetBlock, estimate, renderEstimate } from "@core/preflight";
 import { DEFAULT_CONFIG } from "@core/types";
-import { confirm } from "../confirm";
+import { confirm } from "../prompt";
 import { loadEnv, requireKeys } from "../env";
 import { loadConfig } from "../config";
 import { appendRecords, toBatchRecords, RUNS_PATH } from "../persist";

@@ -22,27 +22,28 @@ balance is indistinguishable from a healthy one until arms start failing.
 |---|---|---|---|---|
 | `bright_data` | **measured** — 240 arms | `BRIGHTDATA_API_TOKEN`, `BRIGHTDATA_SERP_ZONE`, `BRIGHTDATA_UNLOCKER_ZONE` | Google SERP via proxy | separate Web Unlocker call per URL |
 | `firecrawl` | **measured** — 240 arms | `FIRECRAWL_API_KEY` | its own search endpoint | same call, via `scrapeOptions` |
-| `tavily` | *unverified* | `TAVILY_API_KEY` | its own index, RAG-tuned | same call, via `include_raw_content` |
-| `exa` | *unverified* | `EXA_API_KEY` | its own neural index | same call, via `contents.text` |
+| `tavily` | **measured** — 18 arms | `TAVILY_API_KEY` | its own index, RAG-tuned | same call, via `include_raw_content` |
+| `exa` | **measured** — 18 arms | `EXA_API_KEY` | its own neural index | same call, via `contents.text` |
 | `plain` | *baseline only* | *none* | keyless SERP (Mojeek) | bare `fetch()` + regex de-tagging |
 
 **What the statuses mean, because the distinction is the point of this tool:**
 
-- **measured** — this adapter has been run against the live API across the full
-  480-arm credibility set. The numbers in the README describe these two and only
-  these two.
-- **unverified** — written against the provider's current published request shape,
-  never executed against the live API: there were no keys on hand, and getting
-  them was not worth blocking a release over. The code is a good-faith reading of
-  the docs and nothing more. **Treat your first run as the smoke test**, and
-  please open an issue either way — a confirmation is as useful as a bug report.
+- **measured** — this adapter has been run against the live API, and the arm count
+  says how far. The distinction inside that word matters:
+  - **240 arms** (`bright_data`, `firecrawl`) — the full 48-query credibility set,
+    5 repeats, two-judge panel. This is what supports the confidence intervals in
+    the README.
+  - **18 arms** (`tavily`, `exa`) — 6 queries, one per category, 3 repeats, single
+    judge. Enough to confirm the adapter works against the live API and returns
+    plausible sources. **Not enough to rank it against anything.** Treat any
+    ordering that includes these two as an anecdote.
 - **baseline only** — works, but not something to benchmark against. See
   [`plain`](#plain--the-free-baseline) below for why.
 
-An unverified adapter is deliberately shipped rather than hidden: the interface
-is the product, and five adapters where two are honestly labelled is more useful
-than two adapters and a promise. It does mean **`--values tavily,exa` is a
-first-contact experiment, not a supported comparison.**
+The arm count is published rather than collapsed into a checkmark because the gap
+between 240 and 18 is exactly the gap this tool exists to make visible. **`--values
+tavily,exa` is a working comparison, but an underpowered one** — if you need a real
+answer for those two, run the full set yourself and you'll have it.
 
 ---
 

@@ -3,8 +3,6 @@
 // sources with unknown publish dates, which the mockup's hardcoded data never
 // did. `null` age = "unknown" → neutral dot, sorted last, excluded from medians.
 
-const NEUTRAL_DOT = "oklch(0.72 0.02 90)"; // warm grey for unknown-date sources
-
 /** Whole-day age of an ISO date vs `now` (ms). null in → null out. */
 export function ageDays(published: string | null | undefined, now: number): number | null {
   if (!published) return null;
@@ -26,13 +24,6 @@ export function medLabel(days: number | null): string {
   return Math.round(days / 30) + "mo";
 }
 
-export function freshDot(days: number | null): string {
-  if (days === null) return NEUTRAL_DOT;
-  if (days <= 30) return "oklch(0.6 0.16 150)";
-  if (days <= 180) return "oklch(0.65 0.15 75)";
-  return "oklch(0.58 0.2 28)";
-}
-
 /** Median of known ages only; null if none are dated. */
 export function median(nums: number[]): number | null {
   if (!nums.length) return null;
@@ -41,57 +32,98 @@ export function median(nums: number[]): number | null {
   return s.length % 2 ? s[m] : Math.round((s[m - 1] + s[m]) / 2);
 }
 
-// Midpoint of every score scale. 5/10 is "middling" and should look middling —
-// amber. This used to be 7 for the heatmap, which made everything below it red:
-// on real data (scores cluster between 1 and 7) that rendered the entire grid as
-// one alarming block, so a 5 and a 1 were indistinguishable and the eye had
-// nothing to compare. A scale that flags everything flags nothing.
-const MID_SCORE = 5;
+// ─── Score → magnitude ramp ───
+//
+// A 0–10 quality score encodes MAGNITUDE, not polarity: there is no meaningful
+// neutral at 5, only "less good" and "more good". So this is a *sequential*
+// ramp — one hue, light→dark — and not the red→amber→green it used to be.
+//
+// Red/amber/green was wrong twice over. It put a third hue at the midpoint of a
+// scale with no midpoint to mark, and it spent the loudest colour in the palette
+// on the most common value: real scores cluster between 1 and 7, so a warning
+// ramp painted almost every cell as an alarm. A scale that flags everything
+// flags nothing. It also failed red/green colour-blind readers outright, which
+// a single-hue ramp cannot.
+//
+// Steps are the validated blue scale, monotonic in lightness. `SCORE_STEPS` is
+// indexed by the rounded score, so index 0 sits nearest the page and 10 is the
+// deepest. Cells emit `heat-N` classes rather than inline colours, which lets
+// the dark theme restate the whole ramp against a dark surface in CSS instead of
+// flipping the light one (an auto-flip is not a dark palette).
+export const SCORE_STEPS_LIGHT = [
+  "#f2f7fe", "#e2edfd", "#cde2fb", "#b7d3f6", "#9ec5f4", "#86b6ef",
+  "#6da7ec", "#5598e7", "#3987e5", "#256abf", "#184f95",
+] as const;
 
-/** Score 0–10 → red→green oklch text color. */
-export function scoreText(s: number): string {
-  const t = Math.max(0, Math.min(1, (s - MID_SCORE) / MID_SCORE));
-  const hue = 28 + t * (150 - 28);
-  return `oklch(0.5 0.15 ${hue})`;
+export const SCORE_STEPS_DARK = [
+  "#11213a", "#122a4d", "#12325f", "#104281", "#154e96", "#1c5cab",
+  "#256abf", "#2a78d6", "#3987e5", "#5598e7", "#86b6ef",
+] as const;
+
+/** Index into the score ramp. Clamped, rounded, safe on NaN/undefined. */
+export function scoreStep(s: number): number {
+  if (!Number.isFinite(s)) return 0;
+  return Math.max(0, Math.min(10, Math.round(s)));
 }
 
-/** Heatmap cell background: red (0) → amber (5) → green (10). */
-export function heatColor(s: number): string {
-  const clamped = Math.max(0, Math.min(10, s));
-  // Hue ramps red(30) → amber(85) → green(150). Chroma dips at the midpoint so
-  // amber reads as neutral rather than as a third alarming colour.
-  const t = clamped / 10;
-  const hue = clamped <= MID_SCORE
-    ? 30 + (clamped / MID_SCORE) * (85 - 30)
-    : 85 + ((clamped - MID_SCORE) / (10 - MID_SCORE)) * (150 - 85);
-  const distanceFromMid = Math.abs(t - 0.5) * 2; // 0 at amber, 1 at either end
-  return `oklch(${0.95 - distanceFromMid * 0.05} ${0.045 + distanceFromMid * 0.085} ${hue})`;
+/** Ink that stays legible on `SCORE_STEPS_LIGHT[i]`. Flips once the ramp goes dark. */
+export function scoreInkLight(i: number): string {
+  return i >= 8 ? "#ffffff" : "#0b0b0b";
 }
 
-export function heatText(): string {
-  return "#2a2620";
+/** Ink for `SCORE_STEPS_DARK[i]`. Flips the other way: the ramp lightens with score. */
+export function scoreInkDark(i: number): string {
+  return i >= 9 ? "#0b0b0b" : "#ffffff";
 }
 
-export function heatBadge(s: number): string {
-  return s >= MID_SCORE ? "oklch(0.5 0.14 150)" : "oklch(0.55 0.18 30)";
+// ─── Status tokens ───
+//
+// Reserved for state (a failed arm, a stale source) and never reused as a
+// series colour. Shipped with a label or icon in every use, never colour alone.
+export const STATUS = {
+  good: { light: "#1a7f4b", dark: "#3fae76" },
+  warning: { light: "#a76a00", dark: "#d99a2b" },
+  critical: { light: "#b3261e", dark: "#e88b85" },
+  neutral: { light: "#6b6a66", dark: "#9b9a94" },
+} as const;
+
+export function freshStatus(days: number | null): keyof typeof STATUS {
+  if (days === null) return "neutral";
+  if (days <= 30) return "good";
+  if (days <= 180) return "warning";
+  return "critical";
 }
 
-// Provider identity (colors + labels), ported from the mockup.
+// ─── Provider identity ───
+//
+// Categorical: colour means *which provider*, never how well it did. Slots are
+// assigned in a fixed order and never recycled by rank, so a reader who learns
+// "Firecrawl is orange" keeps that when a filter changes the set on screen.
+//
+// The four hues clear the CVD and normal-vision floors in both light and dark,
+// validated in the order they render. Blue is deliberately absent: it is the
+// magnitude ramp above, and a hue that means "which provider" in one mark and
+// "how good" in the next is the ambiguity the whole scheme exists to prevent.
+// Two of the light steps sit under 3:1 against the page, so every use of a
+// provider colour must carry its visible label — which the report does, making
+// colour a redundant channel rather than the only one.
 //
 // Deliberately duplicates the labels in the adapter registry rather than
 // importing it: this module is safe to import client-side, and core/adapters
 // pulls every provider's network code in with it. Keep the labels in step with
 // `ADAPTERS` in core/adapters/index.ts — an unknown id degrades to its raw id
 // and a neutral grey, so a missed entry is cosmetic, not broken.
-export const PROVIDERS: Record<string, { label: string; color: string }> = {
-  bright_data: { label: "Bright Data", color: "oklch(0.5 0.14 250)" },
-  firecrawl: { label: "Firecrawl", color: "oklch(0.55 0.16 50)" },
-  tavily: { label: "Tavily", color: "oklch(0.52 0.14 160)" },
-  exa: { label: "Exa", color: "oklch(0.5 0.15 300)" },
+export const PROVIDERS: Record<string, { label: string; color: string; dark: string }> = {
+  bright_data: { label: "Bright Data", color: "#4a3aa7", dark: "#9085e9" },
+  firecrawl: { label: "Firecrawl", color: "#eb6834", dark: "#d95926" },
+  tavily: { label: "Tavily", color: "#1baf7a", dark: "#199e70" },
+  exa: { label: "Exa", color: "#eda100", dark: "#c98500" },
   // Grey on purpose — the baseline shouldn't read as a peer of the paid arms.
-  plain: { label: "Plain fetch", color: "oklch(0.55 0.03 90)" },
+  plain: { label: "Plain fetch", color: "#6b6a66", dark: "#9b9a94" },
 };
 
-export function providerMeta(provider: string): { label: string; color: string } {
-  return PROVIDERS[provider] ?? { label: provider, color: "oklch(0.5 0.02 90)" };
+const UNKNOWN_PROVIDER = { label: "", color: "#6b6a66", dark: "#9b9a94" };
+
+export function providerMeta(provider: string): { label: string; color: string; dark: string } {
+  return PROVIDERS[provider] ?? { ...UNKNOWN_PROVIDER, label: provider };
 }

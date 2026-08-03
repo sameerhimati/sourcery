@@ -34,6 +34,26 @@ export const PROVIDERS: Record<string, ProviderSpec> = {
     baseURL: "https://api.fireworks.ai/inference/v1",
     envKey: "FIREWORKS_API_KEY",
   },
+  // The free, fast way in: no credit card, and the quickest tokens/sec of any
+  // free tier, which matters because every run is one answer call plus two
+  // judge calls. That is most of the wall-clock that isn't retrieval.
+  groq: {
+    baseURL: "https://api.groq.com/openai/v1",
+    envKey: "GROQ_API_KEY",
+  },
+  // Reached through Anthropic's OpenAI-compatible endpoint rather than its own
+  // SDK, so it costs one row here instead of a second client. Anthropic frames
+  // that layer as being for comparison rather than production, and it does not
+  // support prompt caching — neither limitation binds here, since this makes
+  // plain chat completions and caches nothing.
+  //
+  // Good as an ANSWER model, poor as the judge: the anti-cheat wants a judge
+  // whose cutoff predates the queries, and a current Claude fails a correctly
+  // sourced post-cutoff answer more often, not less.
+  anthropic: {
+    baseURL: "https://api.anthropic.com/v1/",
+    envKey: "ANTHROPIC_API_KEY",
+  },
 };
 
 const DEFAULT_PROVIDER = "openai";

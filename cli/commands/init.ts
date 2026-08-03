@@ -19,8 +19,28 @@ import { ask, askSecret, confirm, interactive, multiSelect, select } from "../pr
 
 const ENV_FILE = ".env.local";
 
-/** Suggested answer/judge pairs per LLM backend. */
+/**
+ * Suggested answer/judge pairs per LLM backend, in the order they're offered.
+ *
+ * Groq leads because it is the shortest path from nothing to a scored result:
+ * free tier, no credit card, and the fastest tokens/sec going, which is felt
+ * directly here since every run is one answer call plus two judge calls.
+ *
+ * Llama 3.3 70B does both jobs rather than dropping to the 8B for speed. The
+ * judge is not a place to economise, a weak one poisons every number downstream,
+ * and its cutoff sits well before any query asking what is newest, which is
+ * exactly what the anti-cheat wants. Groq also serves `openai/gpt-oss-*`, which
+ * is deliberately not used: measured here, its answer scores ran ANTI-correlated
+ * with a second judge at r = -0.50.
+ */
 const LLM_CHOICES = [
+  {
+    label: "Groq",
+    value: "groq",
+    hint: "free, no card, fastest — start here",
+    model: "groq/llama-3.3-70b-versatile",
+    judge: "groq/llama-3.3-70b-versatile",
+  },
   {
     label: "Fireworks",
     value: "fireworks",
@@ -35,10 +55,33 @@ const LLM_CHOICES = [
     model: "gpt-4o-mini",
     judge: "gpt-4o-mini",
   },
+  {
+    label: "Anthropic",
+    value: "anthropic",
+    hint: "Claude answers and judges (see the note on judges in the README)",
+    // Both roles stay on Anthropic so this choice needs ONE key, like every
+    // other. Claude is a current model, and the anti-cheat would rather the
+    // judge's cutoff predated the queries, so this trades some answer-score
+    // accuracy for a one-key setup. `--judge` overrides it, and a staler judge
+    // is the better eval if you hold a second key.
+    model: "anthropic/claude-haiku-4-5",
+    judge: "anthropic/claude-haiku-4-5",
+  },
 ] as const;
 
 const ENV_HEADER = `# sourcery — written by \`sourcery init\`. Never commit this file.
 `;
+
+/** Where to go and get the key you just failed to paste. */
+function signupHint(backend: string): string {
+  const where: Record<string, string> = {
+    groq: "Free key, no card: https://console.groq.com/keys",
+    fireworks: "Get one at https://app.fireworks.ai/settings/users/api-keys",
+    openai: "Get one at https://platform.openai.com/api-keys",
+    anthropic: "Get one at https://console.anthropic.com/settings/keys",
+  };
+  return where[backend] ?? "";
+}
 
 /**
  * Merge keys into an existing .env.local body without disturbing anything
@@ -147,11 +190,20 @@ async function wizard(): Promise<void> {
   if (process.env[envKey]?.trim()) {
     process.stdout.write(`  ${envKey} already set — using it.\n`);
   } else {
-    const key = await askSecret(`  Paste ${envKey}: `);
+    // Asked twice before giving up. A stray Enter used to end the whole wizard
+    // with "re-run when you have one", which is a harsh price for a keypress,
+    // and the second prompt is also where someone who doesn't have a key yet
+    // gets told where to go and get one.
+    let key = await askSecret(`  Paste ${envKey}: `);
+    if (!key) {
+      process.stdout.write(`\n  Nothing entered. ${signupHint(backend)}\n`);
+      key = await askSecret(`  Paste ${envKey} (or Enter to quit): `);
+    }
     if (!key) {
       process.stdout.write(
-        `\n  No key given. ${envKey} is required — every provider needs an answer and a\n` +
-          `  judge. Re-run \`sourcery init\` when you have one.\n`,
+        `\n  No key, so there's nothing to run yet. ${envKey} is required: every\n` +
+          `  query needs a model to answer it and a model to grade it.\n` +
+          `  Re-run \`sourcery init\` once you have one.\n`,
       );
       return;
     }

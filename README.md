@@ -30,15 +30,27 @@ npm run sourcery -- batch                  # the built-in 48-query set, per-quer
 
 One LLM key for the answer and judge steps, and at least one retrieval key for the thing actually being measured.
 
-| what | where to get it | notes |
-|---|---|---|
-| **LLM** | [Fireworks](https://app.fireworks.ai/settings/users/api-keys) or [OpenAI](https://platform.openai.com/api-keys) | pick one. Fireworks is what `init` scaffolds by default |
-| **Tavily** | [app.tavily.com](https://app.tavily.com/home) | free tier, no card. The fastest way to a first result |
-| **Exa** | [dashboard.exa.ai](https://dashboard.exa.ai/api-keys) | free credits to start |
-| **Firecrawl** | [firecrawl.dev](https://www.firecrawl.dev/app/api-keys) | metered in credits, and `--dry-run` will price a run first |
-| **Bright Data** | [brightdata.com](https://brightdata.com/cp/setting/users) | needs three values: an API token plus two zone names, see [`docs/providers.md`](docs/providers.md) |
+**The model key**, for answering and grading. Pick one:
 
-**Fireworks plus Tavily is enough**, both free, and gets you a scored result in well under a minute. Two retrieval keys is where it gets interesting, because that's the first point at which you're comparing anything.
+| | where | notes |
+|---|---|---|
+| **Groq** | [console.groq.com/keys](https://console.groq.com/keys) | **free, no card, and the fastest.** What `init` offers first |
+| Fireworks | [app.fireworks.ai](https://app.fireworks.ai/settings/users/api-keys) | open models, including stale ones that make better judges |
+| OpenAI | [platform.openai.com](https://platform.openai.com/api-keys) | `gpt-4o-mini` answers and grades |
+| Anthropic | [console.anthropic.com](https://console.anthropic.com/settings/keys) | Claude answers well, but see the note on judges below |
+
+**The search key**, which is the thing actually being measured. Pick at least one:
+
+| | where | notes |
+|---|---|---|
+| **Tavily** | [app.tavily.com](https://app.tavily.com/home) | **free tier, no card.** Quickest to a first result |
+| Exa | [dashboard.exa.ai](https://dashboard.exa.ai/api-keys) | free credits to start |
+| Firecrawl | [firecrawl.dev](https://www.firecrawl.dev/app/api-keys) | metered in credits, and `--dry-run` prices a run before it spends |
+| Bright Data | [brightdata.com](https://brightdata.com/cp/setting/users) | three values: an API token plus two zone names, see [`docs/providers.md`](docs/providers.md) |
+
+**Groq plus Tavily costs nothing, needs no card, and gets you a scored result in about a minute.** Two search keys is where it gets interesting, because that's the first point at which you're comparing anything.
+
+A note on judges, since it explains a choice that looks odd. The grader should ideally be a model whose training ended *before* the questions were asked, so it can't score an answer highly just by already knowing it. That's why `init` pairs newer answer models with older graders, and why a current Claude judging its own output will sometimes call a correctly-sourced answer a hallucination. There's a worked example of exactly that in [the findings](docs/findings.md).
 
 If you'd rather not run the wizard, copy `.env.example` to `.env.local` and fill in what you have.
 

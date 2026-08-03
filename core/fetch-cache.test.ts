@@ -122,10 +122,25 @@ describe("robustness", () => {
     expect(readCached("firecrawl", "q", DEFAULT_CONFIG, 0, Date.now(), dir)).toBeNull();
   });
 
-  it("survives an unwritable directory without losing the run", () => {
+  it("survives an unusable cache directory without losing the run", () => {
+    // A regular file standing where a directory should be. mkdir beneath it
+    // fails with ENOTDIR, immediately, on every platform.
+    //
+    // This used to pass "/proc/x/y", which looked portable and was not:
+    // mkdirSync(recursive) against procfs NEVER RETURNS on Linux, while on
+    // macOS /proc doesn't exist so it failed fast and the suite looked green.
+    // The process hung after all 143 tests had passed, so CI showed every test
+    // succeeding and then sat there until it was killed.
+    const notADir = join(dir, "occupied");
+    writeFileSync(notADir, "");
+    const unusable = join(notADir, "sub");
     expect(() =>
-      writeCached("firecrawl", "q", DEFAULT_CONFIG, result, 0, new Date().toISOString(), "/proc/x/y"),
+      writeCached("firecrawl", "q", DEFAULT_CONFIG, result, 0, new Date().toISOString(), unusable),
     ).not.toThrow();
+    // Assert it genuinely failed, not that it quietly worked. not.toThrow() on
+    // its own passes just as happily when the write succeeds, which would make
+    // this a test of nothing.
+    expect(readCached("firecrawl", "q", DEFAULT_CONFIG, 0, Date.now(), unusable)).toBeNull();
   });
 
   it("reads a missing cache directory as empty", () => {

@@ -1,0 +1,33 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  # One job that runs the same gate as a local publish, rather than a list of
+  # steps that mirrors it. scripts/verify-pack.sh already runs test, lint,
+  # typecheck and build, then packs the tarball, installs it into a clean
+  # directory and asserts real behaviour there: --help lists every command,
+  # `credibility` stays hidden but invocable, the reference JSON survives being
+  # inlined by tsup (docs/ never ships, so only the import makes it work), and a
+  # keyless run exits 1 with the friendly error instead of a stack trace.
+  # Re-listing those steps here would let CI and the publish gate drift apart.
+  verify:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # package.json claims engines.node >=20 and nothing has ever tested the
+        # floor. 22 is what development actually happens on.
+        node: [20, 22]
+    name: verify (node ${{ matrix.node }})
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+      - run: npm ci
+      - run: ./scripts/verify-pack.sh

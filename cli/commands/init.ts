@@ -11,7 +11,7 @@ import { ask, askSecret, confirm, interactive, multiSelect, select } from "../pr
 // edit two files by hand. Worse, it wrote `.env.example` while every doc says to
 // fill in `.env.local`, so step one had a silent gap you had to infer.
 //
-// Now it asks, probes each key live, and writes a config naming the arms you
+// Now it asks, probes each key live, and writes a config naming the providers you
 // actually hold — so `sourcery run` works immediately instead of after a round
 // trip through the docs. It still degrades to the old non-interactive scaffold
 // when there's no TTY, because `npx sourcery-eval init` inside a script must not
@@ -247,18 +247,67 @@ async function wizard(): Promise<void> {
 }
 
 /** The pre-wizard behaviour, kept for pipes and CI. */
+/**
+ * A blank `.env.local`, built from the registries rather than copied from
+ * `.env.example`. The example file is not in the npm tarball (`files: ["dist"]`),
+ * so a `npx sourcery-eval init` user was being sent to a file that does not
+ * exist on their machine. Generating it also means a newly registered adapter
+ * appears here for free instead of being forgotten.
+ */
+export function envTemplate(): string {
+  const lines = [
+    ENV_HEADER.trimEnd(),
+    "",
+    "# One LLM key, for the answer and judge steps. Set the one matching your models.",
+    ...Object.values(LLM_PROVIDERS).map((p) => `${p.envKey}=`),
+    "",
+    "# Retrieval providers. Any you leave blank are simply skipped.",
+  ];
+  for (const spec of listAdapters()) {
+    if (!spec.requiredEnv.length) continue;
+    lines.push(`# ${spec.label} — ${spec.blurb}`, ...spec.requiredEnv.map((k) => `${k}=`), "");
+  }
+  return lines.join("\n").replace(/\n{3,}/g, "\n\n") + "\n";
+}
+
+// The no-TTY path. It exists so `npx sourcery-eval init` inside a script cannot
+// hang on a question nobody is there to answer, which is a real requirement.
+//
+// It used to meet that requirement by pretending to have succeeded: it wrote a
+// config hardcoding Fireworks and `["firecrawl", "tavily"]` regardless of your
+// keys, then told you to add keys to a .env.local it had not created. Someone
+// holding only an Exa key got a config naming two providers they could not run.
+// Now everything it writes follows the keys actually present, and it says
+// plainly that the guided version needs a terminal.
 function scaffold(): void {
   const out: string[] = ["Scaffolding sourcery (non-interactive):"];
-  out.push(writeConfig(LLM_CHOICES[0].model, LLM_CHOICES[0].judge, ["firecrawl", "tavily"]).message);
-  out.push("", "Keys detected:");
+
+  if (existsSync(ENV_FILE)) {
+    out.push(`  · ${ENV_FILE} already exists, left alone`);
+  } else {
+    writeFileSync(ENV_FILE, envTemplate(), { mode: 0o600 });
+    out.push(`  ✓ wrote ${ENV_FILE} — fill in the keys you have`);
+  }
+
+  // Models follow whichever LLM key is set, providers follow whichever
+  // retrieval keys are set. Same rule the rest of the CLI now uses.
+  const llm =
+    LLM_CHOICES.find((c) => process.env[LLM_PROVIDERS[c.value].envKey]?.trim()) ?? LLM_CHOICES[0];
+  out.push(writeConfig(llm.model, llm.judge, defaultProviders()).message);
+
+  out.push("", "Retrieval providers:");
   for (const spec of listAdapters()) {
     const missing = missingEnv(spec.id);
-    out.push(`  ${missing.length ? "·" : "✓"} ${spec.id}${missing.length ? ` — needs ${missing.join(", ")}` : ""}`);
+    out.push(
+      `  ${missing.length ? "·" : "✓"} ${spec.id}${missing.length ? ` — needs ${missing.join(", ")}` : ""}`,
+    );
   }
+
   out.push(
     "",
-    `Add your keys to ${ENV_FILE}, then: sourcery run "<your query>"`,
-    "Run in a terminal for the guided setup.",
+    `Next:  fill in ${ENV_FILE}, then \`sourcery providers --check\``,
+    "For the guided setup, which checks each key against its account, run",
+    "`sourcery init` in a terminal.",
   );
   process.stdout.write(out.join("\n") + "\n");
 }

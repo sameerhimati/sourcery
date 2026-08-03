@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { mergeEnv } from "./init";
+import { envTemplate, mergeEnv } from "./init";
+import { listAdapters } from "@core/adapters";
+import { PROVIDERS as LLM_PROVIDERS } from "@core/llm";
 
 // mergeEnv writes the file that holds every credential the user owns. The only
 // unforgivable bug here is destroying a key it didn't ask about, so that is what
@@ -56,5 +58,24 @@ describe("mergeEnv", () => {
     });
     expect(kept).toEqual(["FIRECRAWL_API_KEY"]);
     expect(wrote).toEqual(["TAVILY_API_KEY", "EXA_API_KEY"]);
+  });
+});
+
+describe("envTemplate", () => {
+  // Generated rather than copied from .env.example, because `files: ["dist"]`
+  // means the example never reaches an npx user. This asserts the generation
+  // stays complete, so registering an adapter can't silently omit its key.
+  it("lists every key the registered providers and LLM backends need", () => {
+    const t = envTemplate();
+    for (const spec of listAdapters())
+      for (const key of spec.requiredEnv) expect(t).toContain(`${key}=`);
+    for (const p of Object.values(LLM_PROVIDERS)) expect(t).toContain(`${p.envKey}=`);
+  });
+
+  it("leaves every value blank, so nothing reads as already configured", () => {
+    for (const line of envTemplate().split("\n")) {
+      if (!line || line.startsWith("#")) continue;
+      expect(line).toMatch(/^[A-Z0-9_]+=$/);
+    }
   });
 });

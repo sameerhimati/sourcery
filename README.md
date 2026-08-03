@@ -10,28 +10,56 @@ I built it because I couldn't find a straight answer to that question while buil
 
 ## Quickstart
 
-The package is `sourcery-eval` on npm. The command it installs is `sourcery`.
-
 ```bash
-npx sourcery-eval init               # walks you through keys, writes .env.local, ends on a real run
-npx sourcery-eval providers --check  # which providers are registered, which keys you have,
-                                     # and whether those accounts will actually serve a run
-npx sourcery-eval run "<query>"      # one query, every provider side by side
-npx sourcery-eval batch              # the built-in 48-query set, gives you a per-query heatmap
-npx sourcery-eval report             # self-contained HTML from everything you've run
+git clone https://github.com/sameerhimati/sourcery && cd sourcery
+npm install
+npm run sourcery -- init
 ```
 
-From a clone it's `npm install` and then `npm run sourcery -- run "<query>"`.
+`npm install` builds the CLI, so there's no separate build step. `init` asks for your keys, writes `.env.local` and a config, and finishes by running a real query so you know it works before you trust anything.
 
-You need two kinds of key. One LLM key for the answer and judge steps, and at least one retrieval provider key for the thing being measured. `init` sets both up and finishes by running a real query so you know it works. If you'd rather not run the wizard, copy `.env.example` to `.env.local` and fill in what you have.
+Then:
+
+```bash
+npm run sourcery -- run "<any question>"   # one query, every provider you have keys for
+npm run sourcery -- report                 # self-contained HTML from everything you've run
+npm run sourcery -- batch                  # the built-in 48-query set, per-query heatmap
+```
+
+### You need two keys
+
+One LLM key for the answer and judge steps, and at least one retrieval key for the thing actually being measured.
+
+| what | where to get it | notes |
+|---|---|---|
+| **LLM** | [Fireworks](https://app.fireworks.ai/settings/users/api-keys) or [OpenAI](https://platform.openai.com/api-keys) | pick one. Fireworks is what `init` scaffolds by default |
+| **Tavily** | [app.tavily.com](https://app.tavily.com/home) | free tier, no card. The fastest way to a first result |
+| **Exa** | [dashboard.exa.ai](https://dashboard.exa.ai/api-keys) | free credits to start |
+| **Firecrawl** | [firecrawl.dev](https://www.firecrawl.dev/app/api-keys) | metered in credits, and `--dry-run` will price a run first |
+| **Bright Data** | [brightdata.com](https://brightdata.com/cp/setting/users) | needs three values: an API token plus two zone names, see [`docs/providers.md`](docs/providers.md) |
+
+**Fireworks plus Tavily is enough**, both free, and gets you a scored result in well under a minute. Two retrieval keys is where it gets interesting, because that's the first point at which you're comparing anything.
+
+If you'd rather not run the wizard, copy `.env.example` to `.env.local` and fill in what you have.
 
 By default it compares whichever providers you have keys for. Name them explicitly when you want a specific pairing:
 
 ```bash
-sourcery run "<query>" --values firecrawl,tavily
+npm run sourcery -- run "<query>" --values firecrawl,tavily
 ```
 
-Config, env and results are all read and written relative to wherever you run the command, so run it inside your own project.
+Config, env and results are all read and written relative to wherever you run the command.
+
+### Installing it as a tool
+
+Once it's on npm the same commands work without a clone, as `sourcery`:
+
+```bash
+npx sourcery-eval init
+npx sourcery-eval run "<query>"
+```
+
+Clone first if you want to read the code, which for an eval you're about to believe is not a bad instinct.
 
 ### Know what it costs before it spends
 
@@ -44,7 +72,7 @@ sourcery batch --max-credits 400   # refuses to start if the estimate is over yo
 
 Fetches are cached for 24 hours, so re-judging something you already retrieved is free, and the estimate subtracts cached calls before it quotes you. Run `providers --check` before anything long. A key being set doesn't mean the account still has quota, and finding that out 200 calls into a two-hour run is expensive.
 
-There is also a `plain` provider that needs no retrieval key at all, just a keyless SERP and a bare `fetch()`. It's there so you can try the tool, not so you can benchmark with it. Keyless search rate-limits hard, and in my testing a block survived 15 minutes of total silence and still didn't lift.
+There is also a `plain` provider that needs no key at all, just a keyless SERP and a bare `fetch()`. Treat it as a control, not as a way to skip getting a key. Keyless search rate-limits hard: testing this from a clean machine it was captcha'd on the first attempt, and elsewhere a block survived 15 minutes of total silence and still didn't lift. A run with `plain` as its only provider will usually return you nothing at all, which is a finding about keyless search and not a way to evaluate anything.
 
 Every run appends to `.sourcery/runs.jsonl`. That file is the contract. The terminal scorecard and the HTML report are both just views over it, and the report shows you every source each provider fetched, the answer built from it, and the judge's reasoning for both scores.
 

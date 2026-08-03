@@ -193,10 +193,14 @@ describe("sourcery MCP server", () => {
       runner_up: "bright_data",
       source: "sourcery reference run",
     });
-    expect(out.caveat).toBe(
-      "based on our 480-arm bright_data-vs-firecrawl run, not your data — " +
-        "run `sourcery batch` to make this yours.",
-    );
+    // Asserted by what it has to TELL the caller, not as a byte-exact string.
+    // The recommendation is drawn from a two-provider run, so an agent acting on
+    // it needs to know which providers were never in contention — a bare winner
+    // reads as "best of five" when it is "best of two".
+    const shipped: string[] = (await import("../docs/s2-summary.json")).providers;
+    for (const p of shipped) expect(out.caveat).toContain(p);
+    expect(out.caveat).toMatch(/only covers/);
+    expect(out.caveat).toMatch(/sourcery batch/);
   });
 
   it("which_provider classifies with the caller's model when given one", async () => {

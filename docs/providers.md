@@ -20,28 +20,28 @@ balance is indistinguishable from a healthy one until arms start failing.
 
 | id | Status | Keys needed | Discovery | Extraction |
 |---|---|---|---|---|
-| `bright_data` | **measured** — 240 arms | `BRIGHTDATA_API_TOKEN`, `BRIGHTDATA_SERP_ZONE`, `BRIGHTDATA_UNLOCKER_ZONE` | Google SERP via proxy | separate Web Unlocker call per URL |
-| `firecrawl` | **measured** — 240 arms | `FIRECRAWL_API_KEY` | its own search endpoint | same call, via `scrapeOptions` |
-| `tavily` | **measured** — 18 arms | `TAVILY_API_KEY` | its own index, RAG-tuned | same call, via `include_raw_content` |
-| `exa` | **measured** — 18 arms | `EXA_API_KEY` | its own neural index | same call, via `contents.text` |
+| `bright_data` | **well measured** | `BRIGHTDATA_API_TOKEN`, `BRIGHTDATA_SERP_ZONE`, `BRIGHTDATA_UNLOCKER_ZONE` | Google SERP via proxy | separate Web Unlocker call per URL |
+| `firecrawl` | **well measured** | `FIRECRAWL_API_KEY` | its own search endpoint | same call, via `scrapeOptions` |
+| `tavily` | **lightly measured** | `TAVILY_API_KEY` | its own index, RAG-tuned | same call, via `include_raw_content` |
+| `exa` | **lightly measured** | `EXA_API_KEY` | its own neural index | same call, via `contents.text` |
 | `plain` | *baseline only* | *none* | keyless SERP (Mojeek) | bare `fetch()` + regex de-tagging |
 
 **What the statuses mean, because the distinction is the point of this tool:**
 
-- **measured** — this adapter has been run against the live API, and the arm count
-  says how far. The distinction inside that word matters:
-  - **240 arms** (`bright_data`, `firecrawl`) — the full 48-query credibility set,
-    5 repeats, two-judge panel. This is what supports the confidence intervals in
-    the README.
-  - **18 arms** (`tavily`, `exa`) — 6 queries, one per category, 3 repeats, single
-    judge. Enough to confirm the adapter works against the live API and returns
-    plausible sources. **Not enough to rank it against anything.** Treat any
-    ordering that includes these two as an anecdote.
+- **well measured** (`bright_data`, `firecrawl`) — run against the full 48-query
+  set, 5 fresh fetches per query, every result graded by two judge models. That
+  is what the confidence intervals in the README rest on.
+- **lightly measured** (`tavily`, `exa`) — 6 queries, one per category, 3 fetches
+  each, one judge. Enough to confirm the adapter works against the live API and
+  comes back with plausible sources. **Not enough to rank it against anything.**
+  Treat any ordering that includes these two as an anecdote.
 - **baseline only** — works, but not something to benchmark against. See
   [`plain`](#plain--the-free-baseline) below for why.
 
-The arm count is published rather than collapsed into a checkmark because the gap
-between 240 and 18 is exactly the gap this tool exists to make visible. **`--values
+How far each one was actually measured is published rather than collapsed into a
+checkmark, because that gap is exactly what this tool exists to make visible. In
+raw counts it's 240 graded results each for the first pair against 18 each for
+the second. **`--values
 tavily,exa` is a working comparison, but an underpowered one** — if you need a real
 answer for those two, run the full set yourself and you'll have it.
 

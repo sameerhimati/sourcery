@@ -58,11 +58,11 @@ const RELIABILITY_EDGE = 0.05;
  * Best provider per query type.
  *
  * Ranked on retrieval_score first — the primary metric the harness is built
- * around — but only where the gap survives its own confidence interval. Our own
- * 480-arm run found the providers a statistical tie on quality and separated
- * only on reliability, so a picker that ranked on quality alone would spend most
- * of its answers reporting noise as a winner: recommending the provider that
- * scored 0.04 higher and failed a third of its arms.
+ * around — but only where the gap survives its own confidence interval. The
+ * reference run found its providers a statistical tie on quality and separated
+ * them only on reliability, so a picker that ranked on quality alone would spend
+ * most of its answers reporting noise as a winner: recommending the provider
+ * that scored 0.04 higher and failed a third of its arms.
  *
  * When the leader's margin is inside its own CI, the tie is broken on
  * error_rate instead, and `decided_by` says so. Remaining ties fall through to

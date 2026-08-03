@@ -51,7 +51,7 @@ export function mergeEnv(
   entries: Record<string, string>,
 ): { content: string; wrote: string[]; kept: string[] } {
   // Only a key with a non-empty value counts as present. `FOO=` is a placeholder
-  // — the state Sameer's own OPENAI_API_KEY was in — and must be fillable.
+  // — the state a half-filled .env.local leaves keys in — and must be fillable.
   const present = new Set(
     existing
       .split("\n")

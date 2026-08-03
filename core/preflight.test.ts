@@ -49,8 +49,8 @@ describe("estimate", () => {
   });
 
   it("only the metered provider contributes to a mixed run", async () => {
-    // The batch Sameer is about to run: 4 providers, 6 queries, but only the
-    // firecrawl arm costs firecrawl credits.
+    // A realistic mixed batch: 4 providers, 6 queries, but only the firecrawl
+    // arm costs firecrawl credits.
     const est = await estimate(
       ["firecrawl", "tavily", "exa", "bright_data"],
       6,
@@ -94,9 +94,10 @@ describe("budgetBlock", () => {
   });
 
   it("blocks on the PESSIMISTIC total, not the floor", () => {
-    // 280 is Sameer's 30%-of-932 cap. A 6-arm firecrawl batch floors at 120 but
-    // can reach 360, so it must be refused — --max-credits is a ceiling the run
-    // must not be able to cross, not a figure it probably won't reach.
+    // 280 is the kind of ceiling you set from a real balance (30% of 932 left).
+    // A 6-arm firecrawl batch floors at 120 but can reach 360, so it must be
+    // refused — --max-credits is a ceiling the run must not be able to cross,
+    // not a figure it probably won't reach.
     const block = budgetBlock(est(120, 360), 280);
     expect(block).toContain("could cost up to 360");
     expect(block).toContain("280");

@@ -43,9 +43,6 @@ SESSION_HANDOFF.md
 .claude/
 design/
 
-# thinking artifacts — kept on disk, never published. A plan with unchecked
-# milestones and a landscape survey read as "unfinished" in a public repo; the
-# findings they earned live in the README and docs/providers.md instead.
-docs/rebuild-plan.md
-docs/landscape.md
+# Stale build output from the dashboard that was cut in 5314ecc. No `next`
+# dependency remains; the directory is just what's left on disk.
 .next/

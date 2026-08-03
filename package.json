@@ -1,7 +1,7 @@
 {
   "name": "sourcery-eval",
   "version": "0.1.0",
-  "description": "Eval harness for the web-retrieval layer: same query, same model, same judge — only the retrieval provider varies (Firecrawl, Tavily, Exa, Bright Data, keyless baseline).",
+  "description": "Find the best search API for your agent. Same query, same model, same judge, swap only the retrieval provider: Firecrawl, Tavily, Exa, Bright Data, keyless baseline.",
   "keywords": [
     "eval",
     "retrieval",
@@ -11,7 +11,9 @@
     "firecrawl",
     "tavily",
     "exa",
-    "llm"
+    "llm",
+    "agent",
+    "mcp"
   ],
   "license": "MIT",
   "author": "Sameer Himati",
@@ -19,6 +21,10 @@
     "type": "git",
     "url": "git+https://github.com/sameerhimati/sourcery.git"
   },
+  "bugs": {
+    "url": "https://github.com/sameerhimati/sourcery/issues"
+  },
+  "homepage": "https://github.com/sameerhimati/sourcery#readme",
   "engines": {
     "node": ">=20"
   },

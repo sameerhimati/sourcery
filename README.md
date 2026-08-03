@@ -1,6 +1,8 @@
 # sourcery
 
-Which search API should you point your agent at? It depends on what you're asking it, and nobody can answer that for you from a pricing page.
+**Find the best search API for your agent.**
+
+Which one should you point it at? It depends on what you're asking it, and nobody can answer that for you from a pricing page.
 
 sourcery runs your queries through several web-search APIs with everything else held still. Same query, same answer model, same judge, swap only the retrieval provider, and see what actually changes. Five providers ship in the box and adding one is about forty lines.
 

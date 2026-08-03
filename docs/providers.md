@@ -14,6 +14,14 @@ A set key is not the same as a usable account. `--check` calls each adapter's
 optional `health()` probe — quota-neutral by contract — because an exhausted
 balance is indistinguishable from a healthy one until arms start failing.
 
+**One word used throughout this document: an _arm_ is one `fetch → answer →
+judge` pipeline where exactly one thing differs.** The word comes from clinical
+trials and the discipline comes with it: change one variable, hold everything
+else still, repeat it enough times to tell signal from noise. So "240 arms" is
+48 queries fetched five separate times, each fetch graded on its own, not one
+search repeated 240 times. The README stays in plain English; the counts here
+are the same idea with the arithmetic left in.
+
 ---
 
 ## The registered adapters

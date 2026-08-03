@@ -60,7 +60,7 @@ describe("renderRun", () => {
     `);
   });
 
-  it("reports no winner when all arms failed", () => {
+  it("reports no winner when every provider failed", () => {
     const run: Run = {
       query: "q",
       variable: "provider",
@@ -68,7 +68,7 @@ describe("renderRun", () => {
       judge_model: "gpt-4o-mini",
       arms: [arm({ id: "A", error: "boom" })],
     };
-    expect(renderRun(run)).toContain("Winner: none (all arms failed)");
+    expect(renderRun(run)).toContain("Winner: none (every provider failed)");
   });
 });
 

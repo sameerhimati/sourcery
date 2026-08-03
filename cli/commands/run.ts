@@ -14,7 +14,7 @@ export function registerRun(program: Command): void {
   program
     .command("run")
     .argument("<query>", "the query to evaluate")
-    .description("Evaluate one query across all arms and print a scorecard")
+    .description("Evaluate one query across every provider and print a scorecard")
     .option(
       "--variable <axis>",
       "axis to vary: provider | freshness | num_sources | extraction",

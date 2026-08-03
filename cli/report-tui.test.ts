@@ -99,7 +99,7 @@ describe("renderReportTui", () => {
   it("reports the summary, both metrics and the providers", () => {
     const out = renderReportTui(records, plain);
     expect(out).toContain("sourcery");
-    expect(out).toContain("arms");
+    expect(out).toContain("results");
     expect(out).toContain("RETRIEVAL VS ANSWER");
     expect(out).toContain("retrieval");
     expect(out).toContain("answer");

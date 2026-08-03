@@ -150,7 +150,7 @@ async function wizard(): Promise<void> {
     const key = await askSecret(`  Paste ${envKey}: `);
     if (!key) {
       process.stdout.write(
-        `\n  No key given. ${envKey} is required — every arm needs an answer and a\n` +
+        `\n  No key given. ${envKey} is required — every provider needs an answer and a\n` +
           `  judge. Re-run \`sourcery init\` when you have one.\n`,
       );
       return;
@@ -224,7 +224,7 @@ async function wizard(): Promise<void> {
 
   if (ready.length < 2) {
     process.stdout.write(
-      `\n  Only ${ready.length} paid arm ready, so \`plain\` (the keyless baseline) is the\n` +
+      `\n  Only ${ready.length} paid provider ready, so \`plain\` (the keyless baseline) is the\n` +
         `  other. It rate-limits hard — fine for trying the tool, not for a benchmark.\n`,
     );
   }

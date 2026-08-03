@@ -149,11 +149,11 @@ function statTiles(s: Summary): string {
   const failRate = s.arms ? ((s.fails / s.arms) * 100).toFixed(1) + "%" : "—";
   const lat = s.latency === null ? "—" : Math.round(s.latency / 1000) + "s";
   const tiles = [
-    { v: String(s.arms), k: "arms", sub: "one fetch → answer → judge each" },
+    { v: String(s.arms), k: "results", sub: "one fetch → answer → judge each" },
     { v: String(s.queries), k: "queries", sub: "distinct questions asked" },
     { v: String(s.stats.length), k: "providers", sub: "retrieval backends compared" },
-    { v: lat, k: "median latency", sub: "per arm, end to end" },
-    { v: failRate, k: "arm failure rate", sub: `${s.fails} of ${s.arms} returned nothing` },
+    { v: lat, k: "median latency", sub: "per call, end to end" },
+    { v: failRate, k: "failure rate", sub: `${s.fails} of ${s.arms} returned nothing` },
   ];
   return `<section class="tiles" aria-label="Run summary">
     ${tiles
@@ -188,7 +188,7 @@ function providerChart(s: Summary): string {
       };
       return `<div class="bar-group">
         <div class="bar-name"><span class="swatch" style="background:var(--p-${esc(st.provider)})"></span>${esc(m.label)}
-          <span class="bar-n">${st.arms} arm${st.arms === 1 ? "" : "s"}</span></div>
+          <span class="bar-n">${st.arms} result${st.arms === 1 ? "" : "s"}</span></div>
         <div class="bar-bars">
           ${bar("retrieval", st.retrieval, "f-ret")}
           ${bar("answer", st.answer, "f-ans")}

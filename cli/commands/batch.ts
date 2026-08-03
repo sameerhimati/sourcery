@@ -71,7 +71,7 @@ export function registerBatch(program: Command): void {
       const queries = selectQueries(Number.isFinite(perType) ? perType : 0);
       process.stdout.write(
         `Running ${queries.length} queries × ${running.length} providers ` +
-          `(${running.join(", ")}) = ${queries.length * running.length} arms ` +
+          `(${running.join(", ")}) = ${queries.length * running.length} calls ` +
           `— slow + credit-heavy…\n`,
       );
 
@@ -95,7 +95,7 @@ export function registerBatch(program: Command): void {
       process.stdout.write("\n" + renderEstimate(est) + "\n");
       if (cached) {
         process.stdout.write(
-          `  ${cached} of ${queries.length * running.length} arms already cached ` +
+          `  ${cached} of ${queries.length * running.length} calls already cached ` +
             `(<24h old) — those cost nothing. --no-cache to refetch.\n`,
         );
       }
@@ -114,7 +114,7 @@ export function registerBatch(program: Command): void {
       }
       if (est.overBalance.length) {
         process.stderr.write(
-          `\n⚠ ${est.overBalance.join(", ")} may run out mid-run — the arms that ` +
+          `\n⚠ ${est.overBalance.join(", ")} may run out mid-run — the calls that ` +
             `land after that will 402 and score as failures, not as low scores.\n`,
         );
       }

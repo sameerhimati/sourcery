@@ -108,7 +108,7 @@ describe("buildReport", () => {
     expect(html).toContain("judge <span class=\"mono\">gpt-4o-mini</span>");
     // Summary tiles describe the whole log, not just the latest batch.
     expect(html).toContain("arms");
-    expect(html).toContain("arm failure rate");
+    expect(html).toContain("failure rate");
   });
 
   it("shows each arm's answer and both judge rationales, paired to their scores", () => {

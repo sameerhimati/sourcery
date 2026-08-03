@@ -170,7 +170,7 @@ export function renderReportTui(records: SourceryRecord[], opts: TuiOptions): st
     (a, b) => orderOf(a) - orderOf(b),
   );
   const tiles: [string, string][] = [
-    [String(rows.length), "arms"],
+    [String(rows.length), "results"],
     [String(new Set(rows.map((r) => r.query)).size), "queries"],
     [String(providers.length), "providers"],
     [lat === null ? "—" : `${Math.round(lat / 1000)}s`, "med latency"],
@@ -192,14 +192,14 @@ export function renderReportTui(records: SourceryRecord[], opts: TuiOptions): st
     const m = providerMeta(p);
     const ret = mean(rs.map((r) => r.retrieval).filter(num));
     const ans = mean(rs.map((r) => r.answer).filter(num));
-    // The label column carries the provider on the first line and its arm count
+    // The label column carries the provider on the first line and its result count
     // on the second, so the two bars stay a visual pair with nothing dangling
     // under them.
     const line = (lead: string, tag: string, v: number | null, col: string) =>
       `  ${padEnd(lead, nameW)}${dim(padEnd(tag, 10), c)}${bar(v, barW, col, c)}  ` +
       `${padStart(v === null ? "—" : v.toFixed(2), 5)}`;
     out.push(line(fg(m.dark, m.label, c), "retrieval", ret, m.dark));
-    out.push(line(dim(`${rs.length} arms`, c), "answer", ans, "#6b6a66"));
+    out.push(line(dim(`${rs.length} results`, c), "answer", ans, "#6b6a66"));
     if (p !== providers[providers.length - 1]) out.push("");
   }
 

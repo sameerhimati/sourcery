@@ -91,7 +91,7 @@ export function budgetBlock(est: Estimate, maxCredits?: number): string | null {
   return (
     `Refusing to start: this run could cost up to ${est.totalMax} credits, ` +
     `over the --max-credits ${maxCredits} ceiling.\n` +
-    `Its floor cost is ${est.totalMin}. Lower the arm count (--per-type), drop a ` +
+    `Its floor cost is ${est.totalMin}. Lower the call count (--per-type), drop a ` +
     `metered provider, or raise --max-credits if you meant to spend it.`
   );
 }
@@ -106,7 +106,7 @@ export function renderEstimate(est: Estimate): string {
   const wCost = Math.max(...est.lines.map((l) => cost(l).length));
 
   const rows = est.lines.map((l) => {
-    const head = `  ${l.provider.padEnd(w)}  ${String(l.arms).padStart(4)} arms  `;
+    const head = `  ${l.provider.padEnd(w)}  ${String(l.arms).padStart(4)} calls  `;
     if (l.min === null) return `${head}unmetered (own quota / free)`;
     const bal =
       l.remaining === null

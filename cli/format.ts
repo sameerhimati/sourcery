@@ -57,7 +57,7 @@ export function renderRun(run: Run): string {
   const winner = run.arms.find((a) => a.id === run.winner);
   const footer = winner
     ? `Winner: ${winner.id} (${label(winner.provider)}) — retrieval ${score(winner.retrieval_score)}`
-    : "Winner: none (all arms failed)";
+    : "Winner: none (every provider failed)";
 
   // Per-arm retrieved sources (domains) so you can see what each arm actually got.
   const sourceLines = run.arms

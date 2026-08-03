@@ -16,6 +16,9 @@ jobs:
   # Re-listing those steps here would let CI and the publish gate drift apart.
   verify:
     runs-on: ubuntu-latest
+    # The script takes ~90s locally. Anything near this is a hang, and a hang
+    # should fail in minutes rather than sit on a runner for six hours.
+    timeout-minutes: 10
     strategy:
       fail-fast: false
       matrix:
@@ -30,4 +33,6 @@ jobs:
           node-version: ${{ matrix.node }}
           cache: npm
       - run: npm ci
-      - run: ./scripts/verify-pack.sh
+        # -x so a failure names the exact command. The script is the source of
+        # truth either way; this only traces it.
+      - run: bash -x ./scripts/verify-pack.sh

@@ -9,18 +9,22 @@ import {
   Run,
   RunRequest,
 } from "./types";
-import { fetchSources, DEFAULT_PROVIDERS } from "./adapters";
+import { fetchSources, defaultProviders } from "./adapters";
 import { answer } from "./answer";
 import { judge } from "./judge";
 import { retrievalJudge } from "./retrievalJudge";
 import { MODEL } from "./controls";
 
-const DEFAULT_VALUES: Record<Axis, string[]> = {
-  provider: DEFAULT_PROVIDERS,
-  freshness: ["24h", "all"],
-  num_sources: ["3", "10"],
-  extraction: ["clean", "raw"],
-};
+// A function, not a constant: the provider row now depends on which keys are
+// set, and this module is imported long before the CLI has loaded .env.local.
+// Evaluated at module scope it would freeze an empty environment's answer.
+const defaultValues = (axis: Axis): string[] =>
+  ({
+    provider: defaultProviders(),
+    freshness: ["24h", "all"],
+    num_sources: ["3", "10"],
+    extraction: ["clean", "raw"],
+  })[axis];
 
 const ARM_IDS = ["A", "B", "C", "D", "E"];
 
@@ -31,7 +35,10 @@ function armSpec(
   base: ArmConfig,
 ): { provider: Provider; config: ArmConfig } {
   const config: ArmConfig = { ...base };
-  let provider: Provider = DEFAULT_PROVIDERS[0];
+  // Varying a non-provider axis still needs SOME provider to fetch through. The
+  // first ready one, so a machine without a Bright Data key doesn't run every
+  // freshness arm through an adapter it can't authenticate.
+  let provider: Provider = defaultProviders()[0];
   switch (variable) {
     case "provider":
       provider = value as Provider;
@@ -128,7 +135,7 @@ export function pickWinner(arms: Arm[]): string | null {
 
 export async function runEval(req: RunRequest): Promise<Run> {
   const variable: Axis = req.variable ?? "provider";
-  const values = req.values?.length ? req.values : DEFAULT_VALUES[variable];
+  const values = req.values?.length ? req.values : defaultValues(variable);
   const model = req.model?.trim() || MODEL;
   // Judge defaults to MODEL (the stale judge), NOT to `model` — overriding the
   // answer model must not silently hand the judge a fresher cutoff.

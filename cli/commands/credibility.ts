@@ -1,7 +1,7 @@
 import type { Command } from "commander";
 import { runCredibility, summarize, armKey } from "@core/credibility";
 import { selectQueries } from "@core/batch";
-import { getAdapter, DEFAULT_PROVIDERS } from "@core/adapters";
+import { getAdapter, defaultProviders } from "@core/adapters";
 import { MODEL } from "@core/controls";
 import { requiredEnvKeys } from "@core/llm";
 import { setCacheEnabled } from "@core/fetch-cache";
@@ -81,7 +81,7 @@ export function registerCredibility(program: Command): void {
         .filter(Boolean);
       // Validate up front: a typo'd id should fail now, not 200 arms in.
       for (const p of providers) getAdapter(p);
-      const armSet = providers.length ? providers : DEFAULT_PROVIDERS;
+      const armSet = providers.length ? providers : defaultProviders();
       const arms = queries.length * armSet.length * seeds;
       // --resume replays what's already on disk so a killed run costs minutes,
       // not hours. Rows are appended as they land, so this always has a floor.

@@ -1,6 +1,6 @@
 import type { Command } from "commander";
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
-import { listAdapters, missingEnv } from "@core/adapters";
+import { defaultProviders, listAdapters, missingEnv } from "@core/adapters";
 import { complete, PROVIDERS as LLM_PROVIDERS } from "@core/llm";
 import { loadEnv } from "../env";
 import { CONFIG_FILES } from "../config";
@@ -214,7 +214,9 @@ async function wizard(): Promise<void> {
   // `values` is the arms the user HAS. The old template hardcoded
   // bright_data + firecrawl, which is the worst possible first run: bright_data
   // needs three env vars and historically failed a quarter of its arms.
-  const values = ready.length >= 2 ? ready : [...ready, "plain"];
+  // `ready` is already key-filtered, so this is here for the "at least two arms,
+  // fall back to the keyless baseline" rule, which lives in one place now.
+  const values = defaultProviders(ready);
   const config = writeConfig(chosen.model, chosen.judge, values);
   process.stdout.write("\n" + config.message + "\n");
   if (wrote.length) process.stdout.write(`  ✓ wrote ${ENV_FILE} (${wrote.join(", ")})\n`);

@@ -14,7 +14,7 @@
 // Leaves the live Arm/Run/batch contracts untouched — this is a separate path.
 
 import { EVAL_DATASET, EvalQuery, QueryType } from "./eval-dataset";
-import { fetchSources, DEFAULT_PROVIDERS } from "./adapters";
+import { fetchSources, defaultProviders } from "./adapters";
 import { answer } from "./answer";
 import { judge } from "./judge";
 import { retrievalJudge } from "./retrievalJudge";
@@ -169,7 +169,7 @@ export async function runCredibility(
   const now = opts.now ?? Date.now();
   const judges = opts.judges;
   const concurrency = opts.concurrency ?? DEFAULT_CONCURRENCY;
-  const providers = opts.providers?.length ? opts.providers : DEFAULT_PROVIDERS;
+  const providers = opts.providers?.length ? opts.providers : defaultProviders();
 
   // Flatten to independent pipelines. Seed is just a repeat index — the variance
   // comes from a fresh fetch + a temp>0 answer, not from a threaded RNG seed.

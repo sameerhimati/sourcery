@@ -37,7 +37,7 @@ vi.mock("@core/adapters", () => {
       sources: SOURCES,
       context: "context handed to the answering model",
     })),
-    DEFAULT_PROVIDERS: known,
+    defaultProviders: () => known,
     getAdapter: vi.fn((provider: string) => {
       if (!known.includes(provider)) {
         throw new Error(`Unknown provider "${provider}". Known: ${known.join(", ")}`);

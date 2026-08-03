@@ -1,7 +1,7 @@
 import { EVAL_DATASET, EvalQuery, QueryType } from "./eval-dataset";
 import { runArm } from "./orchestrator";
 import { DEFAULT_CONFIG, Provider, Source } from "./types";
-import { DEFAULT_PROVIDERS } from "./adapters";
+import { defaultProviders } from "./adapters";
 import { MODEL } from "./controls";
 import { mapWithConcurrency } from "./extract";
 
@@ -136,7 +136,7 @@ export async function runBatch(
 ): Promise<BatchOutput> {
   const model = opts.model?.trim() || MODEL;
   const judgeModel = opts.judgeModel?.trim() || MODEL;
-  const providers = opts.providers?.length ? opts.providers : DEFAULT_PROVIDERS;
+  const providers = opts.providers?.length ? opts.providers : defaultProviders();
 
   // Flatten to (query × provider) arms, then run bounded-concurrent.
   const jobs = queries.flatMap((q) =>

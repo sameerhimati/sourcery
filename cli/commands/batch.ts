@@ -3,7 +3,7 @@ import { runBatch, selectQueries } from "@core/batch";
 import { MODEL } from "@core/controls";
 import { requiredEnvKeys } from "@core/llm";
 import { readCached, setCacheEnabled } from "@core/fetch-cache";
-import { DEFAULT_PROVIDERS, getAdapter } from "@core/adapters";
+import { defaultProviders, getAdapter } from "@core/adapters";
 import { budgetBlock, estimate, renderEstimate } from "@core/preflight";
 import { DEFAULT_CONFIG, type Provider } from "@core/types";
 import { confirm } from "../prompt";
@@ -25,7 +25,7 @@ export function registerBatch(program: Command): void {
     .option("--judge <model>", "judge model (defaults to gpt-4o-mini)")
     .option(
       "--providers <list>",
-      "comma-separated provider ids to compare (default: bright_data,firecrawl)",
+      "comma-separated provider ids to compare (default: every provider you have keys for)",
     )
     .option("--no-save", "do not append rows to .sourcery/runs.jsonl")
     .option("--no-cache", "always fetch live; ignore fetches cached in the last 24h")
@@ -48,7 +48,18 @@ export function registerBatch(program: Command): void {
         ? opts.providers.split(",").map((s) => s.trim()).filter(Boolean)
         : undefined;
       providers?.forEach((p) => getAdapter(p));
-      const running = providers ?? DEFAULT_PROVIDERS;
+      // Flag, then the provider list `init` wrote to config, then whatever keys
+      // are set. `run` already honoured config.values and batch did not, so the
+      // arms you configured were respected by one command and silently dropped
+      // by the other. Only when the configured axis IS provider: `values` is
+      // axis-generic, and a config varying freshness holds "24h"/"all" there.
+      const configured =
+        (config.variable ?? "provider") === "provider" && config.values?.length
+          ? config.values
+          : undefined;
+      // Resolved once and passed down, so the cost estimate prices exactly the
+      // arms the run will execute rather than re-deriving them separately.
+      const running = providers ?? configured ?? defaultProviders();
 
       // Require only the LLM key(s) the chosen answer/judge models need (unset
       // refs fall back to the engine default). Retrieval keys stay optional.
@@ -115,7 +126,7 @@ export function registerBatch(program: Command): void {
       const out = await runBatch(queries, undefined, {
         model,
         judgeModel: judge,
-        ...(providers ? { providers } : {}),
+        providers: running,
       });
       process.stdout.write("\n" + renderBatch(out) + "\n");
 

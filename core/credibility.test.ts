@@ -122,8 +122,16 @@ describe("resume", () => {
     for (const p of ["bright_data", "firecrawl"] as const)
       for (let s = 0; s < 2; s++) done.add(armKey("q1", p, s));
 
+    // Providers named explicitly: the default set is resolved from whichever
+    // keys are present, so leaving it implicit made this assert against a
+    // different arm list on a machine that happened to hold a key.
     // If any arm survived the filter this would hit the network and fail/hang.
-    const rows = await runCredibility(queries, { judges: ["j"], seeds: 2, done });
+    const rows = await runCredibility(queries, {
+      judges: ["j"],
+      seeds: 2,
+      done,
+      providers: ["bright_data", "firecrawl"],
+    });
     expect(rows).toEqual([]);
   });
 });
@@ -141,6 +149,9 @@ describe("fail-fast on a dead provider", () => {
         seeds: 2,
         concurrency: 1,
         failFast: 3,
+        // Pinned so an unkeyed `plain` arm can never be the default here — it
+        // needs no credentials, so it would reach the live network.
+        providers: ["bright_data", "firecrawl"],
         onRow: (r) => rows.push(r),
       }),
     ).rejects.toThrow(/aborting before this burns/);
@@ -155,6 +166,7 @@ describe("fail-fast on a dead provider", () => {
       seeds: 1,
       concurrency: 1,
       failFast: 0,
+      providers: ["bright_data", "firecrawl"],
     });
     expect(rows).toHaveLength(2); // both providers, both errored
     expect(rows.every((r) => r.error)).toBe(true);

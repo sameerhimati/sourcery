@@ -1,6 +1,6 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
-import { DEFAULT_PROVIDERS, getAdapter } from "@core/adapters";
+import { getAdapter } from "@core/adapters";
 import { runEval } from "@core/orchestrator";
 import { bestProviderByType } from "@core/routing";
 import type { Run } from "@core/types";
@@ -71,7 +71,10 @@ export function createSourceryServer({ runsPath = RUNS_PATH }: ServerOptions = {
         providers: z
           .array(z.string())
           .optional()
-          .describe(`provider ids to compare (default: ${DEFAULT_PROVIDERS.join(", ")})`),
+          // The rule, not a baked-in list: a tool schema is built once at
+          // registration and would otherwise advertise a provider set that
+          // stops being true the moment another key is set.
+          .describe("provider ids to compare (default: every provider the host has keys for)"),
         model: z
           .string()
           .optional()

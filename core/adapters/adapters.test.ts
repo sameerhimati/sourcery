@@ -1,5 +1,5 @@
-import { describe, expect, it } from "vitest";
-import { ADAPTERS, getAdapter, listAdapters, missingEnv } from "./index";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { ADAPTERS, defaultProviders, getAdapter, listAdapters, missingEnv } from "./index";
 import { parseSerp, stripTags } from "./plain";
 
 describe("adapter registry", () => {
@@ -26,6 +26,58 @@ describe("adapter registry", () => {
     expect(missingEnv("tavily")).toEqual([]);
     if (before === undefined) delete process.env.TAVILY_API_KEY;
     else process.env.TAVILY_API_KEY = before;
+  });
+
+  describe("default provider set", () => {
+    // Every keyed adapter's env, so a stray key on the developer's machine
+    // can't leak into the answer. Restored after each case.
+    const KEYS = [...new Set(listAdapters().flatMap((s) => s.requiredEnv))];
+    let saved: Record<string, string | undefined>;
+
+    beforeEach(() => {
+      saved = Object.fromEntries(KEYS.map((k) => [k, process.env[k]]));
+      for (const k of KEYS) delete process.env[k];
+    });
+    afterEach(() => {
+      for (const k of KEYS) {
+        if (saved[k] === undefined) delete process.env[k];
+        else process.env[k] = saved[k];
+      }
+    });
+
+    it("compares the providers you actually have keys for", () => {
+      process.env.TAVILY_API_KEY = "t";
+      process.env.EXA_API_KEY = "e";
+      expect(defaultProviders()).toEqual(["tavily", "exa"]);
+    });
+
+    it("never picks a provider whose keys are only partly set", () => {
+      // Bright Data needs three. Two is not enough, and an arm that 401s every
+      // call is worse than an arm that isn't there.
+      process.env.BRIGHTDATA_API_TOKEN = "t";
+      process.env.BRIGHTDATA_SERP_ZONE = "z";
+      process.env.FIRECRAWL_API_KEY = "f";
+      process.env.TAVILY_API_KEY = "t";
+      expect(defaultProviders()).toEqual(["firecrawl", "tavily"]);
+    });
+
+    it("adds the keyless baseline only when there'd otherwise be nothing to compare", () => {
+      process.env.FIRECRAWL_API_KEY = "f";
+      expect(defaultProviders()).toEqual(["firecrawl", "plain"]);
+      process.env.EXA_API_KEY = "e";
+      expect(defaultProviders()).toEqual(["firecrawl", "exa"]);
+    });
+
+    it("falls back to the baseline alone when no keys are set at all", () => {
+      expect(defaultProviders()).toEqual(["plain"]);
+    });
+
+    it("applies the same rule to a caller-narrowed pool", () => {
+      // What `init` does: the user picked these, so don't widen past them.
+      process.env.FIRECRAWL_API_KEY = "f";
+      process.env.TAVILY_API_KEY = "t";
+      expect(defaultProviders(["firecrawl"])).toEqual(["firecrawl", "plain"]);
+    });
   });
 
   it("gives every adapter a label and a blurb for the docs", () => {

@@ -94,8 +94,29 @@ export const ADAPTERS: Record<string, AdapterSpec> = {
   },
 };
 
-/** The pair `batch` and the MCP tools compare by default. */
-export const DEFAULT_PROVIDERS: Provider[] = ["bright_data", "firecrawl"];
+/**
+ * The arms to compare when the caller hasn't named any.
+ *
+ * Resolved from the environment, not hardcoded. While this was a fixed
+ * `[bright_data, firecrawl]` pair, someone holding only a Tavily key got a
+ * scorecard of two failed arms on their first run, and the other three
+ * registered adapters could never appear in a default batch however many keys
+ * they had — a constant quietly deciding which providers the tool was allowed
+ * to have an opinion about.
+ *
+ * `plain` is a filler, never a pick. It needs no key, so it would otherwise
+ * always read as ready, and a keyless SERP baseline is for trying the tool
+ * rather than benchmarking with it. It joins only to guarantee there is
+ * something to compare against.
+ *
+ * `candidates` narrows the pool to a set the caller has already chosen (which
+ * is what `init` does), so the "at least two arms" rule lives in one place.
+ */
+export function defaultProviders(candidates?: string[]): Provider[] {
+  const pool = candidates ?? Object.keys(ADAPTERS).filter((id) => id !== "plain");
+  const ready = pool.filter((id) => missingEnv(id).length === 0);
+  return ready.length >= 2 ? ready : [...ready, "plain"];
+}
 
 export function listAdapters(): AdapterSpec[] {
   return Object.values(ADAPTERS);

@@ -40,8 +40,9 @@ vi.mock("@core/adapters", () => ({
   })),
   // Pinned rather than re-exported from the real registry: this fixture asserts
   // a byte-identical Run, so the default arms must not change under it when a
-  // new adapter is registered.
-  DEFAULT_PROVIDERS: ["bright_data", "firecrawl"],
+  // new adapter is registered — or, now that the default is resolved from the
+  // environment, when the machine running the tests happens to hold a key.
+  defaultProviders: () => ["bright_data", "firecrawl"],
 }));
 
 vi.mock("@core/llm", () => ({

@@ -46,3 +46,10 @@ design/
 # Stale build output from the dashboard that was cut in 5314ecc. No `next`
 # dependency remains; the directory is just what's left on disk.
 .next/
+
+# vhs recording scratch (the shim that makes the demo read as `sourcery`)
+.vhs-bin/
+
+# Local config written by `sourcery init` — holds YOUR model choices, not the repo's
+sourcery.config.mjs
+sourcery.config.js

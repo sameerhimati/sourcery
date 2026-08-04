@@ -2,7 +2,11 @@
 
 **Find the best search API for your agent.**
 
+![One query through Tavily and Exa, scored separately on the sources they returned and the answer built from them](https://raw.githubusercontent.com/sameerhimati/sourcery/main/docs/media/hero.gif)
+
 Which one is best depends on what you're asking it, and nobody can answer that for you from a pricing page.
+
+Two scores, not one, because they measure different things — and they barely relate. More on that [below](#what-i-found-when-i-ran-it).
 
 sourcery runs your queries through several web-search APIs with everything else held still. Same query, same answer model, same judge, swap only the retrieval provider, and see what actually changes. Five providers ship in the box and adding one is about forty lines.
 

@@ -52,16 +52,25 @@ zsh doesn't treat `#` as a comment unless told to, so the tape sets
 `command not found: #`.
 
 ```bash
-# X, and anything that would rather have video than a 500 KB gif
-ffmpeg -y -i demo-raw.mp4 -f lavfi -i anullsrc=channel_layout=stereo:sample_rate=44100 \
-  -vf "setpts=PTS/4,fps=30" -c:v libx264 -pix_fmt yuv420p -profile:v high -crf 20 \
-  -movflags +faststart -c:a aac -shortest demo.mp4
-
-# gif, for markdown that can't embed video
-ffmpeg -y -i demo-raw.mp4 \
-  -vf "setpts=PTS/4,fps=12,scale=1000:-1:flags=lanczos,split[a][b];[a]palettegen=max_colors=96[p];[b][p]paletteuse=dither=bayer:bayer_scale=3" \
-  -loop 0 demo.gif
+bash docs/media/retime.sh    # writes demo.mp4 and demo.gif from demo-raw.mp4
 ```
+
+**Don't speed the whole thing up uniformly.** The first cut did, at 4×, and it
+was unreadable in both directions: 69 of the 112 recorded seconds are a progress
+spinner with nothing on screen, while every screen worth reading gets two to six.
+A single multiplier makes the dead part tolerable and the readable parts flash
+past.
+
+`retime.sh` runs the spinner at 12× and *stretches* every screen with something
+to read past its recorded duration — the provider table to 5s, the scorecard to
+7s, the bars and the MCP lines to 9s. Nothing is reordered and no frame is
+invented; the `LATENCY` column still carries the real per-arm timings, and the
+compressed stretch is the one where nothing happens.
+
+The segment boundaries come from measuring per-second frame complexity rather
+than eyeballing it — a near-empty spinner screen compresses to ~7 KB, a full
+scorecard to ~37 KB. The script documents how to re-derive them, which you must
+do after any re-record.
 
 The silent audio track is deliberate: some platforms reject or mis-handle a
 video-only mp4.

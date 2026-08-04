@@ -42,7 +42,7 @@ export function renderRun(run: Run): string {
 
   const header =
     "   " +
-    "ARM  " +
+    "#    " +
     cols.map((c) => pad(c.head, width(c.key, c.head))).join("  ");
 
   const body = rows.map((r) => {
@@ -140,7 +140,7 @@ export function renderBatch(out: BatchOutput): string {
       : "";
 
   return [
-    `Batch — ${out.rows.length} arms, ${out.runs_per_cell} run(s)/cell`,
+    `Batch — ${out.rows.length} results, ${out.runs_per_cell} run(s)/cell`,
     `Generated: ${out.generated_at}`,
     "avg retrieval score (0–10) by query type:",
     "",

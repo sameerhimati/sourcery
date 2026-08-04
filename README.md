@@ -2,10 +2,6 @@
 
 **Find the best search API for your agent.**
 
-![One query through Firecrawl, Tavily, Exa and Bright Data, each scored separately on the sources it returned and the answer built from them](https://raw.githubusercontent.com/sameerhimati/sourcery/main/docs/media/hero.gif)
-
-<sub>A real run, played back at 7×. Three of those four returned mediocre sources and still scored 9–10 on the answer — which is the whole reason there are two columns. One query and one judge, so read it as the mechanism, not a ranking; the [full results](docs/findings.md) have the intervals.</sub>
-
 Which one is best depends on what you're asking it, and nobody can answer that for you from a pricing page.
 
 sourcery runs your queries through several web-search APIs with everything else held still. Same query, same answer model, same judge, swap only the retrieval provider, and see what actually changes. Five providers ship in the box and adding one is about forty lines.
@@ -27,6 +23,10 @@ sourcery run "<any question>"   # one query, every provider you have keys for
 sourcery report --tui           # everything you've run, in the terminal (drop --tui for HTML)
 sourcery batch                  # the built-in 48-query set, per-query heatmap
 ```
+
+![One query through Firecrawl, Tavily, Exa and Bright Data, each scored separately on the sources it returned and the answer built from them](https://raw.githubusercontent.com/sameerhimati/sourcery/main/docs/media/hero.gif)
+
+<sub>A real run, played back at 7×. Three of those four returned mediocre sources and still scored 9–10 on the answer — which is the whole reason there are two columns. One query and one judge, so read it as the mechanism, not a ranking; the [full results](docs/findings.md) have the intervals. **[Longer walkthrough](docs/media/demo.mp4)** — providers, a run, the report, and wiring it into a coding agent, in a minute.</sub>
 
 ### You need two keys
 
@@ -143,6 +143,10 @@ Asking for two source types buys two searches and two sets of scrapes. Real call
 ## What I found when I ran it
 
 I ran the built-in set across all four providers. The write-up is in [**docs/findings.md**](docs/findings.md). The short version, and the reason this tool reports two scores instead of one:
+
+![Retrieval and answer scores side by side for every provider — the retrieval bars are roughly half the length of the answer bars in every case](https://raw.githubusercontent.com/sameerhimati/sourcery/main/docs/media/retrieval-vs-answer.png)
+
+<sub>`sourcery report --tui`, from my own run log. Every provider's answer scores well above its sources.</sub>
 
 **How good the sources are and how good the answer is barely relate to each other.** They correlate at r = 0.16. A provider can hand back stale, off-topic, half-extracted junk and the answer built on top still reads well, because the model is answering from what it already knew. Grade a search API on the answer downstream of it and you are mostly grading your own model.
 

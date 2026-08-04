@@ -49,7 +49,7 @@ describe("renderRun", () => {
       "Query: what changed in the H-1B lottery?
       Varying: provider  ·  Judge: gpt-4o-mini
 
-         ARM  PROVIDER     RETRIEVAL  ANSWER  LATENCY
+         #    PROVIDER     RETRIEVAL  ANSWER  LATENCY
        ★ A    Bright Data  7/10       6/10    1200ms 
          B    Firecrawl    —          —       —         (FIRECRAWL_API_KEY missing)
 
@@ -95,7 +95,7 @@ describe("renderBatch", () => {
       ],
     };
     expect(renderBatch(out)).toMatchInlineSnapshot(`
-      "Batch — 0 arms, 1 run(s)/cell
+      "Batch — 0 results, 1 run(s)/cell
       Generated: 2026-07-23T00:00:00.000Z
       avg retrieval score (0–10) by query type:
 
@@ -132,7 +132,7 @@ describe("renderBatch", () => {
       ],
     };
     expect(renderBatch(out)).toMatchInlineSnapshot(`
-      "Batch — 0 arms, 2 run(s)/cell
+      "Batch — 0 results, 2 run(s)/cell
       Generated: 2026-07-29T00:00:00.000Z
       avg retrieval score (0–10) by query type:
 

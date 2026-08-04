@@ -118,8 +118,8 @@ export async function runArm(
     return {
       ...base,
       error: e instanceof Error ? e.message : String(e),
-      rationale: "arm failed",
-      retrieval_rationale: "arm failed",
+      rationale: "no result",
+      retrieval_rationale: "no result",
       latency_ms: Date.now() - start,
     };
   }

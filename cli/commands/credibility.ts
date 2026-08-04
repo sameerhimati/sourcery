@@ -34,12 +34,12 @@ export function registerCredibility(program: Command): void {
     .description("S2: queries × providers × seeds, judge panel → CIs + judge agreement")
     .option("--seeds <n>", "fresh-fetch repeats per (query × provider)", "5")
     .option("--judges <list>", "comma-separated judge model refs (the panel)")
-    .option("--model <model>", "answer model (held constant across arms)")
+    .option("--model <model>", "answer model (held constant across results)")
     .option("--per-type <n>", "cap queries per type for a dry run (0 = full 48)", "0")
     .option("--concurrency <n>", "pipelines in flight (higher = faster, more load)", "4")
     .option("--providers <list>", "comma-separated provider ids to compare")
-    .option("--resume", "skip arms already in .sourcery/s2-runs.jsonl")
-    .option("--fail-fast <n>", "abort if a provider's first n arms all fail (0 = off)", "8")
+    .option("--resume", "skip results already in .sourcery/s2-runs.jsonl")
+    .option("--fail-fast <n>", "abort if a provider's first n results all fail (0 = off)", "8")
     .option("--no-save", "do not write .sourcery/s2-*.{jsonl,json}")
     .option("--no-cache", "always fetch live; ignore fetches cached in the last 24h")
     .option(
@@ -89,8 +89,8 @@ export function registerCredibility(program: Command): void {
       const done = new Set(prior.map((r) => armKey(r.queryId, r.provider, r.seed)));
       process.stdout.write(
         `Credibility run: ${queries.length} queries × ${armSet.join("/")} × ${seeds} seeds ` +
-          `= ${arms} arms, each graded by ${judges.length} judge(s), concurrency ${concurrency}.\n` +
-          (done.size ? `Resuming: ${done.size} arms already on disk, ${arms - done.size} to go.\n` : "") +
+          `= ${arms} results, each graded by ${judges.length} judge(s), concurrency ${concurrency}.\n` +
+          (done.size ? `Resuming: ${done.size} results already on disk, ${arms - done.size} to go.\n` : "") +
           `This is slow + credit-heavy (fresh fetch every seed)…\n\n`,
       );
 

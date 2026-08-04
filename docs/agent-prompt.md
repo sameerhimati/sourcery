@@ -15,7 +15,7 @@ If your agent speaks MCP, prefer [the MCP server](#mcp-the-server-agents-should-
 sourcery compares web-retrieval providers on YOUR queries with YOUR model, so a
 retrieval backend can be chosen from measurements instead of vibes. It holds
 everything else constant — same answer model, same prompts, same judge — so the
-only thing differing between arms is retrieval.
+only thing differing between results is retrieval.
 
 ### When to reach for it
 - Building RAG or a research agent, and the retrieval provider was never validated.
@@ -56,11 +56,11 @@ commands from the project root or the history won't accumulate.
 - **Always read the error column.** Arms never throw; a failure is recorded, not
   hidden. A provider that scores slightly higher while failing a quarter of its
   calls is the worse choice, and this tool will say so.
-- The winner is the best retrieval_score among arms that did not error.
+- The winner is the best retrieval_score among results that did not error.
 
 ### Costs, before you run anything
-A `run` is a handful of provider calls plus 2–3 LLM calls per arm. A full `batch`
-is 48 queries × every provider — on Firecrawl roughly 10 credits per arm, so a
+A `run` is a handful of provider calls plus 2–3 LLM calls per result. A full `batch`
+is 48 queries × every provider — on Firecrawl roughly 10 credits per result, so a
 two-provider batch runs into the high hundreds of credits and takes a while.
 Check `providers --check` first, and use `batch --per-type 1` (6 queries, one per
 type) for a cheap sweep before committing to the full 48.

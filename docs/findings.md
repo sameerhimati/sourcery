@@ -75,7 +75,13 @@ Those repeats are the only reason I trust any of this. Asking the same provider 
 
 Three things do survive the intervals.
 
-**Reliability is the real difference.** Firecrawl failed 2 calls in 240. Bright Data failed 61, because its SERP endpoint intermittently returns non-JSON under concurrency, which a retry loop softens but doesn't fix. The two tie on answer quality. They don't tie on returning an answer at all.
+**Reliability is the real difference.** Firecrawl failed 2 calls in 240. Bright Data failed 61. The two tie on answer quality. They don't tie on returning an answer at all.
+
+But 25% is not a per-call failure rate, and reporting it as one would be wrong. Those 61 failures cluster hard by query: 22 of the 48 queries never failed once across five attempts, while two failed all five times. If failures were independent at p = 0.25 you'd expect 0.05 queries to fail five-for-five. Two is forty times that.
+
+The mechanism is visible in Bright Data's own error text — *"This query recently failed and cannot be attempted at this time. Please try again later, after a minimum of 15 seconds."* That's a server-side cooldown keyed to the query. A failure doesn't just cost you that call, it poisons the next attempt at the same query, and this harness's five seeds retry the same query back to back. It's close to the worst caller pattern for that limiter.
+
+Probing it directly afterwards: six fresh queries serially, at concurrency 1, failed twice — and both failures were queries already burned earlier the same day. The four the endpoint hadn't seen recently all succeeded. So the failures are real and they're server-side, but the 25% is a number this harness partly manufactured. A caller that doesn't hammer the same query, or that backs off 15 seconds when it sees this, will see materially fewer. Read it as "Bright Data punishes retries" rather than "Bright Data drops a quarter of calls."
 
 **Firecrawl extracts a lot more and it doesn't move quality.** 90% of its sources yield usable text against Bright Data's 33%, which is the one big gap that replicates. It buys no measurable answer-quality edge though (6.99 vs 6.55, overlapping). My earlier story that more extraction produced worse answers was noise. The honest version is that extraction volume and answer quality just aren't connected here.
 
@@ -117,7 +123,9 @@ An eval you can't trust is worse than no eval.
 
 I'd defend the reliability gap (25% against 0.8% over 240 calls each is not noise), the extraction gap (90% against 33%), the shared freshness weakness (~290-day median across both providers and both judges), that judge choice dominates re-run noise, and the retrieval/answer decoupling, which holds at r=0.16 on the full set and reproduces on a separate four-provider pass.
 
-I wouldn't defend any claim that one provider retrieves better than another. Every confidence interval overlaps, in both tables, full stop. Nor any per-category ranking off the four-provider pass, since six queries and three fetches is an illustration and not a measurement. Bright Data's 25% failure rate is also measured under this harness at concurrency 6, and a gentler caller will see fewer, even though the bad-proxy-exit mechanism behind it is real.
+I wouldn't defend any claim that one provider retrieves better than another. Every confidence interval overlaps, in both tables, full stop. Nor any per-category ranking off the four-provider pass, since six queries and three fetches is an illustration and not a measurement.
+
+And I'd no longer state Bright Data's 25% as a per-call failure rate. It's a rate under a caller that retries the same query five times in a row into a limiter that penalises exactly that, which the clustering above makes plain. The failures are real and server-side; the magnitude is partly an artifact of my own protocol.
 
 I'd hold the absolute score levels loosely. They're a property of how hard this dataset is, and the section above explains why that difficulty is unrepresentative.
 

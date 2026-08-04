@@ -38,3 +38,34 @@ ffmpeg -y -i hero-raw.mp4 \
 
 The README says it's sped up, right under the image. Keep that caption if you
 re-record.
+
+## demo.mp4 / demo.gif
+
+The long one, for X, HN, or anywhere the README isn't doing the talking. Four
+acts — what's configured, one query across four providers, why there are two
+scores, and how an agent consults it — from `demo.tape`, ~112 seconds of real
+time at 4× playback.
+
+Shell comments carry the narration, since vhs has no text overlay. Interactive
+zsh doesn't treat `#` as a comment unless told to, so the tape sets
+`interactive_comments`; without it every narration line prints
+`command not found: #`.
+
+```bash
+# X, and anything that would rather have video than a 500 KB gif
+ffmpeg -y -i demo-raw.mp4 -f lavfi -i anullsrc=channel_layout=stereo:sample_rate=44100 \
+  -vf "setpts=PTS/4,fps=30" -c:v libx264 -pix_fmt yuv420p -profile:v high -crf 20 \
+  -movflags +faststart -c:a aac -shortest demo.mp4
+
+# gif, for markdown that can't embed video
+ffmpeg -y -i demo-raw.mp4 \
+  -vf "setpts=PTS/4,fps=12,scale=1000:-1:flags=lanczos,split[a][b];[a]palettegen=max_colors=96[p];[b][p]paletteuse=dither=bayer:bayer_scale=3" \
+  -loop 0 demo.gif
+```
+
+The silent audio track is deliberate: some platforms reject or mis-handle a
+video-only mp4.
+
+The best single frame is act three — `report --tui`, where the short coloured
+retrieval bars sit against the long grey answer bars for every provider. That's
+the r = 0.16 result as a picture, and it's the frame to lead a post with.

@@ -4,6 +4,7 @@ import {
   complete,
   parseModelRef,
   requiredEnvKeys,
+  unfenceJson,
 } from "./index";
 
 describe("parseModelRef — first-slash split, bare-string back-compat", () => {
@@ -50,6 +51,47 @@ describe("PROVIDERS registry — baseURL + env-key selection", () => {
   it("leaves OpenAI on the SDK default baseURL", () => {
     expect(PROVIDERS.openai.baseURL).toBeUndefined();
     expect(PROVIDERS.openai.envKey).toBe("OPENAI_API_KEY");
+  });
+
+  it("puts Anthropic on prompt-only JSON, since it 400s on json_object", () => {
+    // Measured against the live endpoint: `response_format: {type:"json_object"}`
+    // returns 400 "Input should be 'json_schema'". Every Anthropic arm failed
+    // before it was scored until this row existed.
+    expect(PROVIDERS.anthropic.jsonMode).toBe("prompt");
+  });
+
+  it("leaves every other provider on json_object", () => {
+    for (const [id, spec] of Object.entries(PROVIDERS)) {
+      if (id === "anthropic") continue;
+      expect(spec.jsonMode ?? "object").toBe("object");
+    }
+  });
+});
+
+describe("unfenceJson — a fenced judge response still parses", () => {
+  it("strips a ```json fence", () => {
+    expect(unfenceJson('```json\n{"score": 9}\n```')).toBe('{"score": 9}');
+  });
+
+  it("strips a bare ``` fence", () => {
+    expect(unfenceJson('```\n{"type": "news"}\n```')).toBe('{"type": "news"}');
+  });
+
+  it("leaves unfenced JSON exactly as it was", () => {
+    expect(unfenceJson('{"score": 9, "rationale": "fine"}')).toBe(
+      '{"score": 9, "rationale": "fine"}',
+    );
+  });
+
+  it("leaves a backtick INSIDE a rationale alone", () => {
+    // The guard against a greedy match: this is valid JSON already, and
+    // mangling it would corrupt a score rather than rescue one.
+    const raw = '{"score": 4, "rationale": "the ``` in the page broke extraction"}';
+    expect(unfenceJson(raw)).toBe(raw);
+  });
+
+  it("survives being applied twice", () => {
+    expect(unfenceJson(unfenceJson('```json\n{"score": 1}\n```'))).toBe('{"score": 1}');
   });
 });
 

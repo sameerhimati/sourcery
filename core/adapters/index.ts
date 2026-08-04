@@ -22,6 +22,12 @@ export interface AdapterSpec {
   requiredEnv: string[];
   /** One line, shown by `sourcery providers` and in docs/providers.md. */
   blurb: string;
+  /**
+   * Where to go and get the key, shown by `init` before it asks for one.
+   * Absent for `plain`, which needs no account. Lives here rather than in the
+   * wizard so a newly registered adapter cannot be added without one.
+   */
+  signup?: string;
   fetch: (query: string, config: ArmConfig) => Promise<FetchResult>;
   /**
    * Optional cheap probe for `sourcery providers --check`: quota, balance, or
@@ -55,6 +61,7 @@ export const ADAPTERS: Record<string, AdapterSpec> = {
     label: "Bright Data",
     requiredEnv: ["BRIGHTDATA_API_TOKEN", "BRIGHTDATA_SERP_ZONE", "BRIGHTDATA_UNLOCKER_ZONE"],
     blurb: "Google SERP via proxy, then per-page extraction through Web Unlocker.",
+    signup: "https://brightdata.com/cp/setting/users",
     fetch: fetchBrightData,
   },
   firecrawl: {
@@ -62,6 +69,7 @@ export const ADAPTERS: Record<string, AdapterSpec> = {
     label: "Firecrawl",
     requiredEnv: ["FIRECRAWL_API_KEY"],
     blurb: "Search + scrape in one call; returns markdown per result.",
+    signup: "https://www.firecrawl.dev/app/api-keys",
     fetch: fetchFirecrawl,
     health: firecrawlHealth,
     cost: {
@@ -76,6 +84,7 @@ export const ADAPTERS: Record<string, AdapterSpec> = {
     label: "Tavily",
     requiredEnv: ["TAVILY_API_KEY"],
     blurb: "Search API built for RAG; returns snippets, optionally raw page content.",
+    signup: "https://app.tavily.com/home",
     fetch: fetchTavily,
   },
   exa: {
@@ -83,6 +92,7 @@ export const ADAPTERS: Record<string, AdapterSpec> = {
     label: "Exa",
     requiredEnv: ["EXA_API_KEY"],
     blurb: "Neural/embedding search over its own index, with page text included.",
+    signup: "https://dashboard.exa.ai/api-keys",
     fetch: fetchExa,
   },
   plain: {

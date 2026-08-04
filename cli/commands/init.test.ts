@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { envTemplate, mergeEnv } from "./init";
+import { envTemplate, invocation, mergeEnv, usageGuide } from "./init";
 import { listAdapters } from "@core/adapters";
 import { PROVIDERS as LLM_PROVIDERS } from "@core/llm";
 
@@ -77,5 +77,51 @@ describe("envTemplate", () => {
       if (!line || line.startsWith("#")) continue;
       expect(line).toMatch(/^[A-Z0-9_]+=$/);
     }
+  });
+});
+
+describe("invocation — the last thing the wizard says must be runnable", () => {
+  it("uses the npm script when running from a clone, which is what the README leads with", () => {
+    expect(invocation("/Users/x/Code/sourcery/cli/index.ts")).toBe("npm run sourcery --");
+    expect(invocation("C:\\src\\sourcery\\cli\\index.ts")).toBe("npm run sourcery --");
+  });
+
+  it("uses the bare binary for an installed copy", () => {
+    expect(invocation("/usr/local/lib/node_modules/sourcery-eval/dist/index.js")).toBe("sourcery");
+    expect(invocation("/tmp/x/node_modules/.bin/sourcery")).toBe("sourcery");
+  });
+
+  it("falls back to the binary when argv gives it nothing", () => {
+    expect(invocation("")).toBe("sourcery");
+  });
+});
+
+describe("usageGuide", () => {
+  it("names all three commands the README leads with", () => {
+    const g = usageGuide("sourcery");
+    for (const cmd of ["run", "batch", "report"]) expect(g).toContain(`sourcery ${cmd}`);
+  });
+
+  it("spells the commands the way the caller actually invoked the tool", () => {
+    // A clone user copying `sourcery run` out of this guide gets
+    // command-not-found, which is a bad last impression for a setup wizard.
+    expect(usageGuide("npm run sourcery --")).toContain('npm run sourcery -- run "<query>"');
+  });
+
+  it("warns that batch spends before it spends", () => {
+    expect(usageGuide("sourcery")).toContain("--dry-run");
+  });
+});
+
+describe("adapter signup links — init offers them before asking for a key", () => {
+  it("gives every keyed provider somewhere to go", () => {
+    for (const spec of listAdapters()) {
+      if (!spec.requiredEnv.length) continue;
+      expect(spec.signup, `${spec.id} has no signup URL`).toMatch(/^https:\/\//);
+    }
+  });
+
+  it("leaves the keyless baseline without one, since there is nothing to sign up for", () => {
+    expect(listAdapters().find((s) => s.id === "plain")?.signup).toBeUndefined();
   });
 });

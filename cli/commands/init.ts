@@ -163,6 +163,36 @@ export default {
   return { message: `  ✓ wrote ${file}`, written: true };
 }
 
+/**
+ * How to spell the command in copy-pasteable advice.
+ *
+ * The README leads with the clone, where the binary is not on PATH and the only
+ * thing that works is `npm run sourcery -- run "…"`. Printing a bare `sourcery`
+ * to that user hands them a command-not-found as the last thing the wizard says.
+ * The tsx entrypoint is the tell: an installed copy runs `dist/index.js`.
+ */
+export function invocation(argv1: string = process.argv[1] ?? ""): string {
+  return /cli[/\\]index\.ts$/.test(argv1) ? "npm run sourcery --" : "sourcery";
+}
+
+/**
+ * The closing screen: what this tool has, in three lines.
+ *
+ * `init` used to end on a scorecard, which proves it works but leaves someone
+ * who has never seen the CLI with no idea what else it does. These are the same
+ * three commands the README leads with, in the same order.
+ */
+export function usageGuide(cmd: string = invocation()): string {
+  return (
+    `\nThree commands from here:\n` +
+    `  ${cmd} run "<query>"   one query, every provider you have keys for\n` +
+    `  ${cmd} batch           the built-in 48-query set — price it first with --dry-run\n` +
+    `  ${cmd} report          self-contained HTML from everything you've run\n` +
+    `\nConfig is ${CONFIG_FILES[0]}, keys are ${ENV_FILE}. Both are read from the\n` +
+    `directory you run the command in.\n`
+  );
+}
+
 /** One cheap completion — proves the key works, not merely that it is present. */
 async function probeLlm(model: string): Promise<string | null> {
   try {
@@ -190,10 +220,13 @@ async function wizard(): Promise<void> {
   if (process.env[envKey]?.trim()) {
     process.stdout.write(`  ${envKey} already set — using it.\n`);
   } else {
+    // The link goes ABOVE the prompt, not after a failed one. Someone who does
+    // not have a key yet is the common case at this exact moment, and making
+    // them submit an empty line to find out where to go is a puzzle, not a
+    // wizard.
+    process.stdout.write(`  ${signupHint(backend)}\n`);
     // Asked twice before giving up. A stray Enter used to end the whole wizard
-    // with "re-run when you have one", which is a harsh price for a keypress,
-    // and the second prompt is also where someone who doesn't have a key yet
-    // gets told where to go and get one.
+    // with "re-run when you have one", which is a harsh price for a keypress.
     let key = await askSecret(`  Paste ${envKey}: `);
     if (!key) {
       process.stdout.write(`\n  Nothing entered. ${signupHint(backend)}\n`);
@@ -232,8 +265,14 @@ async function wizard(): Promise<void> {
 
   for (const id of picked) {
     const spec = specs.find((s) => s.id === id)!;
-    for (const key of spec.requiredEnv) {
-      if (process.env[key]?.trim()) continue;
+    // Same rule as the model key: say where to get it before asking for it.
+    // Printed once per provider rather than once per variable, because Bright
+    // Data's three values all come from the same page.
+    const needs = spec.requiredEnv.filter((k) => !process.env[k]?.trim());
+    if (needs.length && spec.signup) {
+      process.stdout.write(`\n  ${spec.label} — get a key at ${spec.signup}\n`);
+    }
+    for (const key of needs) {
       const value = await askSecret(`  ${spec.label} — ${key}: `);
       if (value) {
         env[key] = value;
@@ -285,17 +324,23 @@ async function wizard(): Promise<void> {
   // The old init ended with "next: edit these files", which is where the "is
   // this a CLI or a dashboard?" confusion started. Finishing on a real result
   // makes what this thing is unambiguous.
+  const cmd = invocation();
   process.stdout.write(
-    `\nReady:  sourcery run "<your query>"   — compares ${values.join(" vs ")}\n`,
+    `\nReady:  ${cmd} run "<your query>"   — compares ${values.join(" vs ")}\n`,
   );
-  if (!(await confirm("\nRun one now?"))) return;
-  const query = await ask('  Query [what is the latest stable Node.js LTS?]: ',
-    "what is the latest stable Node.js LTS?");
-  process.stdout.write(`\n  sourcery run "${query}"\n`);
-  const { runEval } = await import("@core/orchestrator");
-  const { renderRun } = await import("../format");
-  const run = await runEval({ query, variable: "provider", values, model: chosen.model, judge_model: chosen.judge });
-  process.stdout.write("\n" + renderRun(run) + "\n");
+  if (await confirm("\nRun one now?")) {
+    const query = await ask('  Query [what is the latest stable Node.js LTS?]: ',
+      "what is the latest stable Node.js LTS?");
+    process.stdout.write(`\n  ${cmd} run "${query}"\n`);
+    const { runEval } = await import("@core/orchestrator");
+    const { renderRun } = await import("../format");
+    const run = await runEval({ query, variable: "provider", values, model: chosen.model, judge_model: chosen.judge });
+    process.stdout.write("\n" + renderRun(run) + "\n");
+  }
+
+  // Printed whether or not they ran one. Declining the sample run is not a
+  // reason to be left without the three commands the tool actually has.
+  process.stdout.write(usageGuide(cmd));
 }
 
 /** The pre-wizard behaviour, kept for pipes and CI. */
@@ -355,11 +400,12 @@ function scaffold(): void {
     );
   }
 
+  const cmd = invocation();
   out.push(
     "",
-    `Next:  fill in ${ENV_FILE}, then \`sourcery providers --check\``,
+    `Next:  fill in ${ENV_FILE}, then \`${cmd} providers --check\``,
     "For the guided setup, which checks each key against its account, run",
-    "`sourcery init` in a terminal.",
+    `\`${cmd} init\` in a terminal.`,
   );
   process.stdout.write(out.join("\n") + "\n");
 }

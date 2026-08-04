@@ -181,6 +181,33 @@ export function isTransportFailure(error: string | undefined): boolean {
 }
 
 /**
+ * Did this result fail because YOUR account ran out, rather than because the
+ * provider failed?
+ *
+ * The published run reported Firecrawl at 2 failures in 240. Both were
+ * `402 Insufficient credits` — a plan running dry mid-run. Firecrawl returned
+ * something on every call it was actually asked to serve, and the eval said
+ * otherwise in a table comparing it to a competitor. An eval that can't tell
+ * "the provider broke" from "you ran out of money" is measuring your wallet and
+ * printing it as reliability.
+ *
+ * Counted and reported, never silently dropped: an account that died mid-run is
+ * a fact about the run, and hiding it would make a truncated matrix look
+ * complete. It just isn't the provider's fault.
+ */
+const ACCOUNT_FAILURES =
+  /\b(401|402|403)\b|insufficient credit|quota exceeded|payment required|out of credits|billing/i;
+
+export function isAccountFailure(error: string | undefined): boolean {
+  return Boolean(error && !isTransportFailure(error) && ACCOUNT_FAILURES.test(error));
+}
+
+/** A failure the provider is actually answerable for. */
+export function isProviderFailure(error: string | undefined): boolean {
+  return Boolean(error) && !isTransportFailure(error) && !isAccountFailure(error);
+}
+
+/**
  * The results `--resume` may skip: everything on disk except the ones that
  * failed because the network went away. Those get another attempt.
  */
@@ -322,9 +349,15 @@ export interface ProviderStat {
   // Reliability, kept beside quality because the scores above are computed from
   // surviving arms only — a provider that fails half its queries and scores well
   // on the rest looks identical to one that never fails, unless you report this.
-  n_arms: number; // arms attempted, failures included
+  n_arms: number; // results attempted, failures included
+  // Failures the PROVIDER is answerable for. A 402 from your own exhausted plan
+  // is not one, and counting it as one told a competitor's story for them —
+  // Firecrawl was reported at 2 failures in 240 when it had none.
   n_errors: number;
   error_rate: number; // n_errors / n_arms
+  // Your account dying mid-run. Reported rather than dropped: it explains a
+  // truncated matrix, it just isn't a reliability signal about the provider.
+  n_account_errors: number;
 }
 
 export interface TypeStat extends ProviderStat {
@@ -402,7 +435,8 @@ function providerStat(rows: CredibilityRow[], provider: Provider): ProviderStat 
   // point is to catch the provider whose good scores come from a small sample
   // of the queries it was actually asked.
   const attempted = rows.filter((r) => r.provider === provider);
-  const errors = attempted.filter((r) => r.error).length;
+  const errors = attempted.filter((r) => isProviderFailure(r.error)).length;
+  const accountErrors = attempted.filter((r) => isAccountFailure(r.error)).length;
 
   return {
     provider,
@@ -414,6 +448,7 @@ function providerStat(rows: CredibilityRow[], provider: Provider): ProviderStat 
     n_arms: attempted.length,
     n_errors: errors,
     error_rate: attempted.length ? Number((errors / attempted.length).toFixed(4)) : 0,
+    n_account_errors: accountErrors,
   };
 }
 

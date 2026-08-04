@@ -10,6 +10,8 @@ import {
   runCredibility,
   dedupeRows,
   isTransportFailure,
+  isAccountFailure,
+  isProviderFailure,
   resumableKeys,
   type CredibilityRow,
 } from "./credibility";
@@ -264,5 +266,38 @@ describe("resume after a dropped connection", () => {
   it("keeps every distinct result", () => {
     const rows = [row("q1", "tavily", 0), row("q1", "tavily", 1), row("q1", "exa", 0)];
     expect(dedupeRows(rows)).toHaveLength(3);
+  });
+});
+
+describe("whose fault was it", () => {
+  // The published run said Firecrawl failed 2 of 240. Both were 402s from an
+  // exhausted plan. An eval that can't tell "the provider broke" from "you ran
+  // out of money" is measuring your wallet and printing it as reliability — in a
+  // table next to a competitor.
+  it("blames the account, not the provider, for a 402", () => {
+    const e = 'Firecrawl 402: {"success":false,"error":"Insufficient credits"}';
+    expect(isAccountFailure(e)).toBe(true);
+    expect(isProviderFailure(e)).toBe(false);
+  });
+
+  it("blames the provider for its own bad response", () => {
+    const e = "Bright Data returned non-JSON: Error while processing request";
+    expect(isProviderFailure(e)).toBe(true);
+    expect(isAccountFailure(e)).toBe(false);
+  });
+
+  it("blames nobody for a dead network", () => {
+    expect(isProviderFailure("fetch failed")).toBe(false);
+    expect(isAccountFailure("fetch failed")).toBe(false);
+  });
+
+  it("treats a rate limit as the provider's, since it is a real refusal to serve", () => {
+    // Distinct from a 402: you had budget, they declined. That IS reliability.
+    expect(isProviderFailure("429 Rate limit reached for model")).toBe(true);
+  });
+
+  it("counts a clean run as no failure at all", () => {
+    expect(isProviderFailure(undefined)).toBe(false);
+    expect(isAccountFailure(undefined)).toBe(false);
   });
 });

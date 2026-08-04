@@ -152,7 +152,7 @@ I ran the built-in set across all four providers. The write-up is in [**docs/fin
 
 One query breaks it both ways at once. Exa fetched the right Apple page, answered correctly off it, and scored **0** on the answer because the judge itself was a year out of date. Tavily retrieved nothing usable and scored **9**, answering from memory.
 
-**The two I measured properly tied on quality and split on reliability.** Firecrawl failed 2 calls out of 240, Bright Data failed 61. Both returned sources around 290 days old for questions asking what is newest, so freshness is unsolved rather than solved by either of them.
+**The two I measured properly tied on quality and split on reliability.** Firecrawl returned something on all 240 calls — its only two misses were my own account hitting a 402 — while Bright Data failed 61. Both returned sources around 290 days old for questions asking what is newest, so freshness is unsolved rather than solved by either of them.
 
 **And an earlier version of this fooled me.** Twelve queries, one judge, no repeats, and it said Bright Data wrote better answers by 2.6 points. I had a tidy story for why. Run properly, the gap vanished. It was noise, and catching that is the whole reason to build one of these.
 

@@ -62,7 +62,7 @@ Tested properly the gap vanished.
 | Sources extracted | 33% | 90% |
 | Median source age | 286 days | 299 days |
 | Median latency | 76s | 52s |
-| Failed calls | 25% | 0.8% |
+| Failed calls | 25% | 0% (2 more were my account's 402) |
 | Queries with data (of 48) | 46 | 48 |
 
 Answer model (Kimi) held constant throughout, judges a two-model open panel (GLM + DeepSeek). Full computed summary in [`s2-summary.json`](s2-summary.json).
@@ -75,7 +75,11 @@ Those repeats are the only reason I trust any of this. Asking the same provider 
 
 Three things do survive the intervals.
 
-**Reliability is the real difference.** Firecrawl failed 2 calls in 240. Bright Data failed 61. The two tie on answer quality. They don't tie on returning an answer at all.
+**Reliability is the real difference.** Bright Data failed 61 calls in 240. Firecrawl failed none.
+
+I reported Firecrawl at 2 for a while, which was wrong and unfair to them. Both of those were `402 Insufficient credits` — my plan running dry mid-run, not their service failing. Every one of Bright Data's 61 is a real `returned non-JSON` from its SERP endpoint. An eval that can't tell "the provider broke" from "you ran out of money" is measuring your wallet and calling it reliability, so the harness now separates the two.
+
+The two tie on answer quality. They don't tie on returning an answer at all.
 
 But 25% is not a per-call failure rate, and reporting it as one would be wrong. Those 61 failures cluster hard by query: 22 of the 48 queries never failed once across five attempts, while two failed all five times. If failures were independent at p = 0.25 you'd expect 0.05 queries to fail five-for-five. Two is forty times that.
 
@@ -123,7 +127,7 @@ What's still owed is a curated second dataset of real retrieval tasks, shipped a
 
 An eval you can't trust is worse than no eval.
 
-I'd defend the reliability gap (25% against 0.8% over 240 calls each is not noise), the extraction gap (90% against 33%), the shared freshness weakness (~290-day median across both providers and both judges), that judge choice dominates re-run noise, and the retrieval/answer decoupling, which holds at r=0.16 on the full set and reproduces on a separate four-provider pass.
+I'd defend the reliability gap (61 real provider failures against zero, over 240 calls each, is not noise), the extraction gap (90% against 33%), the shared freshness weakness (~290-day median across both providers and both judges), that judge choice dominates re-run noise, and the retrieval/answer decoupling, which holds at r=0.16 on the full set and reproduces on a separate four-provider pass.
 
 I wouldn't defend any claim that one provider retrieves better than another. Every confidence interval overlaps, in both tables, full stop. Nor any per-category ranking off the four-provider pass, since six queries and three fetches is an illustration and not a measurement.
 

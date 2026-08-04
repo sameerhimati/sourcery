@@ -201,6 +201,7 @@ describe("renderCredibility: unparseable judge verdicts", () => {
       retrieval_mean: 5, retrieval_ci95: 1, answer_mean: 5, answer_ci95: 1,
       // 2 queries × 2 seeds, none failed — consistent with n_rows/n_errors above.
       n_arms: 4, n_errors: 0, error_rate: 0,
+      n_account_errors: 0,
     }],
     by_type: [],
     agreement: [],

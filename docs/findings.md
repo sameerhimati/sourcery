@@ -65,7 +65,7 @@ Tested properly the gap vanished.
 | Failed calls | 25% | 0.8% |
 | Queries with data (of 48) | 46 | 48 |
 
-Answer model (Kimi) held constant throughout, judges a two-model open panel (GLM + DeepSeek). Full computed summary in [`docs/s2-summary.json`](docs/s2-summary.json).
+Answer model (Kimi) held constant throughout, judges a two-model open panel (GLM + DeepSeek). Full computed summary in [`s2-summary.json`](s2-summary.json).
 
 On both quality scores the intervals overlap, so the two are statistically indistinguishable and that 2.6-point gap is gone. It was underpowering, not signal.
 
@@ -85,7 +85,7 @@ There's also a finding about the method itself. The judge moves the score more t
 
 ## Why the scores look low
 
-Mid-4s out of 10 looks like a broken harness. It isn't, and it's worth saying why before you conclude these are bad products.
+Mid-4s out of 10 looks like a broken harness. It isn't, and the reason matters before you conclude these are bad products.
 
 The built-in dataset is adversarial on purpose. Every one of its 48 queries demands the newest thing that exists, and the median source that comes back is around 290 days old. That's the result, not a grading bug.
 
@@ -122,5 +122,3 @@ I wouldn't defend any claim that one provider retrieves better than another. Eve
 I'd hold the absolute score levels loosely. They're a property of how hard this dataset is, and the section above explains why that difficulty is unrepresentative.
 
 And the comparison that got the full treatment is Bright Data against Firecrawl because those were the only two keys I had when I ran it, not because they're the two that matter. Tavily and Exa got keyed later. If you want a different pairing, that's the tool.
-
-

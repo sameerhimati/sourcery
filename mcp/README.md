@@ -1,6 +1,6 @@
 # sourcery for agents
 
-> Your agent picks a web-search provider from measurements instead of a hardcoded default.
+> Your agent picks a web-search provider from measurements it can check.
 
 sourcery compares web-retrieval providers — Firecrawl, Tavily, Exa, Bright Data, a
 keyless baseline — on **your** queries, with everything else held constant: same
@@ -54,8 +54,8 @@ provider calls, no credits.
 }
 ```
 
-**Read `decided_by` before acting on `provider`.** It is the difference between
-evidence and a coin flip:
+**Read `decided_by` before acting on `provider`.** It tells you how much weight
+the pick can carry:
 
 | value | what it means |
 |---|---|
@@ -100,8 +100,7 @@ one to act on. Worked examples in [`docs/findings.md`](../docs/findings.md).
 ## Make the numbers yours
 
 Out of the box you get reference numbers measured on this project's own 48-query
-set, flagged with a `caveat`. They are a floor, not the goal — the queries that
-matter are yours.
+set, flagged with a `caveat`. The queries that matter are yours.
 
 ```bash
 sourcery batch --per-type 4 --providers tavily,exa   # a cheap first pass

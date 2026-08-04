@@ -11,6 +11,7 @@ import { loadEnv, requireKeys } from "../env";
 import { loadConfig } from "../config";
 import { appendRecords, toBatchRecords, RUNS_PATH } from "../persist";
 import { renderBatch } from "../format";
+import { createProgress } from "../progress";
 
 export function registerBatch(program: Command): void {
   program
@@ -35,6 +36,7 @@ export function registerBatch(program: Command): void {
     )
     .option("-y, --yes", "skip the cost confirmation prompt")
     .option("--dry-run", "print the cost estimate and exit without running anything")
+    .option("--no-progress", "suppress the progress line")
     .action(async (opts: BatchOptions) => {
       loadEnv();
       setCacheEnabled(opts.cache !== false);
@@ -123,11 +125,25 @@ export function registerBatch(program: Command): void {
         return;
       }
 
-      const out = await runBatch(queries, undefined, {
-        model,
-        judgeModel: judge,
-        providers: running,
+      // The one place progress is not a nicety: this is 48 × providers arms at
+      // concurrency 4, which is minutes to an hour of otherwise total silence.
+      const progress = createProgress({
+        tty: Boolean(process.stdout.isTTY) && opts.progress !== false,
+        write: (s) => process.stdout.write(s),
+        width: process.stdout.columns ?? 100,
       });
+      process.stdout.write("\n");
+      let out;
+      try {
+        out = await runBatch(queries, undefined, {
+          model,
+          judgeModel: judge,
+          providers: running,
+          onProgress: (e) => progress.update(e),
+        });
+      } finally {
+        progress.stop();
+      }
       process.stdout.write("\n" + renderBatch(out) + "\n");
 
       if (opts.save !== false) {
@@ -150,4 +166,5 @@ interface BatchOptions {
   maxCredits?: string;
   yes?: boolean;
   dryRun?: boolean;
+  progress?: boolean;
 }

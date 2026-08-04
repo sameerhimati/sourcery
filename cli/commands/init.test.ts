@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { envTemplate, mergeEnv } from "./init";
+import { envTemplate, mergeEnv, shortHost, usageGuide } from "./init";
 import { listAdapters } from "@core/adapters";
 import { PROVIDERS as LLM_PROVIDERS } from "@core/llm";
 
@@ -77,5 +77,47 @@ describe("envTemplate", () => {
       if (!line || line.startsWith("#")) continue;
       expect(line).toMatch(/^[A-Z0-9_]+=$/);
     }
+  });
+});
+
+describe("usageGuide", () => {
+  it("names all three commands the README leads with", () => {
+    const g = usageGuide("sourcery");
+    for (const cmd of ["run", "batch", "report"]) expect(g).toContain(`sourcery ${cmd}`);
+  });
+
+  it("spells the commands the way the caller actually invoked the tool", () => {
+    // A clone user copying `sourcery run` out of this guide gets
+    // command-not-found, which is a bad last impression for a setup wizard.
+    expect(usageGuide("npm run sourcery --")).toContain('npm run sourcery -- run "<query>"');
+  });
+
+  it("warns that batch spends before it spends", () => {
+    expect(usageGuide("sourcery")).toContain("--dry-run");
+  });
+});
+
+describe("shortHost — the provider menu answers 'where do I get one'", () => {
+  it("keeps the menu narrow by showing only the host", () => {
+    expect(shortHost("https://www.firecrawl.dev/app/api-keys")).toBe("firecrawl.dev");
+    expect(shortHost("https://brightdata.com/cp/setting/users")).toBe("brightdata.com");
+    expect(shortHost("https://app.tavily.com/home")).toBe("app.tavily.com");
+  });
+
+  it("returns nothing for a provider with no signup, rather than 'undefined'", () => {
+    expect(shortHost(undefined)).toBe("");
+  });
+});
+
+describe("adapter signup links — init offers them before asking for a key", () => {
+  it("gives every keyed provider somewhere to go", () => {
+    for (const spec of listAdapters()) {
+      if (!spec.requiredEnv.length) continue;
+      expect(spec.signup, `${spec.id} has no signup URL`).toMatch(/^https:\/\//);
+    }
+  });
+
+  it("leaves the keyless baseline without one, since there is nothing to sign up for", () => {
+    expect(listAdapters().find((s) => s.id === "plain")?.signup).toBeUndefined();
   });
 });

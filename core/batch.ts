@@ -1,6 +1,6 @@
 import { EVAL_DATASET, EvalQuery, QueryType } from "./eval-dataset";
 import { runArm } from "./orchestrator";
-import { DEFAULT_CONFIG, Provider, Source } from "./types";
+import { DEFAULT_CONFIG, Provider, ProgressEvent, Source } from "./types";
 import { defaultProviders } from "./adapters";
 import { MODEL } from "./controls";
 import { mapWithConcurrency } from "./extract";
@@ -132,7 +132,12 @@ export function selectQueries(perType = 0): EvalQuery[] {
 export async function runBatch(
   queries: EvalQuery[] = EVAL_DATASET,
   now: number = Date.now(),
-  opts: { model?: string; judgeModel?: string; providers?: string[] } = {},
+  opts: {
+    model?: string;
+    judgeModel?: string;
+    providers?: string[];
+    onProgress?: (event: ProgressEvent) => void;
+  } = {},
 ): Promise<BatchOutput> {
   const model = opts.model?.trim() || MODEL;
   const judgeModel = opts.judgeModel?.trim() || MODEL;
@@ -143,6 +148,10 @@ export async function runBatch(
     providers.map((provider) => ({ q, provider })),
   );
 
+  // A full batch is 48 queries × every provider and takes minutes to an hour.
+  // Without this it is indistinguishable from a hang, which is exactly how a
+  // long run got abandoned before.
+  let settled = 0;
   const rows = await mapWithConcurrency(jobs, BATCH_CONCURRENCY, async ({ q, provider }) => {
     const arm = await runArm(
       { id: provider, provider, config: { ...DEFAULT_CONFIG } },
@@ -150,6 +159,7 @@ export async function runBatch(
       model,
       judgeModel,
     );
+    opts.onProgress?.({ done: ++settled, total: jobs.length, label: `${provider} · ${q.query}` });
     const row: BatchRow = {
       queryId: q.id,
       type: q.type,

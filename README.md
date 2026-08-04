@@ -2,7 +2,7 @@
 
 **Find the best search API for your agent.**
 
-Which one should you point it at? It depends on what you're asking it, and nobody can answer that for you from a pricing page.
+Which one is best depends on what you're asking it, and nobody can answer that for you from a pricing page.
 
 sourcery runs your queries through several web-search APIs with everything else held still. Same query, same answer model, same judge, swap only the retrieval provider, and see what actually changes. Five providers ship in the box and adding one is about forty lines.
 
@@ -22,7 +22,7 @@ Then:
 
 ```bash
 npm run sourcery -- run "<any question>"   # one query, every provider you have keys for
-npm run sourcery -- report                 # self-contained HTML from everything you've run
+npm run sourcery -- report --tui           # everything you've run, in the terminal (drop --tui for HTML)
 npm run sourcery -- batch                  # the built-in 48-query set, per-query heatmap
 ```
 
@@ -39,7 +39,7 @@ One LLM key for the answer and judge steps, and at least one retrieval key for t
 | OpenAI | [platform.openai.com](https://platform.openai.com/api-keys) | `gpt-4o-mini` answers and grades |
 | Anthropic | [console.anthropic.com](https://console.anthropic.com/settings/keys) | Claude answers well, but see the note on judges below |
 
-**The search key**, which is the thing actually being measured. Pick at least one:
+**The search key**. Pick at least one:
 
 | | where | notes |
 |---|---|---|
@@ -48,9 +48,9 @@ One LLM key for the answer and judge steps, and at least one retrieval key for t
 | Firecrawl | [firecrawl.dev](https://www.firecrawl.dev/app/api-keys) | metered in credits, and `--dry-run` prices a run before it spends |
 | Bright Data | [brightdata.com](https://brightdata.com/cp/setting/users) | three values: an API token plus two zone names, see [`docs/providers.md`](docs/providers.md) |
 
-**Groq plus Tavily costs nothing, needs no card, and gets you a scored result in about a minute.** Two search keys is where it gets interesting, because that's the first point at which you're comparing anything.
+**Groq plus Tavily needs no card and gets you a scored result in about a minute.** Two search keys is where it gets interesting, because that's the first point at which you're comparing anything.
 
-A note on judges, since it explains a choice that looks odd. The grader should ideally be a model whose training ended *before* the questions were asked, so it can't score an answer highly just by already knowing it. That's why `init` pairs newer answer models with older graders, and why a current Claude judging its own output will sometimes call a correctly-sourced answer a hallucination. There's a worked example of exactly that in [the findings](docs/findings.md).
+A note on judges, since it explains a choice that looks odd. The grader should be a model whose training ended *before* the questions were asked, so it can't score an answer highly just by already knowing it. That's why `init` pairs newer answer models with older graders, and why a current Claude judging its own output will sometimes call a correctly-sourced answer a hallucination. There's a worked example of exactly that in [the findings](docs/findings.md).
 
 If you'd rather not run the wizard, copy `.env.example` to `.env.local` and fill in what you have.
 
@@ -84,7 +84,7 @@ sourcery batch --max-credits 400   # refuses to start if the estimate is over yo
 
 Fetches are cached for 24 hours, so re-judging something you already retrieved is free, and the estimate subtracts cached calls before it quotes you. Run `providers --check` before anything long. A key being set doesn't mean the account still has quota, and finding that out 200 calls into a two-hour run is expensive.
 
-There is also a `plain` provider that needs no key at all, just a keyless SERP and a bare `fetch()`. Treat it as a control, not as a way to skip getting a key. Keyless search rate-limits hard: testing this from a clean machine it was captcha'd on the first attempt, and elsewhere a block survived 15 minutes of total silence and still didn't lift. A run with `plain` as its only provider will usually return you nothing at all, which is a finding about keyless search and not a way to evaluate anything.
+There is also a `plain` provider that needs no key at all, just a keyless SERP and a bare `fetch()`. Treat it as a control, not as a way to skip getting a key. Keyless search rate-limits hard: testing this from a clean machine it was captcha'd on the first attempt, and elsewhere a block survived 15 minutes of total silence and still didn't lift. A run with `plain` as its only provider will usually return you nothing at all.
 
 Every run appends to `.sourcery/runs.jsonl`. That file is the contract. The terminal scorecard and the HTML report are both just views over it, and the report shows you every source each provider fetched, the answer built from it, and the judge's reasoning for both scores.
 
@@ -120,7 +120,7 @@ Asking for two source types buys two searches and two sets of scrapes. Real call
 
 I ran the built-in set across all four providers. The write-up is in [**docs/findings.md**](docs/findings.md). The short version, and the reason this tool reports two scores instead of one:
 
-**How good the sources are and how good the answer is barely relate to each other.** They correlate at r = 0.16, which is essentially not at all. A provider can hand back stale, off-topic, half-extracted junk and the answer built on top still reads well, because the model is answering from what it already knew. Grade a search API on the answer downstream of it and you are mostly grading your own model.
+**How good the sources are and how good the answer is barely relate to each other.** They correlate at r = 0.16. A provider can hand back stale, off-topic, half-extracted junk and the answer built on top still reads well, because the model is answering from what it already knew. Grade a search API on the answer downstream of it and you are mostly grading your own model.
 
 One query breaks it both ways at once. Exa fetched the right Apple page, answered correctly off it, and scored **0** on the answer because the judge itself was a year out of date. Tavily retrieved nothing usable and scored **9**, answering from memory.
 
@@ -129,6 +129,7 @@ One query breaks it both ways at once. Exa fetched the right Apple page, answere
 **And an earlier version of this fooled me.** Twelve queries, one judge, no repeats, and it said Bright Data wrote better answers by 2.6 points. I had a tidy story for why. Run properly, the gap vanished. It was noise, and catching that is the whole reason to build one of these.
 
 [Read the full write-up, with the tables and the caveats](docs/findings.md)
+
 ## Use it from an agent
 
 sourcery ships an MCP server on the same binary, so the eval is something an agent can consult rather than something a human reads afterwards. Two tools:
@@ -138,13 +139,24 @@ sourcery ships an MCP server on the same binary, so the eval is something an age
 | `which_provider` | one LLM call, no retrieval | Classifies a query into one of the six types and returns whichever provider scored best on that type in your eval history. Use it to pick a backend. |
 | `evaluate_retrieval` | slow, metered, live provider and LLM calls | Runs one query across several providers with everything else held constant and returns per-provider scores. Use it to prove one. |
 
-The cheap one is the useful pattern. Before an agent spends a retrieval call it can ask which backend has actually done best on this kind of question and route accordingly, which is evidence instead of a hardcoded default for the price of a single classification. With no local history yet it falls back to my shipped numbers and says so, including which providers those numbers can't speak for.
+The cheap one is the useful pattern. Before an agent spends a retrieval call it can ask which backend has actually done best on this kind of question, and route accordingly. Evidence instead of a hardcoded default, for the price of one classification. With no local history yet it falls back to my shipped numbers and says so, including which providers those numbers can't speak for.
+
+Register it once, and the command prints the snippet for whatever you're using:
 
 ```bash
-sourcery mcp    # stdio MCP server
+sourcery mcp --install
 ```
 
-Tool definitions live in [`mcp/server.ts`](mcp/server.ts).
+```bash
+claude mcp add sourcery -- npx -y sourcery-eval mcp   # Claude Code
+codex mcp add sourcery -- npx -y sourcery-eval mcp    # Codex
+```
+
+Cursor and Claude Desktop take the same thing as JSON, and Codex will also read a `[mcp_servers.sourcery]` table in `~/.codex/config.toml` if you'd rather edit the file. `--install` prints all of them.
+
+Run your agent from the directory holding `.sourcery/runs.jsonl`, because the server resolves it relative to its working directory — from anywhere else you get my shipped numbers instead of yours.
+
+Tool definitions live in [`mcp/server.ts`](mcp/server.ts), and there's a block you can paste into an agent's instructions in [`docs/agent-prompt.md`](docs/agent-prompt.md).
 
 ## Bring your own model
 
@@ -156,15 +168,20 @@ The answer step and both judges go through one provider-agnostic seam, so you ca
 # OpenAI, needs OPENAI_API_KEY
 sourcery run "<query>" --model gpt-4o-mini
 
-# Fireworks, needs FIREWORKS_API_KEY, and it's what init scaffolds by default
+# Groq, needs GROQ_API_KEY, and it's what init offers first
+sourcery run "<query>" \
+  --model groq/llama-3.3-70b-versatile \
+  --judge groq/llama-3.3-70b-versatile
+
+# Fireworks, needs FIREWORKS_API_KEY
 sourcery run "<query>" \
   --model fireworks/accounts/fireworks/models/kimi-k2p6 \
   --judge fireworks/accounts/fireworks/models/deepseek-v4-pro
 ```
 
-This matters more than it looks. An eval of your retrieval stack is only meaningful if it runs the model you actually ship, and "which model is best" is a question this tool deliberately won't answer for you. You only need a key for the backend you actually use, and adding another OpenAI-compatible one (Together, Groq, vLLM) is a single row in [`core/llm/`](core/llm/).
+This matters more than it looks. An eval of your retrieval stack is only meaningful if it runs the model you actually ship, and "which model is best" is a question this tool deliberately won't answer for you. You only need a key for the backend you actually use, and adding another OpenAI-compatible one (Together, vLLM, whatever you're running locally) is a single row in [`core/llm/`](core/llm/).
 
-The judge defaults to a stale model on purpose. The anti-cheat needs the judge's cutoff to predate the queries, so a fresher judge only affects the answer score and never the primary source score. The iPhone example above is what that tradeoff looks like when it bites.
+The judge defaults to a stale model on purpose. The anti-cheat needs the judge's cutoff to predate the queries, so a fresher judge only affects the answer score and never the primary source score. The Apple example above is what that tradeoff looks like when it bites.
 
 ## Stack
 

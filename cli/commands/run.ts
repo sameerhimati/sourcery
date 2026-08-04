@@ -9,6 +9,8 @@ import { loadEnv, requireKeys } from "../env";
 import { loadConfig } from "../config";
 import { appendRecords, toRunRecord, RUNS_PATH } from "../persist";
 import { renderRun } from "../format";
+import { createProgress } from "../progress";
+import { invocation } from "../invocation";
 
 export function registerRun(program: Command): void {
   program
@@ -27,6 +29,7 @@ export function registerRun(program: Command): void {
     )
     .option("--no-save", "do not append the run to .sourcery/runs.jsonl")
     .option("--no-cache", "always fetch live; ignore fetches cached in the last 24h")
+    .option("--no-progress", "suppress the progress line")
     .action(async (query: string, opts: RunOptions) => {
       loadEnv();
       setCacheEnabled(opts.cache !== false);
@@ -58,7 +61,20 @@ export function registerRun(program: Command): void {
         ...(judge ? { judge_model: judge } : {}),
       };
 
-      const run = await runEval(req);
+      // Retrieval + answer + two judges per arm is several seconds even when
+      // everything is healthy, and the command printed nothing until it was all
+      // over. Stopped before the scorecard so the two never share a line.
+      const progress = createProgress({
+        tty: Boolean(process.stdout.isTTY) && opts.progress !== false,
+        write: (s) => process.stdout.write(s),
+        width: process.stdout.columns ?? 100,
+      });
+      let run;
+      try {
+        run = await runEval({ ...req, onProgress: (e) => progress.update(e) });
+      } finally {
+        progress.stop();
+      }
       process.stdout.write(renderRun(run) + "\n");
 
       if (opts.save !== false) {
@@ -66,6 +82,10 @@ export function registerRun(program: Command): void {
         const id = `run_${Date.now().toString(36)}`;
         appendRecords([toRunRecord(run, id, ts)]);
         process.stdout.write(`\nsaved → ${RUNS_PATH} (${id})\n`);
+        // The run log accumulates across runs, and `report --tui` is the view
+        // over it — which nobody found, because the only mention of it was a
+        // flag in --help.
+        process.stdout.write(`see everything so far → ${invocation()} report --tui\n`);
       }
     });
 }
@@ -77,4 +97,5 @@ interface RunOptions {
   judge?: string;
   save?: boolean;
   cache?: boolean;
+  progress?: boolean;
 }

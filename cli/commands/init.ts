@@ -4,6 +4,7 @@ import { defaultProviders, listAdapters, missingEnv } from "@core/adapters";
 import { complete, PROVIDERS as LLM_PROVIDERS } from "@core/llm";
 import { loadEnv } from "../env";
 import { CONFIG_FILES } from "../config";
+import { invocation } from "../invocation";
 import { ask, askSecret, confirm, interactive, multiSelect, select } from "../prompt";
 
 // ─── `sourcery init` ───
@@ -71,6 +72,15 @@ const LLM_CHOICES = [
 
 const ENV_HEADER = `# sourcery — written by \`sourcery init\`. Never commit this file.
 `;
+
+/**
+ * A signup URL shortened to its host, for a menu line where the full URL would
+ * wrap. `undefined` for the keyless baseline, which has nothing to sign up for.
+ */
+export function shortHost(url: string | undefined): string {
+  if (!url) return "";
+  return url.replace(/^https?:\/\//, "").replace(/^www\./, "").split("/")[0];
+}
 
 /** Where to go and get the key you just failed to paste. */
 function signupHint(backend: string): string {
@@ -163,6 +173,24 @@ export default {
   return { message: `  ✓ wrote ${file}`, written: true };
 }
 
+/**
+ * The closing screen: what this tool has, in three lines.
+ *
+ * `init` used to end on a scorecard, which proves it works but leaves someone
+ * who has never seen the CLI with no idea what else it does. These are the same
+ * three commands the README leads with, in the same order.
+ */
+export function usageGuide(cmd: string = invocation()): string {
+  return (
+    `\nThree commands from here:\n` +
+    `  ${cmd} run "<query>"   one query, every provider you have keys for\n` +
+    `  ${cmd} batch           the built-in 48-query set — price it first with --dry-run\n` +
+    `  ${cmd} report --tui    everything you've run, in the terminal (drop --tui for HTML)\n` +
+    `\nConfig is ${CONFIG_FILES[0]}, keys are ${ENV_FILE}. Both are read from the\n` +
+    `directory you run the command in.\n`
+  );
+}
+
 /** One cheap completion — proves the key works, not merely that it is present. */
 async function probeLlm(model: string): Promise<string | null> {
   try {
@@ -190,10 +218,13 @@ async function wizard(): Promise<void> {
   if (process.env[envKey]?.trim()) {
     process.stdout.write(`  ${envKey} already set — using it.\n`);
   } else {
+    // The link goes ABOVE the prompt, not after a failed one. Someone who does
+    // not have a key yet is the common case at this exact moment, and making
+    // them submit an empty line to find out where to go is a puzzle, not a
+    // wizard.
+    process.stdout.write(`  ${signupHint(backend)}\n`);
     // Asked twice before giving up. A stray Enter used to end the whole wizard
-    // with "re-run when you have one", which is a harsh price for a keypress,
-    // and the second prompt is also where someone who doesn't have a key yet
-    // gets told where to go and get one.
+    // with "re-run when you have one", which is a harsh price for a keypress.
     let key = await askSecret(`  Paste ${envKey}: `);
     if (!key) {
       process.stdout.write(`\n  Nothing entered. ${signupHint(backend)}\n`);
@@ -221,19 +252,42 @@ async function wizard(): Promise<void> {
   // ─── 2. retrieval providers ───
   process.stdout.write("\n");
   const specs = listAdapters().filter((s) => s.requiredEnv.length > 0);
-  const picked = await multiSelect(
-    "Which retrieval providers do you have keys for?  (the eval's actual variable)",
-    specs.map((s) => ({
-      label: s.label,
-      value: s.id,
-      hint: missingEnv(s.id).length ? `needs ${s.requiredEnv.join(", ")}` : "key already set",
-    })),
-  );
+  // The hint answers the question actually being asked at this moment, which is
+  // "where do I get one" — not "which env var will hold it". Naming the variable
+  // helps only someone who already has the key.
+  const menu = specs.map((s) => ({
+    label: s.label,
+    value: s.id,
+    hint: missingEnv(s.id).length ? shortHost(s.signup) : "key already set",
+  }));
+  const question = "Which retrieval providers do you have keys for?  (the eval's actual variable)";
+  let picked = await multiSelect(question, menu);
+
+  // Selecting none used to sail straight through to a config whose only arm is
+  // `plain`, which rate-limits within a couple of calls — so the wizard's grand
+  // finale was "Winner: none (every provider failed)". Say so, and offer the
+  // free one, before that happens rather than after.
+  if (!picked.length) {
+    const free = specs.find((s) => s.id === "tavily");
+    process.stdout.write(
+      `\n  Nothing picked. With no retrieval key the only arm is \`plain\`, the keyless\n` +
+        `  baseline — it gets captcha'd almost immediately, so the first run would\n` +
+        `  score nothing and tell you nothing.\n` +
+        (free?.signup ? `  Tavily's free tier needs no card: ${free.signup}\n` : ""),
+    );
+    picked = await multiSelect("Pick one now, or leave blank to add keys later:", menu);
+  }
 
   for (const id of picked) {
     const spec = specs.find((s) => s.id === id)!;
-    for (const key of spec.requiredEnv) {
-      if (process.env[key]?.trim()) continue;
+    // Same rule as the model key: say where to get it before asking for it.
+    // Printed once per provider rather than once per variable, because Bright
+    // Data's three values all come from the same page.
+    const needs = spec.requiredEnv.filter((k) => !process.env[k]?.trim());
+    if (needs.length && spec.signup) {
+      process.stdout.write(`\n  ${spec.label} — get a key at ${spec.signup}\n`);
+    }
+    for (const key of needs) {
       const value = await askSecret(`  ${spec.label} — ${key}: `);
       if (value) {
         env[key] = value;
@@ -274,10 +328,11 @@ async function wizard(): Promise<void> {
   if (wrote.length) process.stdout.write(`  ✓ wrote ${ENV_FILE} (${wrote.join(", ")})\n`);
   if (kept.length) process.stdout.write(`  · kept existing ${kept.join(", ")}\n`);
 
-  if (ready.length < 2) {
+  if (ready.length === 1) {
     process.stdout.write(
-      `\n  Only ${ready.length} paid provider ready, so \`plain\` (the keyless baseline) is the\n` +
-        `  other. It rate-limits hard — fine for trying the tool, not for a benchmark.\n`,
+      `\n  One paid provider, so \`plain\` (the keyless baseline) is the other arm.\n` +
+        `  It rate-limits hard — fine for seeing the tool work, not for a benchmark.\n` +
+        `  A second key is where this starts comparing anything.\n`,
     );
   }
 
@@ -285,17 +340,37 @@ async function wizard(): Promise<void> {
   // The old init ended with "next: edit these files", which is where the "is
   // this a CLI or a dashboard?" confusion started. Finishing on a real result
   // makes what this thing is unambiguous.
+  const cmd = invocation();
+
+  // Unless there is nothing to run. With no retrieval key every arm is `plain`,
+  // which gets captcha'd — offering the sample run there means ending setup on
+  // "Winner: none (every provider failed)", which reads as a broken tool rather
+  // than a missing key.
+  if (!ready.length) {
+    process.stdout.write(
+      `\n  No retrieval key yet, so there's nothing to compare. Add one to ${ENV_FILE}\n` +
+        `  (or re-run \`${cmd} init\`), then \`${cmd} providers --check\`.\n`,
+    );
+    process.stdout.write(usageGuide(cmd));
+    return;
+  }
+
   process.stdout.write(
-    `\nReady:  sourcery run "<your query>"   — compares ${values.join(" vs ")}\n`,
+    `\nReady:  ${cmd} run "<your query>"   — compares ${values.join(" vs ")}\n`,
   );
-  if (!(await confirm("\nRun one now?"))) return;
-  const query = await ask('  Query [what is the latest stable Node.js LTS?]: ',
-    "what is the latest stable Node.js LTS?");
-  process.stdout.write(`\n  sourcery run "${query}"\n`);
-  const { runEval } = await import("@core/orchestrator");
-  const { renderRun } = await import("../format");
-  const run = await runEval({ query, variable: "provider", values, model: chosen.model, judge_model: chosen.judge });
-  process.stdout.write("\n" + renderRun(run) + "\n");
+  if (await confirm("\nRun one now?")) {
+    const query = await ask('  Query [what is the latest stable Node.js LTS?]: ',
+      "what is the latest stable Node.js LTS?");
+    process.stdout.write(`\n  ${cmd} run "${query}"\n`);
+    const { runEval } = await import("@core/orchestrator");
+    const { renderRun } = await import("../format");
+    const run = await runEval({ query, variable: "provider", values, model: chosen.model, judge_model: chosen.judge });
+    process.stdout.write("\n" + renderRun(run) + "\n");
+  }
+
+  // Printed whether or not they ran one. Declining the sample run is not a
+  // reason to be left without the three commands the tool actually has.
+  process.stdout.write(usageGuide(cmd));
 }
 
 /** The pre-wizard behaviour, kept for pipes and CI. */
@@ -355,11 +430,12 @@ function scaffold(): void {
     );
   }
 
+  const cmd = invocation();
   out.push(
     "",
-    `Next:  fill in ${ENV_FILE}, then \`sourcery providers --check\``,
+    `Next:  fill in ${ENV_FILE}, then \`${cmd} providers --check\``,
     "For the guided setup, which checks each key against its account, run",
-    "`sourcery init` in a terminal.",
+    `\`${cmd} init\` in a terminal.`,
   );
   process.stdout.write(out.join("\n") + "\n");
 }

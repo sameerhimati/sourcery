@@ -104,6 +104,8 @@ set, flagged with a `caveat`. The queries that matter are yours.
 
 ```bash
 sourcery batch --per-type 4 --providers tavily,exa   # a cheap first pass
+sourcery batch --queries-template > my-queries.json  # then your own queries
+sourcery batch --queries my-queries.json             # which is the point
 sourcery batch --dry-run                             # price the full set first
 ```
 

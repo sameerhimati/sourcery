@@ -29,6 +29,11 @@ only thing differing between arms is retrieval.
 - `sourcery run "<query>" --values a,b` — one query through two providers, scored
   side by side.
 - `sourcery batch` — the built-in 48-query set across providers, as a per-type table.
+- `sourcery batch --queries <file>` — the same, on YOUR queries. A JSON array (or
+  JSONL) of `{ query, type }`, where type is one of the six below. Prefer this
+  whenever the user has real queries: the built-in set is freshness probes, and
+  the whole claim of this tool is that your queries are the ones that matter.
+  `sourcery batch --queries-template` prints a starting point.
 - `sourcery report` — self-contained HTML from the run log.
 
 Bring your own model: `--model <provider>/<model>` for any OpenAI-compatible

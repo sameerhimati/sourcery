@@ -113,9 +113,11 @@ Those are jobs with a right answer sitting on a specific page, and they're what 
 
 This is also the strongest argument for running it on your own queries rather than reading mine. Your queries are the ones you care about, and they're nothing like these.
 
-The fix on my side is additive, not a rewrite. A second dataset of real retrieval tasks, selectable by flag and reported separately, with `core/eval-dataset.ts` left exactly as it is. The published numbers are anchored to those 48 queries and quietly editing them would invalidate the result rather than improve it. Two datasets that disagree is a more interesting finding than either on its own.
+The fix is additive, not a rewrite. `core/eval-dataset.ts` stays exactly as it is — the published numbers are anchored to those 48 queries, and quietly editing them would invalidate the result rather than improve it.
 
-That work isn't done yet. This section is the caveat until it is.
+Half of it now exists. `sourcery batch --queries my-queries.json` runs your own set through the same harness, same scoring, same run log, and `--queries-template` prints a starting point. So the answer to "these queries aren't mine" is no longer "I know, sorry" — it's a flag.
+
+What's still owed is a curated second dataset of real retrieval tasks, shipped and measured the way these 48 were, so there's a published comparison rather than only a mechanism. Two datasets that disagree is a more interesting finding than either alone.
 
 ## What I'd defend, and what I wouldn't
 

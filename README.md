@@ -90,6 +90,28 @@ There is also a `plain` provider that needs no key at all, just a keyless SERP a
 
 Every run appends to `.sourcery/runs.jsonl`. That file is the contract. The terminal scorecard and the HTML report are both just views over it, and the report shows you every source each provider fetched, the answer built from it, and the judge's reasoning for both scores.
 
+### Run it on your own queries
+
+The built-in 48 are freshness probes. Yours are the ones that matter, and they're nothing like these:
+
+```bash
+sourcery batch --queries-template > my-queries.json   # a starting point
+sourcery batch --queries my-queries.json              # run them
+```
+
+The file is a JSON array, or one JSON object per line if that's what your query log gives you:
+
+```json
+[
+  { "type": "product_lookup", "query": "What are the current pricing tiers for <product>?" },
+  { "type": "how_to", "query": "How do I configure <tool> to do <specific thing>?" }
+]
+```
+
+`id` is optional. `type` must be one of the six built-in types — `breaking_news`, `how_to`, `product_lookup`, `local_geo`, `recent_release`, `numeric_live` — because the heatmap, the MCP classifier and `which_provider`'s routing all key off them. A seventh type would parse and then be unroutable forever, so it's refused up front.
+
+Results land in the same `.sourcery/runs.jsonl`, so `which_provider` starts answering from your queries rather than my numbers.
+
 ## The providers
 
 | id | How far it's been measured | Keys needed | Shape |

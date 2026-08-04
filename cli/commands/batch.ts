@@ -1,5 +1,7 @@
 import type { Command } from "commander";
+import { readFileSync } from "node:fs";
 import { runBatch, selectQueries } from "@core/batch";
+import { parseQuerySet, QuerySetError, querySetTemplate } from "@core/query-set";
 import { MODEL } from "@core/controls";
 import { requiredEnvKeys } from "@core/llm";
 import { readCached, setCacheEnabled } from "@core/fetch-cache";
@@ -22,6 +24,11 @@ export function registerBatch(program: Command): void {
       "cap queries per type for a quick pass (0 = full 48-query set)",
       "0",
     )
+    .option(
+      "--queries <file>",
+      "run YOUR queries instead of the built-in set (JSON array or JSONL)",
+    )
+    .option("--queries-template", "print a starter query file to stdout and exit")
     .option("--model <model>", "answer model override")
     .option("--judge <model>", "judge model (defaults to gpt-4o-mini)")
     .option(
@@ -38,6 +45,10 @@ export function registerBatch(program: Command): void {
     .option("--dry-run", "print the cost estimate and exit without running anything")
     .option("--no-progress", "suppress the progress line")
     .action(async (opts: BatchOptions) => {
+      if (opts.queriesTemplate) {
+        process.stdout.write(querySetTemplate());
+        return;
+      }
       loadEnv();
       setCacheEnabled(opts.cache !== false);
       const config = await loadConfig();
@@ -70,7 +81,13 @@ export function registerBatch(program: Command): void {
       requireKeys(requiredEnvKeys([model ?? MODEL, judge ?? MODEL]), [model ?? MODEL, judge ?? MODEL]);
 
       const perType = Number(opts.perType);
-      const queries = selectQueries(Number.isFinite(perType) ? perType : 0);
+      // Your own queries are the point of the tool; the built-in 48 are a
+      // demonstration that the harness works. --per-type caps the built-in set
+      // and has no meaning for a set you wrote yourself, so it is ignored there
+      // rather than silently truncating a file you handed us.
+      const queries = opts.queries
+        ? loadQuerySet(opts.queries)
+        : selectQueries(Number.isFinite(perType) ? perType : 0);
       process.stdout.write(
         `Running ${queries.length} queries × ${running.length} providers ` +
           `(${running.join(", ")}) = ${queries.length * running.length} calls ` +
@@ -167,4 +184,32 @@ interface BatchOptions {
   yes?: boolean;
   dryRun?: boolean;
   progress?: boolean;
+  queries?: string;
+  queriesTemplate?: boolean;
+}
+
+/**
+ * Read a user query set, and fail with something actionable.
+ *
+ * A malformed query file is the most likely thing to go wrong on someone's first
+ * real use of this tool, so the error has to name the file, the entry and the
+ * fix — not surface a JSON.parse stack trace from three frames down.
+ */
+function loadQuerySet(file: string): ReturnType<typeof parseQuerySet> {
+  let text: string;
+  try {
+    text = readFileSync(file, "utf8");
+  } catch {
+    process.stderr.write(`Cannot read ${file}\n  \`sourcery batch --queries-template\` prints a starting point.\n`);
+    process.exit(1);
+  }
+  try {
+    return parseQuerySet(text, file);
+  } catch (e) {
+    if (e instanceof QuerySetError) {
+      process.stderr.write(`${e.message}\n`);
+      process.exit(1);
+    }
+    throw e;
+  }
 }

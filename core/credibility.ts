@@ -156,6 +156,44 @@ export function armKey(queryId: string, provider: Provider, seed: number): strin
 }
 
 /**
+ * Did this result fail because YOUR machine lost the network, rather than
+ * because the provider failed?
+ *
+ * The distinction decides what `--resume` is allowed to skip, and it matters
+ * more here than anywhere else in the codebase: the headline reliability claim
+ * IS the failure rate. A provider's 4xx, its non-JSON, its timeout — those are
+ * data, and retrying them until they pass would manufacture a better number than
+ * the product deserves. A DNS failure because the wifi dropped is not data, and
+ * skipping it on resume bakes your outage into a published statistic and
+ * attributes it to a vendor.
+ *
+ * Deliberately narrow: it matches the handful of Node/undici codes that can only
+ * mean the local network went away. Anything ambiguous is treated as a real
+ * provider failure, because over-counting your own outage is the safer error —
+ * it makes a provider look worse than it is, which is at least visible, rather
+ * than better than it is, which is not.
+ */
+const TRANSPORT_FAILURES =
+  /\b(ENOTFOUND|EAI_AGAIN|ECONNREFUSED|ECONNRESET|ENETDOWN|ENETUNREACH|EHOSTUNREACH|UND_ERR_CONNECT_TIMEOUT|UND_ERR_SOCKET)\b|fetch failed|network is (down|unreachable)/i;
+
+export function isTransportFailure(error: string | undefined): boolean {
+  return Boolean(error && TRANSPORT_FAILURES.test(error));
+}
+
+/**
+ * The results `--resume` may skip: everything on disk except the ones that
+ * failed because the network went away. Those get another attempt.
+ */
+export function resumableKeys(rows: CredibilityRow[]): Set<string> {
+  const keys = new Set<string>();
+  for (const r of rows) {
+    if (isTransportFailure(r.error)) continue;
+    keys.add(armKey(r.queryId, r.provider, r.seed));
+  }
+  return keys;
+}
+
+/**
  * Run the full credibility matrix: queries × providers × seeds, each fetched
  * fresh and graded by every judge in the panel. Never throws per-arm — a failed
  * pipeline becomes a row with `error` set and no judgements.
@@ -452,10 +490,29 @@ function varianceDecomp(rows: CredibilityRow[], judgeLabels: string[]): Variance
   };
 }
 
+/**
+ * Collapse the raw log into one row per (query, provider, seed).
+ *
+ * The log is append-only, so a retried result leaves the old attempt behind it.
+ * Counting both would inflate `n_arms` and, worse, keep counting a superseded
+ * failure in the error rate — the number this whole run exists to measure. Last
+ * write wins, because rows are appended in the order they completed.
+ *
+ * Transport failures that were never retried are dropped rather than counted:
+ * they record that this machine lost its network, and attributing that to a
+ * provider is exactly the mistake the retry logic exists to prevent.
+ */
+export function dedupeRows(rows: CredibilityRow[]): CredibilityRow[] {
+  const latest = new Map<string, CredibilityRow>();
+  for (const r of rows) latest.set(armKey(r.queryId, r.provider, r.seed), r);
+  return [...latest.values()].filter((r) => !isTransportFailure(r.error));
+}
+
 export function summarize(
-  rows: CredibilityRow[],
+  raw: CredibilityRow[],
   meta: { seeds: number; answer_model: string; judges: string[]; now: number },
 ): CredibilitySummary {
+  const rows = dedupeRows(raw);
   const labels = meta.judges.map(judgeLabel);
   const providers = providersIn(rows);
   // All unordered judge pairs (usually just one for a 2-judge panel).

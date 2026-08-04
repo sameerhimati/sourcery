@@ -8,6 +8,9 @@ import {
   summarize,
   armKey,
   runCredibility,
+  dedupeRows,
+  isTransportFailure,
+  resumableKeys,
   type CredibilityRow,
 } from "./credibility";
 
@@ -189,5 +192,77 @@ describe("summary reports what actually ran", () => {
     expect(s.providers).toEqual(["bright_data"]);
     expect(s.n_queries).toBe(2);
     expect(s.by_provider).toHaveLength(1);
+  });
+});
+
+describe("resume after a dropped connection", () => {
+  // The scenario this exists for: the wifi goes out 200 results into a 480-result
+  // run. Those results land on disk as failures. Without this, --resume skips
+  // them as "done" and publishes an outage as a provider's failure rate — the
+  // one number the whole run exists to measure.
+  const row = (
+    queryId: string,
+    provider: string,
+    seed: number,
+    error?: string,
+  ): CredibilityRow => ({
+    queryId,
+    type: "how_to",
+    query: "q",
+    provider: provider as CredibilityRow["provider"],
+    seed,
+    num_sources: error ? 0 : 8,
+    num_sources_extracted: error ? 0 : 8,
+    median_source_age_days: null,
+    domains: [],
+    latency_ms: 1,
+    judgements: [],
+    ...(error ? { error } : {}),
+  });
+
+  it("treats a lost network as a transport failure", () => {
+    expect(isTransportFailure("fetch failed")).toBe(true);
+    expect(isTransportFailure("getaddrinfo ENOTFOUND api.tavily.com")).toBe(true);
+    expect(isTransportFailure("connect ECONNREFUSED 127.0.0.1:443")).toBe(true);
+  });
+
+  it("treats a provider's own failure as data, not an outage", () => {
+    // These are the measurement. Retrying them until they pass would invent a
+    // better reliability number than the provider earned.
+    expect(isTransportFailure("Bright Data returned non-JSON: This query recently failed")).toBe(false);
+    expect(isTransportFailure("429 Rate limit reached")).toBe(false);
+    expect(isTransportFailure("402 Payment Required")).toBe(false);
+    expect(isTransportFailure(undefined)).toBe(false);
+  });
+
+  it("resume skips completed and provider-failed results, but retries network ones", () => {
+    const keys = resumableKeys([
+      row("q1", "tavily", 0),
+      row("q2", "tavily", 0, "429 Rate limit reached"),
+      row("q3", "tavily", 0, "fetch failed"),
+    ]);
+    expect(keys.has(armKey("q1", "tavily", 0))).toBe(true);
+    expect(keys.has(armKey("q2", "tavily", 0))).toBe(true);
+    expect(keys.has(armKey("q3", "tavily", 0))).toBe(false);
+  });
+
+  it("a retried result supersedes the attempt it replaces", () => {
+    // The log is append-only, so both rows are on disk. Counting the old failure
+    // would keep it in the error rate forever.
+    const deduped = dedupeRows([
+      row("q1", "tavily", 0, "fetch failed"),
+      row("q1", "tavily", 0),
+    ]);
+    expect(deduped).toHaveLength(1);
+    expect(deduped[0].error).toBeUndefined();
+  });
+
+  it("drops a network failure that was never retried rather than blaming the provider", () => {
+    expect(dedupeRows([row("q1", "tavily", 0, "ENOTFOUND")])).toHaveLength(0);
+  });
+
+  it("keeps every distinct result", () => {
+    const rows = [row("q1", "tavily", 0), row("q1", "tavily", 1), row("q1", "exa", 0)];
+    expect(dedupeRows(rows)).toHaveLength(3);
   });
 });

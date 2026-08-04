@@ -1,5 +1,5 @@
 import type { Command } from "commander";
-import { runCredibility, summarize, armKey } from "@core/credibility";
+import { isTransportFailure, resumableKeys, runCredibility, summarize, armKey } from "@core/credibility";
 import { selectQueries } from "@core/batch";
 import { getAdapter, defaultProviders } from "@core/adapters";
 import { MODEL } from "@core/controls";
@@ -86,11 +86,20 @@ export function registerCredibility(program: Command): void {
       // --resume replays what's already on disk so a killed run costs minutes,
       // not hours. Rows are appended as they land, so this always has a floor.
       const prior = opts.resume ? readCredibilityRows() : [];
-      const done = new Set(prior.map((r) => armKey(r.queryId, r.provider, r.seed)));
+      // Skip what's on disk — EXCEPT results that failed because this machine
+      // lost the network. Those are not measurements of anything; skipping them
+      // would publish your own outage as a provider's failure rate, and the
+      // failure rate is the headline reliability claim.
+      const done = resumableKeys(prior);
+      const retrying = prior.filter((r) => isTransportFailure(r.error)).length;
       process.stdout.write(
         `Credibility run: ${queries.length} queries × ${armSet.join("/")} × ${seeds} seeds ` +
           `= ${arms} results, each graded by ${judges.length} judge(s), concurrency ${concurrency}.\n` +
           (done.size ? `Resuming: ${done.size} results already on disk, ${arms - done.size} to go.\n` : "") +
+          (retrying
+            ? `Retrying ${retrying} that failed with a network error — those measure your ` +
+              `connection, not the provider.\n`
+            : "") +
           `This is slow + credit-heavy (fresh fetch every seed)…\n\n`,
       );
 

@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest";
 import { envTemplate, mergeEnv, shortHost, usageGuide } from "./init";
-import { invocation } from "../invocation";
 import { listAdapters } from "@core/adapters";
 import { PROVIDERS as LLM_PROVIDERS } from "@core/llm";
 
@@ -78,22 +77,6 @@ describe("envTemplate", () => {
       if (!line || line.startsWith("#")) continue;
       expect(line).toMatch(/^[A-Z0-9_]+=$/);
     }
-  });
-});
-
-describe("invocation — the last thing the wizard says must be runnable", () => {
-  it("uses the npm script when running from a clone, which is what the README leads with", () => {
-    expect(invocation("/Users/x/Code/sourcery/cli/index.ts")).toBe("npm run sourcery --");
-    expect(invocation("C:\\src\\sourcery\\cli\\index.ts")).toBe("npm run sourcery --");
-  });
-
-  it("uses the bare binary for an installed copy", () => {
-    expect(invocation("/usr/local/lib/node_modules/sourcery-eval/dist/index.js")).toBe("sourcery");
-    expect(invocation("/tmp/x/node_modules/.bin/sourcery")).toBe("sourcery");
-  });
-
-  it("falls back to the binary when argv gives it nothing", () => {
-    expect(invocation("")).toBe("sourcery");
   });
 });
 

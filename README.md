@@ -129,6 +129,7 @@ One query breaks it both ways at once. Exa fetched the right Apple page, answere
 **And an earlier version of this fooled me.** Twelve queries, one judge, no repeats, and it said Bright Data wrote better answers by 2.6 points. I had a tidy story for why. Run properly, the gap vanished. It was noise, and catching that is the whole reason to build one of these.
 
 [Read the full write-up, with the tables and the caveats](docs/findings.md)
+
 ## Use it from an agent
 
 sourcery ships an MCP server on the same binary, so the eval is something an agent can consult rather than something a human reads afterwards. Two tools:
@@ -140,11 +141,22 @@ sourcery ships an MCP server on the same binary, so the eval is something an age
 
 The cheap one is the useful pattern. Before an agent spends a retrieval call it can ask which backend has actually done best on this kind of question and route accordingly, which is evidence instead of a hardcoded default for the price of a single classification. With no local history yet it falls back to my shipped numbers and says so, including which providers those numbers can't speak for.
 
+Register it once, and the command prints the snippet for whatever you're using:
+
 ```bash
-sourcery mcp    # stdio MCP server
+sourcery mcp --install
 ```
 
-Tool definitions live in [`mcp/server.ts`](mcp/server.ts).
+```bash
+claude mcp add sourcery -- npx -y sourcery-eval mcp   # Claude Code
+codex mcp add sourcery -- npx -y sourcery-eval mcp    # Codex
+```
+
+Cursor and Claude Desktop take the same thing as JSON, and Codex will also read a `[mcp_servers.sourcery]` table in `~/.codex/config.toml` if you'd rather edit the file. `--install` prints all of them.
+
+Run your agent from the directory holding `.sourcery/runs.jsonl`, because the server resolves it relative to its working directory — from anywhere else you get my shipped numbers instead of yours.
+
+Tool definitions live in [`mcp/server.ts`](mcp/server.ts), and there's a block you can paste into an agent's instructions in [`docs/agent-prompt.md`](docs/agent-prompt.md).
 
 ## Bring your own model
 
@@ -156,13 +168,18 @@ The answer step and both judges go through one provider-agnostic seam, so you ca
 # OpenAI, needs OPENAI_API_KEY
 sourcery run "<query>" --model gpt-4o-mini
 
-# Fireworks, needs FIREWORKS_API_KEY, and it's what init scaffolds by default
+# Groq, needs GROQ_API_KEY, and it's what init offers first
+sourcery run "<query>" \
+  --model groq/llama-3.3-70b-versatile \
+  --judge groq/llama-3.3-70b-versatile
+
+# Fireworks, needs FIREWORKS_API_KEY
 sourcery run "<query>" \
   --model fireworks/accounts/fireworks/models/kimi-k2p6 \
   --judge fireworks/accounts/fireworks/models/deepseek-v4-pro
 ```
 
-This matters more than it looks. An eval of your retrieval stack is only meaningful if it runs the model you actually ship, and "which model is best" is a question this tool deliberately won't answer for you. You only need a key for the backend you actually use, and adding another OpenAI-compatible one (Together, Groq, vLLM) is a single row in [`core/llm/`](core/llm/).
+This matters more than it looks. An eval of your retrieval stack is only meaningful if it runs the model you actually ship, and "which model is best" is a question this tool deliberately won't answer for you. You only need a key for the backend you actually use, and adding another OpenAI-compatible one (Together, vLLM, whatever you're running locally) is a single row in [`core/llm/`](core/llm/).
 
 The judge defaults to a stale model on purpose. The anti-cheat needs the judge's cutoff to predate the queries, so a fresher judge only affects the answer score and never the primary source score. The iPhone example above is what that tradeoff looks like when it bites.
 

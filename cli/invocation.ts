@@ -12,3 +12,25 @@
 export function invocation(argv1: string = process.argv[1] ?? ""): string {
   return /cli[/\\]index\.ts$/.test(argv1) ? "npm run sourcery --" : "sourcery";
 }
+
+/** True when we're running from a checkout rather than an installed package. */
+export function isClone(argv1: string = process.argv[1] ?? ""): boolean {
+  return /cli[/\\]index\.ts$/.test(argv1);
+}
+
+/**
+ * The command an MCP client should spawn to serve sourcery.
+ *
+ * `npx -y sourcery-eval mcp` once it's installable, but from a clone that
+ * resolves to nothing — so a checkout gets the absolute path to its own build
+ * instead. Printing the npx line to someone who cloned the repo would be advice
+ * that fails on first use, which is the same defect as any other doc that
+ * describes a product it doesn't have.
+ */
+export function mcpServerCommand(
+  argv1: string = process.argv[1] ?? "",
+): { command: string; args: string[] } {
+  if (!isClone(argv1)) return { command: "npx", args: ["-y", "sourcery-eval", "mcp"] };
+  const root = argv1.replace(/cli[/\\]index\.ts$/, "");
+  return { command: "node", args: [`${root}dist/index.js`, "mcp"] };
+}

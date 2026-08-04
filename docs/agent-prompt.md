@@ -65,7 +65,17 @@ type) for a cheap sweep before committing to the full 48.
 
 ## MCP: the server agents should actually use
 
-`sourcery mcp` serves the same engine over stdio. Register it once:
+`sourcery mcp` serves the same engine over stdio. `sourcery mcp --install` prints
+the registration for every client below, adapted to how sourcery is installed —
+from a clone it points at your own build, since `npx sourcery-eval` would resolve
+to nothing.
+
+```bash
+claude mcp add sourcery -- npx -y sourcery-eval mcp   # Claude Code
+codex mcp add sourcery -- npx -y sourcery-eval mcp    # Codex
+```
+
+Cursor, Claude Desktop and anything else taking JSON:
 
 ```json
 {
@@ -78,7 +88,13 @@ type) for a cheap sweep before committing to the full 48.
 }
 ```
 
-Claude Code: `claude mcp add sourcery -- npx -y sourcery-eval mcp`
+Codex also reads `~/.codex/config.toml` directly:
+
+```toml
+[mcp_servers.sourcery]
+command = "npx"
+args = ["-y", "sourcery-eval", "mcp"]
+```
 
 Run the client from your project directory — the server resolves
 `.sourcery/runs.jsonl` relative to its working directory, so from anywhere else

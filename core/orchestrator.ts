@@ -150,6 +150,10 @@ export async function runEval(req: RunRequest): Promise<Run> {
     ...(req.extraction ? { extraction: req.extraction } : {}),
   };
 
+  // Arms are parallel, so progress is "how many have settled", not a position in
+  // a queue. Reported as each one lands rather than at the end, which is the
+  // only thing that distinguishes a slow arm from a hung one.
+  let settled = 0;
   const arms: Arm[] = await Promise.all(
     values.map((value, i) => {
       const { provider, config } = armSpec(variable, value, base);
@@ -158,7 +162,10 @@ export async function runEval(req: RunRequest): Promise<Run> {
         req.query,
         model,
         judgeModel,
-      );
+      ).then((arm) => {
+        req.onProgress?.({ done: ++settled, total: values.length, label: provider });
+        return arm;
+      });
     }),
   );
 

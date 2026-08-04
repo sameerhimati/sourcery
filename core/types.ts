@@ -68,6 +68,19 @@ export interface RunRequest {
   num_sources?: number;
   freshness?: Freshness;
   extraction?: Extraction;
+  /**
+   * Called as arms settle, for a caller that wants to show progress. Core never
+   * writes to stdout itself — the MCP server shares this engine and stdout there
+   * IS the protocol, so a stray write would corrupt the stream.
+   */
+  onProgress?: (event: ProgressEvent) => void;
+}
+
+/** One unit of work finished. `label` names what it was, for display. */
+export interface ProgressEvent {
+  done: number;
+  total: number;
+  label: string;
 }
 
 // Internal only — carries fetched content into the answer step.

@@ -101,6 +101,30 @@ export function requiredEnvKeys(refs: string[]): string[] {
 }
 
 /**
+ * Turn a provider's API error into something a person can act on.
+ *
+ * Groq is the path `init` recommends first and its free tier caps tokens per
+ * minute; each arm is one answer call plus two judge calls with page content
+ * inline, so a three-provider run trips it. The raw 429 mentions an org id and a
+ * TPM budget and reads like a bug in the tool. The original is kept on the end —
+ * this explains, it does not hide.
+ */
+export function explainLlmError(message: string, provider: string, envKey: string): string {
+  if (/\b429\b|rate limit/i.test(message)) {
+    const wait = message.match(/try again in ([\d.]+)\s*s/i)?.[1];
+    return (
+      `${provider} rate limit${wait ? ` — retry in ${Math.ceil(Number(wait))}s` : ""}. ` +
+      `Free tiers cap tokens per minute, and every arm costs one answer call plus ` +
+      `two judge calls, so comparing fewer providers at once stays under it. (${message})`
+    );
+  }
+  if (/\b401\b|invalid.{0,20}api key|authentication/i.test(message)) {
+    return `${provider} rejected the key — check ${envKey}. (${message})`;
+  }
+  return message;
+}
+
+/**
  * Strip a markdown code fence off a JSON response.
  *
  * Nothing forces bare JSON on a provider in "prompt" mode, and Claude fences it
@@ -140,12 +164,18 @@ export async function complete({
   }
   const client = getClient(spec.baseURL, apiKey);
   const sendResponseFormat = jsonMode && (spec.jsonMode ?? "object") === "object";
-  const res = await client.chat.completions.create({
-    model: modelId,
-    ...(temperature !== undefined ? { temperature } : {}),
-    ...(sendResponseFormat ? { response_format: { type: "json_object" as const } } : {}),
-    messages,
-  });
+  let res;
+  try {
+    res = await client.chat.completions.create({
+      model: modelId,
+      ...(temperature !== undefined ? { temperature } : {}),
+      ...(sendResponseFormat ? { response_format: { type: "json_object" as const } } : {}),
+      messages,
+    });
+  } catch (e) {
+    const raw = e instanceof Error ? e.message : String(e);
+    throw new Error(explainLlmError(raw, provider, spec.envKey));
+  }
   const text = res.choices[0]?.message?.content?.trim() ?? "";
   return jsonMode ? unfenceJson(text) : text;
 }

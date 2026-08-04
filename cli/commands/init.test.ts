@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { envTemplate, invocation, mergeEnv, usageGuide } from "./init";
+import { envTemplate, invocation, mergeEnv, shortHost, usageGuide } from "./init";
 import { listAdapters } from "@core/adapters";
 import { PROVIDERS as LLM_PROVIDERS } from "@core/llm";
 
@@ -110,6 +110,18 @@ describe("usageGuide", () => {
 
   it("warns that batch spends before it spends", () => {
     expect(usageGuide("sourcery")).toContain("--dry-run");
+  });
+});
+
+describe("shortHost — the provider menu answers 'where do I get one'", () => {
+  it("keeps the menu narrow by showing only the host", () => {
+    expect(shortHost("https://www.firecrawl.dev/app/api-keys")).toBe("firecrawl.dev");
+    expect(shortHost("https://brightdata.com/cp/setting/users")).toBe("brightdata.com");
+    expect(shortHost("https://app.tavily.com/home")).toBe("app.tavily.com");
+  });
+
+  it("returns nothing for a provider with no signup, rather than 'undefined'", () => {
+    expect(shortHost(undefined)).toBe("");
   });
 });
 

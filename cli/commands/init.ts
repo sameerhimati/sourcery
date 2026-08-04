@@ -72,6 +72,15 @@ const LLM_CHOICES = [
 const ENV_HEADER = `# sourcery — written by \`sourcery init\`. Never commit this file.
 `;
 
+/**
+ * A signup URL shortened to its host, for a menu line where the full URL would
+ * wrap. `undefined` for the keyless baseline, which has nothing to sign up for.
+ */
+export function shortHost(url: string | undefined): string {
+  if (!url) return "";
+  return url.replace(/^https?:\/\//, "").replace(/^www\./, "").split("/")[0];
+}
+
 /** Where to go and get the key you just failed to paste. */
 function signupHint(backend: string): string {
   const where: Record<string, string> = {
@@ -254,14 +263,31 @@ async function wizard(): Promise<void> {
   // ─── 2. retrieval providers ───
   process.stdout.write("\n");
   const specs = listAdapters().filter((s) => s.requiredEnv.length > 0);
-  const picked = await multiSelect(
-    "Which retrieval providers do you have keys for?  (the eval's actual variable)",
-    specs.map((s) => ({
-      label: s.label,
-      value: s.id,
-      hint: missingEnv(s.id).length ? `needs ${s.requiredEnv.join(", ")}` : "key already set",
-    })),
-  );
+  // The hint answers the question actually being asked at this moment, which is
+  // "where do I get one" — not "which env var will hold it". Naming the variable
+  // helps only someone who already has the key.
+  const menu = specs.map((s) => ({
+    label: s.label,
+    value: s.id,
+    hint: missingEnv(s.id).length ? shortHost(s.signup) : "key already set",
+  }));
+  const question = "Which retrieval providers do you have keys for?  (the eval's actual variable)";
+  let picked = await multiSelect(question, menu);
+
+  // Selecting none used to sail straight through to a config whose only arm is
+  // `plain`, which rate-limits within a couple of calls — so the wizard's grand
+  // finale was "Winner: none (every provider failed)". Say so, and offer the
+  // free one, before that happens rather than after.
+  if (!picked.length) {
+    const free = specs.find((s) => s.id === "tavily");
+    process.stdout.write(
+      `\n  Nothing picked. With no retrieval key the only arm is \`plain\`, the keyless\n` +
+        `  baseline — it gets captcha'd almost immediately, so the first run would\n` +
+        `  score nothing and tell you nothing.\n` +
+        (free?.signup ? `  Tavily's free tier needs no card: ${free.signup}\n` : ""),
+    );
+    picked = await multiSelect("Pick one now, or leave blank to add keys later:", menu);
+  }
 
   for (const id of picked) {
     const spec = specs.find((s) => s.id === id)!;
@@ -313,10 +339,11 @@ async function wizard(): Promise<void> {
   if (wrote.length) process.stdout.write(`  ✓ wrote ${ENV_FILE} (${wrote.join(", ")})\n`);
   if (kept.length) process.stdout.write(`  · kept existing ${kept.join(", ")}\n`);
 
-  if (ready.length < 2) {
+  if (ready.length === 1) {
     process.stdout.write(
-      `\n  Only ${ready.length} paid provider ready, so \`plain\` (the keyless baseline) is the\n` +
-        `  other. It rate-limits hard — fine for trying the tool, not for a benchmark.\n`,
+      `\n  One paid provider, so \`plain\` (the keyless baseline) is the other arm.\n` +
+        `  It rate-limits hard — fine for seeing the tool work, not for a benchmark.\n` +
+        `  A second key is where this starts comparing anything.\n`,
     );
   }
 
@@ -325,6 +352,20 @@ async function wizard(): Promise<void> {
   // this a CLI or a dashboard?" confusion started. Finishing on a real result
   // makes what this thing is unambiguous.
   const cmd = invocation();
+
+  // Unless there is nothing to run. With no retrieval key every arm is `plain`,
+  // which gets captcha'd — offering the sample run there means ending setup on
+  // "Winner: none (every provider failed)", which reads as a broken tool rather
+  // than a missing key.
+  if (!ready.length) {
+    process.stdout.write(
+      `\n  No retrieval key yet, so there's nothing to compare. Add one to ${ENV_FILE}\n` +
+        `  (or re-run \`${cmd} init\`), then \`${cmd} providers --check\`.\n`,
+    );
+    process.stdout.write(usageGuide(cmd));
+    return;
+  }
+
   process.stdout.write(
     `\nReady:  ${cmd} run "<your query>"   — compares ${values.join(" vs ")}\n`,
   );

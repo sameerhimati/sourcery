@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it } from "vitest";
 import {
   PROVIDERS,
   complete,
+  explainLlmError,
   parseModelRef,
   requiredEnvKeys,
   unfenceJson,
@@ -65,6 +66,40 @@ describe("PROVIDERS registry — baseURL + env-key selection", () => {
       if (id === "anthropic") continue;
       expect(spec.jsonMode ?? "object").toBe("object");
     }
+  });
+});
+
+describe("explainLlmError — a free-tier limit should not read like a bug", () => {
+  // The real message, from a two-provider run on Groq's free tier.
+  const RATE_LIMIT =
+    "429 Rate limit reached for model `llama-3.3-70b-versatile` in organization " +
+    "`org_01kz75akbge8dby1btxf87m680` service tier `on_demand` on tokens per minute " +
+    "(TPM): Limit 12000, Used 11443, Requested 3751. Please try again in 15.969999999s.";
+
+  it("says what to do, and rounds the wait to something readable", () => {
+    const out = explainLlmError(RATE_LIMIT, "groq", "GROQ_API_KEY");
+    expect(out).toContain("retry in 16s");
+    expect(out).toContain("fewer providers");
+  });
+
+  it("keeps the original message, so nothing is hidden", () => {
+    expect(explainLlmError(RATE_LIMIT, "groq", "GROQ_API_KEY")).toContain("Limit 12000");
+  });
+
+  it("points a rejected key at the env var that holds it", () => {
+    const out = explainLlmError("401 Invalid API Key", "groq", "GROQ_API_KEY");
+    expect(out).toContain("GROQ_API_KEY");
+  });
+
+  it("passes anything it doesn't recognise through untouched", () => {
+    expect(explainLlmError("socket hang up", "groq", "GROQ_API_KEY")).toBe("socket hang up");
+  });
+
+  it("does not mistake a 429 inside a model id for a rate limit", () => {
+    // Guards the \b boundaries: "gpt-429b" is a model name, not a status code.
+    expect(explainLlmError("model gpt-4290b not found", "groq", "GROQ_API_KEY")).toBe(
+      "model gpt-4290b not found",
+    );
   });
 });
 

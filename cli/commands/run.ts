@@ -10,6 +10,7 @@ import { loadConfig } from "../config";
 import { appendRecords, toRunRecord, RUNS_PATH } from "../persist";
 import { renderRun } from "../format";
 import { createProgress } from "../progress";
+import { invocation } from "../invocation";
 
 export function registerRun(program: Command): void {
   program
@@ -81,6 +82,10 @@ export function registerRun(program: Command): void {
         const id = `run_${Date.now().toString(36)}`;
         appendRecords([toRunRecord(run, id, ts)]);
         process.stdout.write(`\nsaved → ${RUNS_PATH} (${id})\n`);
+        // The run log accumulates across runs, and `report --tui` is the view
+        // over it — which nobody found, because the only mention of it was a
+        // flag in --help.
+        process.stdout.write(`see everything so far → ${invocation()} report --tui\n`);
       }
     });
 }

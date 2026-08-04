@@ -4,6 +4,7 @@ import { defaultProviders, listAdapters, missingEnv } from "@core/adapters";
 import { complete, PROVIDERS as LLM_PROVIDERS } from "@core/llm";
 import { loadEnv } from "../env";
 import { CONFIG_FILES } from "../config";
+import { invocation } from "../invocation";
 import { ask, askSecret, confirm, interactive, multiSelect, select } from "../prompt";
 
 // ─── `sourcery init` ───
@@ -173,18 +174,6 @@ export default {
 }
 
 /**
- * How to spell the command in copy-pasteable advice.
- *
- * The README leads with the clone, where the binary is not on PATH and the only
- * thing that works is `npm run sourcery -- run "…"`. Printing a bare `sourcery`
- * to that user hands them a command-not-found as the last thing the wizard says.
- * The tsx entrypoint is the tell: an installed copy runs `dist/index.js`.
- */
-export function invocation(argv1: string = process.argv[1] ?? ""): string {
-  return /cli[/\\]index\.ts$/.test(argv1) ? "npm run sourcery --" : "sourcery";
-}
-
-/**
  * The closing screen: what this tool has, in three lines.
  *
  * `init` used to end on a scorecard, which proves it works but leaves someone
@@ -196,7 +185,7 @@ export function usageGuide(cmd: string = invocation()): string {
     `\nThree commands from here:\n` +
     `  ${cmd} run "<query>"   one query, every provider you have keys for\n` +
     `  ${cmd} batch           the built-in 48-query set — price it first with --dry-run\n` +
-    `  ${cmd} report          self-contained HTML from everything you've run\n` +
+    `  ${cmd} report --tui    everything you've run, in the terminal (drop --tui for HTML)\n` +
     `\nConfig is ${CONFIG_FILES[0]}, keys are ${ENV_FILE}. Both are read from the\n` +
     `directory you run the command in.\n`
   );

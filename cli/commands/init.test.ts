@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { envTemplate, invocation, mergeEnv, shortHost, usageGuide } from "./init";
+import { envTemplate, mergeEnv, shortHost, usageGuide } from "./init";
+import { invocation } from "../invocation";
 import { listAdapters } from "@core/adapters";
 import { PROVIDERS as LLM_PROVIDERS } from "@core/llm";
 

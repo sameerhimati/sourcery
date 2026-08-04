@@ -163,4 +163,13 @@ describe("complete — friendly missing-key error, not a stack trace", () => {
       }),
     ).rejects.toThrow(/Missing FIREWORKS_API_KEY.*\.env\.local/);
   });
+
+  it("does not point at .env.example, which is not in the npm tarball", async () => {
+    delete process.env.FIREWORKS_API_KEY;
+    const err = await complete({
+      model: "fireworks/accounts/fireworks/models/kimi-k2-instruct",
+      messages: [{ role: "user", content: "hi" }],
+    }).catch((e: Error) => e);
+    expect((err as Error).message).not.toContain(".env.example");
+  });
 });

@@ -56,7 +56,11 @@ export function missingKeysMessage(missing: string[], models: string[] = []): st
     : "";
   return (
     `Missing required env: ${missing.join(", ")}\n` +
-    `Set them in .env.local (see .env.example) or your shell.${because}`
+    // NOT ".env.example" — `files: ["dist"]` keeps it out of the tarball, so an
+    // npx user was being sent to a file that does not exist on their machine.
+    // `init` generates the same template from the registries and is the one
+    // instruction that works however you installed this.
+    `Set them in .env.local, or run \`sourcery init\` to write one.${because}`
   );
 }
 

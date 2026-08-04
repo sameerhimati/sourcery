@@ -7,6 +7,15 @@ import { missingKeysMessage } from "./env";
 // model on its own. Advice that doesn't work is worse than no advice.
 
 describe("missingKeysMessage", () => {
+  it("never sends anyone to .env.example, which the npm tarball does not contain", () => {
+    // `files: ["dist"]` ships four files. Naming .env.example in an error means
+    // an `npx sourcery-eval` user is told to open a file they do not have — the
+    // exact failure init was fixed for, which survived here.
+    const msg = missingKeysMessage(["OPENAI_API_KEY"], ["gpt-4o-mini"]);
+    expect(msg).not.toContain(".env.example");
+    expect(msg).toContain(".env.local");
+  });
+
   const msg = () => missingKeysMessage(["OPENAI_API_KEY"], ["gpt-4o-mini"]);
 
   it("names the missing key and where to put it", () => {

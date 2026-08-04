@@ -159,7 +159,9 @@ export async function complete({
   if (!apiKey) {
     throw new Error(
       `Missing ${spec.envKey} for model "${model}" (provider "${provider}"). ` +
-        `Set it in .env.local (see .env.example).`,
+        // `.env.example` is not in the npm tarball, so naming it here sent npx
+        // users to a file they don't have. `init` writes the real thing.
+        `Set it in .env.local, or run \`sourcery init\` to write one.`,
     );
   }
   const client = getClient(spec.baseURL, apiKey);

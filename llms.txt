@@ -1,0 +1,22 @@
+# sourcery
+
+> Compare web-retrieval providers — Firecrawl, Tavily, Exa, Bright Data, a keyless baseline — on your own queries, with everything else held constant: same query, same answer model, same prompts, same judge. Swap only the retrieval layer. MIT, BYO model, ships an MCP server on the same binary.
+
+The result worth knowing before anything else: **source quality and answer quality correlate at r = 0.16.** Grading a search API on the answer downstream of it mostly grades your own model, which is why sourcery reports two scores and treats the source one as primary.
+
+Install: `npx sourcery-eval init` · Agents: `npx sourcery-eval mcp --install`
+
+## For agents
+
+- [Agent instructions](https://raw.githubusercontent.com/sameerhimati/sourcery/main/docs/agent-prompt.md): a block written to paste into a CLAUDE.md, AGENTS.md, system prompt or skill. Covers both the CLI surface and the MCP tools, with how to read the scores. Fetch this first if you are being asked to use sourcery.
+- [MCP server guide](https://raw.githubusercontent.com/sameerhimati/sourcery/main/mcp/README.md): registration one-liners for Claude Code, Codex, Cursor and Claude Desktop; the two tools and their response shapes; why the working directory decides whose numbers you get.
+
+## Reference
+
+- [README](https://raw.githubusercontent.com/sameerhimati/sourcery/main/README.md): install, the two keys you need, cost controls, the provider table, what the run log contains.
+- [Findings](https://raw.githubusercontent.com/sameerhimati/sourcery/main/docs/findings.md): the full write-up — the r = 0.16 result, Firecrawl vs Bright Data on quality and reliability, and an earlier version of this eval that produced a confident wrong answer from too few queries.
+- [Providers](https://raw.githubusercontent.com/sameerhimati/sourcery/main/docs/providers.md): per-provider setup, quirks, credit arithmetic, and how to write a new adapter (one function plus a registry row).
+
+## Optional
+
+- [Demo script](https://raw.githubusercontent.com/sameerhimati/sourcery/main/docs/demo-script.md): a 90-second walkthrough, if you need to explain the tool to someone rather than run it.

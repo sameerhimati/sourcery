@@ -11,19 +11,17 @@ I built it because I couldn't find a straight answer to that question while buil
 ## Quickstart
 
 ```bash
-git clone https://github.com/sameerhimati/sourcery && cd sourcery
-npm install
-npm run sourcery -- init
+npx sourcery-eval init
 ```
 
-`npm install` builds the CLI, so there's no separate build step. `init` asks for your keys, writes `.env.local` and a config, and finishes by running a real query so you know it works before you trust anything.
+`init` asks for your keys, writes `.env.local` and a config, and finishes by running a real query so you know it works before you trust anything.
 
 Then:
 
 ```bash
-npm run sourcery -- run "<any question>"   # one query, every provider you have keys for
-npm run sourcery -- report --tui           # everything you've run, in the terminal (drop --tui for HTML)
-npm run sourcery -- batch                  # the built-in 48-query set, per-query heatmap
+sourcery run "<any question>"   # one query, every provider you have keys for
+sourcery report --tui           # everything you've run, in the terminal (drop --tui for HTML)
+sourcery batch                  # the built-in 48-query set, per-query heatmap
 ```
 
 ### You need two keys
@@ -52,26 +50,26 @@ One LLM key for the answer and judge steps, and at least one retrieval key for t
 
 A note on judges, since it explains a choice that looks odd. The grader should be a model whose training ended *before* the questions were asked, so it can't score an answer highly just by already knowing it. That's why `init` pairs newer answer models with older graders, and why a current Claude judging its own output will sometimes call a correctly-sourced answer a hallucination. There's a worked example of exactly that in [the findings](docs/findings.md).
 
-If you'd rather not run the wizard, copy `.env.example` to `.env.local` and fill in what you have.
+If you'd rather not answer questions, `sourcery init` in a non-interactive shell writes a blank `.env.local` and a config from whatever keys you already have, and tells you what's still missing.
 
 By default it compares whichever providers you have keys for. Name them explicitly when you want a specific pairing:
 
 ```bash
-npm run sourcery -- run "<query>" --values firecrawl,tavily
+sourcery run "<query>" --values firecrawl,tavily
 ```
 
 Config, env and results are all read and written relative to wherever you run the command.
 
-### Installing it as a tool
+### Running it from a clone
 
-Once it's on npm the same commands work without a clone, as `sourcery`:
+Clone if you want to read the code, which for an eval you're about to believe is not a bad instinct. Every command works the same, spelled `npm run sourcery -- <command>`:
 
 ```bash
-npx sourcery-eval init
-npx sourcery-eval run "<query>"
+git clone https://github.com/sameerhimati/sourcery && cd sourcery
+npm install                              # also builds the CLI; no separate build step
+npm run sourcery -- init
+npm run sourcery -- run "<query>"
 ```
-
-Clone first if you want to read the code, which for an eval you're about to believe is not a bad instinct.
 
 ### Know what it costs before it spends
 
@@ -156,7 +154,15 @@ Cursor and Claude Desktop take the same thing as JSON, and Codex will also read 
 
 Run your agent from the directory holding `.sourcery/runs.jsonl`, because the server resolves it relative to its working directory — from anywhere else you get my shipped numbers instead of yours.
 
-Tool definitions live in [`mcp/server.ts`](mcp/server.ts), and there's a block you can paste into an agent's instructions in [`docs/agent-prompt.md`](docs/agent-prompt.md).
+Three things to hand an agent, depending on what you're doing:
+
+| | |
+|---|---|
+| [`mcp/README.md`](mcp/README.md) | the server itself — install, both tools, response shapes, and how to read the scores |
+| [`docs/agent-prompt.md`](docs/agent-prompt.md) | a block written to paste straight into a `CLAUDE.md`, `AGENTS.md`, system prompt or skill |
+| [`llms.txt`](llms.txt) | the index, if you'd rather point an agent at one URL and let it fetch what it needs |
+
+Tool definitions live in [`mcp/server.ts`](mcp/server.ts).
 
 ## Bring your own model
 

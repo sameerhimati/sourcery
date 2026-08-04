@@ -41,7 +41,7 @@
     "prepublishOnly": "tsup"
   },
   "bin": {
-    "sourcery": "./dist/index.js"
+    "sourcery": "dist/index.js"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.29.0",

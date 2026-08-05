@@ -23,6 +23,13 @@ export interface Source {
   content?: string; // extracted page text (truncated), else snippet fallback
 }
 
+/**
+ * Where an arm died. `provider` is the retrieval call being measured; `answer`
+ * and `judge` are LLM steps downstream of it, whose failures say nothing about
+ * the provider. `unknown` covers anything thrown outside a tagged stage.
+ */
+export type ErrorStage = "provider" | "answer" | "judge" | "unknown";
+
 export interface Arm {
   id: string; // "A", "B", "C"
   provider: Provider;
@@ -36,6 +43,17 @@ export interface Arm {
   score: number; // 0–10 from the answer judge — SECONDARY metric
   rationale: string;
   error?: string; // set if this arm failed; UI can show a fallback
+  // WHICH STAGE failed. Without this the arm carries one flat `error` and every
+  // consumer assumes the provider produced it — which is how a published table
+  // came to report Exa at 1 failure in 240 when the row was the answer/judge LLM
+  // call timing out. The provider's name is on the arm, so an unattributed
+  // failure is silently charged to the vendor. "unknown" is deliberate: an error
+  // we cannot place must never default to "provider".
+  error_stage?: ErrorStage;
+  // Provider fetch time alone. `latency_ms` covers the whole arm — fetch, answer
+  // and both judges — so it cannot be reported as a provider's latency, which is
+  // the same misattribution one field over.
+  fetch_ms?: number;
   // When the SOURCES were retrieved, and whether they came from the fetch cache.
   // Every freshness number in this eval is computed off these sources, so a
   // reused fetch must be distinguishable from a live one — otherwise a re-judge

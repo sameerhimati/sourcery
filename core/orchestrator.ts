@@ -9,6 +9,7 @@ import {
   Run,
   RunRequest,
 } from "./types";
+import { stage, stageOf } from "./stage";
 import { fetchSources, defaultProviders } from "./adapters";
 import { answer } from "./answer";
 import { judge } from "./judge";
@@ -88,20 +89,24 @@ export async function runArm(
     rationale: "",
   };
   const start = Date.now();
+  // Hoisted so a downstream failure still reports what the provider actually
+  // returned. The old catch spread `...base` and published sources: [] for an
+  // arm whose fetch had succeeded, which reads downstream as "returned nothing".
+  let fetch_ms: number | undefined;
+  let fetched: Awaited<ReturnType<typeof fetchSources>> | undefined;
   try {
-    const { sources, context, fetched_at, from_cache } = await fetchSources(
-      spec.provider,
-      query,
-      spec.config,
-    );
+    const fetchStart = Date.now();
+    fetched = await stage("provider", fetchSources(spec.provider, query, spec.config));
+    fetch_ms = Date.now() - fetchStart;
+    const { sources, context, fetched_at, from_cache } = fetched;
     // Retrieval judge (primary) grades the sources; answer + answer judge
     // (secondary) run in parallel off the same fetched context. The answer uses
     // `model`; both judges use `judgeModel` (kept stale by default on purpose).
     const [retrieval, ans] = await Promise.all([
-      retrievalJudge(query, sources, judgeModel),
-      answer(query, context, model),
+      stage("judge", retrievalJudge(query, sources, judgeModel)),
+      stage("answer", answer(query, context, model)),
     ]);
-    const { score, rationale } = await judge(query, ans, sources, judgeModel);
+    const { score, rationale } = await stage("judge", judge(query, ans, sources, judgeModel));
     return {
       ...base,
       answer: ans,
@@ -112,12 +117,18 @@ export async function runArm(
       rationale,
       fetched_at,
       from_cache,
+      fetch_ms,
       latency_ms: Date.now() - start,
     };
   } catch (e) {
     return {
       ...base,
       error: e instanceof Error ? e.message : String(e),
+      error_stage: stageOf(e),
+      sources: fetched?.sources ?? [],
+      ...(fetched?.fetched_at ? { fetched_at: fetched.fetched_at } : {}),
+      ...(fetched ? { from_cache: fetched.from_cache } : {}),
+      ...(fetch_ms !== undefined ? { fetch_ms } : {}),
       rationale: "no result",
       retrieval_rationale: "no result",
       latency_ms: Date.now() - start,

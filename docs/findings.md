@@ -99,10 +99,10 @@ The comparison above is two providers because those were the only keys I had. Ta
 
 | provider | source quality (95% CI) | answer quality (95% CI) | median source age | provider failures |
 |---|---:|---:|---:|---:|
-| **exa** | **6.45 ± 0.52** | 8.23 ± 0.47 | **35 days** | 1 / 240 |
+| **exa** | **6.45 ± 0.52** | 8.23 ± 0.47 | **35 days** | 0 / 240 |
 | bright_data | 4.78 ± 0.44 | 6.55 ± 0.81 | 286 days | 61 / 240 |
 | firecrawl | 4.56 ± 0.52 | 6.99 ± 0.69 | 299 days | 0 / 240 |
-| tavily | 3.95 ± 0.47 | 6.57 ± 0.71 | 318 days | 1 / 240 |
+| tavily | 3.95 ± 0.47 | 6.57 ± 0.71 | 318 days | 0 / 240 |
 
 **This is the first separated result this eval has produced.** Exa's interval clears all three others — its lower bound (5.93) sits above Bright Data's upper bound (5.22). Everywhere else I've been careful to say the intervals overlap and you shouldn't rank anything. Here they don't, and you can.
 
@@ -124,7 +124,13 @@ So: Exa retrieves substantially fresher sources than the alternatives, and that 
 
 ### What else changed with four providers in
 
-**Firecrawl's reliability is now the cleanest number in the table.** Zero provider failures in 240 calls. Its only two misses were `402 Insufficient credits` — my plan running dry — which the harness now attributes to my account rather than to them. Bright Data's 61 stand, with the clustering caveat above.
+**Three of the four returned something on every call.** Firecrawl's only two misses were `402 Insufficient credits` — my plan running dry — which the harness attributes to my account rather than to them. Bright Data's 61 stand, with the clustering caveat above.
+
+**Exa and Tavily were reported at 1 / 240 each, and both were mine.** Someone at Exa asked what their one failure was. It was `bn-04` seed 3 — *"the newest major announcement from OpenAI in the past two weeks"* — failing with `Request timed out.` That is the OpenAI SDK's wording, and the Exa adapter is a bare `fetch()` that can only throw `Exa <status>` or undici's `fetch failed`. So the row was my answer/judge call dying and being recorded against the arm it happened to be running under. Tavily's single failure is the same string on the *same query*, seed 4, at 130s: the LLM was struggling on that one question and it landed on two different providers.
+
+Two things this eval already separated — the provider broke, versus my account ran out — and a third it did not: the provider broke, versus a step downstream of the provider broke. An arm is one retrieval call plus three LLM calls, all collapsing into one `error` field on a record stamped with a vendor's name, so anything unattributed is charged to them by default. `core/stage.ts` now tags each step and `isProviderFailure` treats that tag as authoritative; an error it cannot place is recorded as `unknown`, never as the provider's. Rows written before this have no tag and fall back to reading the message, which is exactly how the number above got published.
+
+It also means `latency_ms` was never a provider latency — it spans fetch, answer and both judges. `fetch_ms` now records the retrieval call alone, so the next run can report that honestly. This one can't, and the numbers here don't include it.
 
 **The judge still moves the score more than the retriever does.** Across 895 paired verdicts the two judges correlate at r = 0.67 on source quality and agree within a point only 44% of the time. Mean disagreement between judges is 2.12 points; re-running the same query moves it 0.98. Twice the noise comes from who is grading than from what came back. That replicates the earlier finding on double the data, and it is the reason every number here carries an interval.
 
@@ -165,6 +171,8 @@ What's still owed is a curated second dataset of real retrieval tasks, shipped a
 An eval you can't trust is worse than no eval.
 
 I'd defend the reliability gap (61 real provider failures against zero, over 240 calls each, is not noise), the extraction gap (90% against 33%), that judge choice dominates re-run noise, and the retrieval/answer decoupling, which holds at r=0.16 on the full set and reproduces on a separate four-provider pass.
+
+I would not now defend any single-digit failure count I have published. Every one of them so far has turned out to be mine — Firecrawl's two were my billing, Exa's and Tavily's one apiece were my LLM client. Sixty-one is a finding; one is a bug report about this harness.
 
 I'd now also defend Exa's freshness advantage — a 35-day median against 286-318 for the other three, at comparable date coverage against Firecrawl — and the source-quality gap that comes with it, which is the one difference here whose confidence interval clears every other provider's.
 

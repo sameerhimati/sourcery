@@ -18,7 +18,8 @@ import { fetchSources, defaultProviders } from "./adapters";
 import { answer } from "./answer";
 import { judge } from "./judge";
 import { retrievalJudge } from "./retrievalJudge";
-import { DEFAULT_CONFIG, Provider, Source } from "./types";
+import { DEFAULT_CONFIG, ErrorStage, Provider, Source } from "./types";
+import { stage, stageOf } from "./stage";
 import { mapWithConcurrency } from "./extract";
 
 const DEFAULT_CONCURRENCY = 4; // (query×provider×seed) pipelines in flight; retrieval-bound
@@ -46,6 +47,13 @@ export interface CredibilityRow {
   latency_ms: number;
   judgements: Judgement[];
   error?: string;
+  // Which step threw. Absent on rows written before this existed — those fall
+  // back to reading the error string, which is why the published table charged
+  // an LLM timeout to a provider. See core/stage.ts.
+  error_stage?: ErrorStage;
+  // Provider fetch alone. latency_ms is the whole row (fetch + answer + judges),
+  // so it can never be quoted as a provider's latency.
+  fetch_ms?: number;
   // median_source_age_days above is only meaningful relative to WHEN the sources
   // were fetched. Recorded so a re-judge over cached fetches can't pass off
   // yesterday's ages as today's. Optional: pre-cache rows are still valid.
@@ -248,9 +256,20 @@ export function isAccountFailure(error: string | undefined): boolean {
   return Boolean(error && !isTransportFailure(error) && ACCOUNT_FAILURES.test(error));
 }
 
-/** A failure the provider is actually answerable for. */
-export function isProviderFailure(error: string | undefined): boolean {
-  return Boolean(error) && !isTransportFailure(error) && !isAccountFailure(error);
+/**
+ * A failure the provider is actually answerable for.
+ *
+ * `stage` is authoritative when present: an answer or judge call that died says
+ * nothing about the retrieval under test, however its message reads. Rows
+ * written before staging existed have no stage, and fall back to the string
+ * predicates — which is exactly how "Request timed out." from the OpenAI SDK got
+ * published as an Exa failure. Treat a stageless row as evidence about the
+ * harness, not about the vendor.
+ */
+export function isProviderFailure(error: string | undefined, stage?: ErrorStage): boolean {
+  if (!error) return false;
+  if (stage && stage !== "provider") return false;
+  return !isTransportFailure(error) && !isAccountFailure(error);
 }
 
 /**
@@ -344,32 +363,40 @@ export async function runCredibility(
       record(row);
       return row;
     };
+    // Hoisted: a judge that dies must not erase what the provider returned, or
+    // the row reads as "retrieved nothing" for a fetch that worked.
+    let fetched: Awaited<ReturnType<typeof fetchSources>> | undefined;
+    let fetch_ms: number | undefined;
     try {
       // `seed` is passed to the cache so each repeat keeps its own entry. Sharing
       // one across seeds would zero out seed_std_mean — the exact number this
       // matrix exists to measure.
-      const { sources, context, fetched_at, from_cache } = await fetchSources(
-        provider,
-        q.query,
-        { ...DEFAULT_CONFIG },
-        seed,
+      const fetchStart = Date.now();
+      fetched = await stage(
+        "provider",
+        fetchSources(provider, q.query, { ...DEFAULT_CONFIG }, seed),
       );
-      const ans = await answer(q.query, context, model);
+      fetch_ms = Date.now() - fetchStart;
+      const { sources, context, fetched_at, from_cache } = fetched;
+      const ans = await stage("answer", answer(q.query, context, model));
       // Every judge grades the SAME sources + answer for this seed, in parallel.
-      const judgements = await Promise.all(
-        judges.map(async (j): Promise<Judgement> => {
-          const [r, a] = await Promise.all([
-            retrievalJudge(q.query, sources, j),
-            judge(q.query, ans, sources, j),
-          ]);
-          return {
-            judge: judgeLabel(j),
-            retrieval_score: r.score,
-            retrieval_rationale: r.rationale,
-            answer_score: a.score,
-            answer_rationale: a.rationale,
-          };
-        }),
+      const judgements = await stage(
+        "judge",
+        Promise.all(
+          judges.map(async (j): Promise<Judgement> => {
+            const [r, a] = await Promise.all([
+              retrievalJudge(q.query, sources, j),
+              judge(q.query, ans, sources, j),
+            ]);
+            return {
+              judge: judgeLabel(j),
+              retrieval_score: r.score,
+              retrieval_rationale: r.rationale,
+              answer_score: a.score,
+              answer_rationale: a.rationale,
+            };
+          }),
+        ),
       );
       const row: CredibilityRow = {
         ...rowBase,
@@ -378,21 +405,27 @@ export async function runCredibility(
         median_source_age_days: medianAgeDays(sources, now),
         domains: sources.map((s) => s.domain),
         latency_ms: Date.now() - start,
+        fetch_ms,
         fetched_at,
         from_cache,
         judgements,
       };
       return emit(row);
     } catch (e) {
+      const sources = fetched?.sources ?? [];
       return emit({
         ...rowBase,
-        num_sources: 0,
-        num_sources_extracted: 0,
-        median_source_age_days: null,
-        domains: [],
+        num_sources: sources.length,
+        num_sources_extracted: sources.filter((s) => s.content).length,
+        median_source_age_days: medianAgeDays(sources, now),
+        domains: sources.map((s) => s.domain),
         latency_ms: Date.now() - start,
+        ...(fetch_ms !== undefined ? { fetch_ms } : {}),
+        ...(fetched?.fetched_at ? { fetched_at: fetched.fetched_at } : {}),
+        ...(fetched ? { from_cache: fetched.from_cache } : {}),
         judgements: [],
         error: e instanceof Error ? e.message : String(e),
+        error_stage: stageOf(e),
       });
     }
   });
@@ -496,7 +529,7 @@ function providerStat(rows: CredibilityRow[], provider: Provider): ProviderStat 
   // point is to catch the provider whose good scores come from a small sample
   // of the queries it was actually asked.
   const attempted = rows.filter((r) => r.provider === provider);
-  const errors = attempted.filter((r) => isProviderFailure(r.error)).length;
+  const errors = attempted.filter((r) => isProviderFailure(r.error, r.error_stage)).length;
   const accountErrors = attempted.filter((r) => isAccountFailure(r.error)).length;
 
   return {

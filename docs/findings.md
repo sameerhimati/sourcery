@@ -89,9 +89,46 @@ Probing it directly afterwards: six fresh queries serially, at concurrency 1, fa
 
 **Firecrawl extracts a lot more and it doesn't move quality.** 90% of its sources yield usable text against Bright Data's 33%, which is the one big gap that replicates. It buys no measurable answer-quality edge though (6.99 vs 6.55, overlapping). My earlier story that more extraction produced worse answers was noise. The honest version is that extraction volume and answer quality just aren't connected here.
 
-**Neither is good at freshness.** Every query in the set asks for the latest or current or newest thing, and the median source that comes back is around 290 days old for both. Fresh retrieval is genuinely unsolved, and this measures that rather than asserting it.
+**Neither of these two is good at freshness.** Every query in the set asks for the latest or current or newest thing, and the median source that comes back is around 290 days old for both. I took that to mean fresh retrieval was unsolved generally. Adding Exa showed otherwise — see the four-provider section below.
 
 There's also a finding about the method itself. The judge moves the score more than the retriever does. Re-running a query shifts the source score by about 1.0, swapping the judge model shifts it by about 2.0, and the two judges only agree at r=0.60. That's why the single-judge result was fragile, and why I'd side-eye any benchmark that grades with one model and prints no interval.
+
+## All four, properly, and the one gap that survives
+
+The comparison above is two providers because those were the only keys I had. Tavily and Exa have now been through the same treatment — 48 queries, 5 fresh fetches each, the same two-judge panel, the same held-constant answer model. 960 results.
+
+| provider | source quality (95% CI) | answer quality (95% CI) | median source age | provider failures |
+|---|---:|---:|---:|---:|
+| **exa** | **6.45 ± 0.52** | 8.23 ± 0.47 | **35 days** | 1 / 240 |
+| bright_data | 4.78 ± 0.44 | 6.55 ± 0.81 | 286 days | 61 / 240 |
+| firecrawl | 4.56 ± 0.52 | 6.99 ± 0.69 | 299 days | 0 / 240 |
+| tavily | 3.95 ± 0.47 | 6.57 ± 0.71 | 318 days | 1 / 240 |
+
+**This is the first separated result this eval has produced.** Exa's interval clears all three others — its lower bound (5.93) sits above Bright Data's upper bound (5.22). Everywhere else I've been careful to say the intervals overlap and you shouldn't rank anything. Here they don't, and you can.
+
+The other three are still statistically tangled with each other, so the honest reading is *Exa, then a three-way tie*, not a leaderboard.
+
+### The mechanism is freshness, and I had this wrong
+
+Earlier in this document I wrote that neither provider was good at freshness and that fresh retrieval is unsolved. That was true of the two I had measured, and wrong as a general claim.
+
+Exa returns sources with a **median age of 35 days**. Everyone else is between 286 and 318 — an order of magnitude staler on a query set where every single question asks for the latest, current or newest thing. That is the whole gap, and it is exactly the axis the dataset was built to detect.
+
+Two checks before believing it, because this is the kind of result that is usually an artifact.
+
+**Is it the fetch date?** Firecrawl and Bright Data were fetched on 2026-07-24, Tavily and Exa on 2026-08-05. Twelve days apart on a freshness-sensitive question set is a real confound and I can't make it go away. But it doesn't explain this: Tavily was fetched *on the same days as Exa* and came back with the stalest sources of all four. The advantage doesn't track the fetch date.
+
+**Is it a dating artifact?** Median age can only be computed over sources that carry a usable publish date, so a provider that only dates its old articles would look artificially stale. Coverage: Firecrawl 96%, Exa 94%, Tavily 60%, Bright Data 44%. The headline comparison is Exa against Firecrawl at essentially identical coverage, which is apples to apples. Tavily's and Bright Data's ages rest on a thinner subset and should be held more loosely.
+
+So: Exa retrieves substantially fresher sources than the alternatives, and that shows up as the only score gap here wide enough to survive its own error bars.
+
+### What else changed with four providers in
+
+**Firecrawl's reliability is now the cleanest number in the table.** Zero provider failures in 240 calls. Its only two misses were `402 Insufficient credits` — my plan running dry — which the harness now attributes to my account rather than to them. Bright Data's 61 stand, with the clustering caveat above.
+
+**The judge still moves the score more than the retriever does.** Across 895 paired verdicts the two judges correlate at r = 0.67 on source quality and agree within a point only 44% of the time. Mean disagreement between judges is 2.12 points; re-running the same query moves it 0.98. Twice the noise comes from who is grading than from what came back. That replicates the earlier finding on double the data, and it is the reason every number here carries an interval.
+
+Three judge verdicts came back unparseable and scored 0. They are counted and flagged rather than dropped, because a corrupted zero drags a mean down exactly like a genuine one.
 
 ## Why the scores look low
 
@@ -127,7 +164,9 @@ What's still owed is a curated second dataset of real retrieval tasks, shipped a
 
 An eval you can't trust is worse than no eval.
 
-I'd defend the reliability gap (61 real provider failures against zero, over 240 calls each, is not noise), the extraction gap (90% against 33%), the shared freshness weakness (~290-day median across both providers and both judges), that judge choice dominates re-run noise, and the retrieval/answer decoupling, which holds at r=0.16 on the full set and reproduces on a separate four-provider pass.
+I'd defend the reliability gap (61 real provider failures against zero, over 240 calls each, is not noise), the extraction gap (90% against 33%), that judge choice dominates re-run noise, and the retrieval/answer decoupling, which holds at r=0.16 on the full set and reproduces on a separate four-provider pass.
+
+I'd now also defend Exa's freshness advantage — a 35-day median against 286-318 for the other three, at comparable date coverage against Firecrawl — and the source-quality gap that comes with it, which is the one difference here whose confidence interval clears every other provider's.
 
 I wouldn't defend any claim that one provider retrieves better than another. Every confidence interval overlaps, in both tables, full stop. Nor any per-category ranking off the four-provider pass, since six queries and three fetches is an illustration and not a measurement.
 

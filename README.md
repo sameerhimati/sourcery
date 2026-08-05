@@ -118,11 +118,11 @@ Results land in the same `.sourcery/runs.jsonl`, so `which_provider` starts answ
 |---|---|---|---|
 | `bright_data` | well measured | 3 (token + 2 zone names) | Google SERP, then a separate unblocked fetch per URL |
 | `firecrawl` | well measured | 1 | search and scrape in one call |
-| `tavily` | lightly measured | 1 | RAG-tuned index, optional raw page content |
-| `exa` | lightly measured | 1 | neural index, the only one with reliable native publish dates |
+| `tavily` | well measured | 1 | RAG-tuned index, optional raw page content |
+| `exa` | well measured | 1 | neural index, the only one with reliable native publish dates |
 | `plain` | baseline only | none | keyless SERP and a bare `fetch()`, the free baseline |
 
-That middle column is about my numbers, not about the products. Bright Data and Firecrawl went through the full set with repeats and two judges. Tavily and Exa got keyed later and have been through a much smaller pass, enough to know the adapter works and not enough to rank them. Your own run is what makes that column irrelevant.
+That middle column is about my numbers, not about the products. All four have now been through the full 48-query set with five fresh fetches each and a two-judge panel — 960 results. `plain` is a control and has never been measured seriously, because a keyless SERP that gets captcha'd on the first call has nothing to measure. Your own run is what makes that column irrelevant.
 
 An adapter is one function, `(query, config) => { sources, context }`, plus a row in the registry. That's the entire interface. Setup recipes, per-provider quirks, credit arithmetic and a full worked example are in [`docs/providers.md`](docs/providers.md).
 
@@ -152,7 +152,7 @@ I ran the built-in set across all four providers. The write-up is in [**docs/fin
 
 One query breaks it both ways at once. Exa fetched the right Apple page, answered correctly off it, and scored **0** on the answer because the judge itself was a year out of date. Tavily retrieved nothing usable and scored **9**, answering from memory.
 
-**The two I measured properly tied on quality and split on reliability.** Firecrawl returned something on all 240 calls — its only two misses were my own account hitting a 402 — while Bright Data failed 61. Both returned sources around 290 days old for questions asking what is newest, so freshness is unsolved rather than solved by either of them.
+**Firecrawl, Bright Data and Tavily tie on source quality. Exa doesn't.** Across 960 results — 48 queries, four providers, five fresh fetches each, two judges — Exa scores 6.45 ± 0.52 where the other three sit between 3.95 and 4.78 with overlapping intervals. It's the one gap here wide enough to survive its own error bars, and the mechanism is freshness: Exa's median source is 35 days old against 286-318 for everyone else. On reliability, Firecrawl returned something on all 240 calls — its only two misses were my own account hitting a 402 — while Bright Data failed 61. Both returned sources around 290 days old for questions asking what is newest, so freshness is unsolved rather than solved by either of them.
 
 **And an earlier version of this fooled me.** Twelve queries, one judge, no repeats, and it said Bright Data wrote better answers by 2.6 points. I had a tidy story for why. Run properly, the gap vanished. It was noise, and catching that is the whole reason to build one of these.
 

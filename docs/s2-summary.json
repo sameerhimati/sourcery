@@ -1,19 +1,21 @@
 {
-  "generated_at": "2026-07-24T22:30:43.019Z",
+  "generated_at": "2026-08-05T13:00:07.297Z",
   "seeds": 5,
   "answer_model": "fireworks/accounts/fireworks/models/kimi-k2p6",
   "judges": [
     "fireworks/accounts/fireworks/models/glm-5p2",
     "fireworks/accounts/fireworks/models/deepseek-v4-pro"
   ],
-  "n_rows": 480,
-  "n_errors": 63,
+  "n_rows": 960,
+  "n_errors": 65,
   "providers": [
     "firecrawl",
-    "bright_data"
+    "bright_data",
+    "tavily",
+    "exa"
   ],
   "n_queries": 48,
-  "n_unparseable_judgements": 2,
+  "n_unparseable_judgements": 3,
   "by_provider": [
     {
       "provider": "firecrawl",
@@ -23,8 +25,9 @@
       "answer_mean": 6.99,
       "answer_ci95": 0.69,
       "n_arms": 240,
-      "n_errors": 2,
-      "error_rate": 0.0083
+      "n_errors": 0,
+      "error_rate": 0,
+      "n_account_errors": 2
     },
     {
       "provider": "bright_data",
@@ -35,7 +38,32 @@
       "answer_ci95": 0.81,
       "n_arms": 240,
       "n_errors": 61,
-      "error_rate": 0.2542
+      "error_rate": 0.2542,
+      "n_account_errors": 0
+    },
+    {
+      "provider": "tavily",
+      "n_queries": 48,
+      "retrieval_mean": 3.95,
+      "retrieval_ci95": 0.47,
+      "answer_mean": 6.57,
+      "answer_ci95": 0.71,
+      "n_arms": 240,
+      "n_errors": 1,
+      "error_rate": 0.0042,
+      "n_account_errors": 0
+    },
+    {
+      "provider": "exa",
+      "n_queries": 48,
+      "retrieval_mean": 6.45,
+      "retrieval_ci95": 0.52,
+      "answer_mean": 8.23,
+      "answer_ci95": 0.47,
+      "n_arms": 240,
+      "n_errors": 1,
+      "error_rate": 0.0042,
+      "n_account_errors": 0
     }
   ],
   "by_type": [
@@ -49,6 +77,7 @@
       "n_arms": 40,
       "n_errors": 0,
       "error_rate": 0,
+      "n_account_errors": 0,
       "type": "breaking_news"
     },
     {
@@ -61,6 +90,33 @@
       "n_arms": 40,
       "n_errors": 3,
       "error_rate": 0.075,
+      "n_account_errors": 0,
+      "type": "breaking_news"
+    },
+    {
+      "provider": "tavily",
+      "n_queries": 8,
+      "retrieval_mean": 3.54,
+      "retrieval_ci95": 1.24,
+      "answer_mean": 6.89,
+      "answer_ci95": 2.4,
+      "n_arms": 40,
+      "n_errors": 1,
+      "error_rate": 0.025,
+      "n_account_errors": 0,
+      "type": "breaking_news"
+    },
+    {
+      "provider": "exa",
+      "n_queries": 8,
+      "retrieval_mean": 8.14,
+      "retrieval_ci95": 0.74,
+      "answer_mean": 9.56,
+      "answer_ci95": 0.44,
+      "n_arms": 40,
+      "n_errors": 1,
+      "error_rate": 0.025,
+      "n_account_errors": 0,
       "type": "breaking_news"
     },
     {
@@ -73,6 +129,7 @@
       "n_arms": 40,
       "n_errors": 0,
       "error_rate": 0,
+      "n_account_errors": 0,
       "type": "how_to"
     },
     {
@@ -85,6 +142,33 @@
       "n_arms": 40,
       "n_errors": 3,
       "error_rate": 0.075,
+      "n_account_errors": 0,
+      "type": "how_to"
+    },
+    {
+      "provider": "tavily",
+      "n_queries": 8,
+      "retrieval_mean": 5.11,
+      "retrieval_ci95": 0.56,
+      "answer_mean": 8.36,
+      "answer_ci95": 1.04,
+      "n_arms": 40,
+      "n_errors": 0,
+      "error_rate": 0,
+      "n_account_errors": 0,
+      "type": "how_to"
+    },
+    {
+      "provider": "exa",
+      "n_queries": 8,
+      "retrieval_mean": 6.07,
+      "retrieval_ci95": 1.14,
+      "answer_mean": 9.14,
+      "answer_ci95": 0.59,
+      "n_arms": 40,
+      "n_errors": 0,
+      "error_rate": 0,
+      "n_account_errors": 0,
       "type": "how_to"
     },
     {
@@ -97,6 +181,7 @@
       "n_arms": 40,
       "n_errors": 0,
       "error_rate": 0,
+      "n_account_errors": 0,
       "type": "product_lookup"
     },
     {
@@ -109,6 +194,33 @@
       "n_arms": 40,
       "n_errors": 12,
       "error_rate": 0.3,
+      "n_account_errors": 0,
+      "type": "product_lookup"
+    },
+    {
+      "provider": "tavily",
+      "n_queries": 8,
+      "retrieval_mean": 3.45,
+      "retrieval_ci95": 1.52,
+      "answer_mean": 6.71,
+      "answer_ci95": 1.63,
+      "n_arms": 40,
+      "n_errors": 0,
+      "error_rate": 0,
+      "n_account_errors": 0,
+      "type": "product_lookup"
+    },
+    {
+      "provider": "exa",
+      "n_queries": 8,
+      "retrieval_mean": 6.5,
+      "retrieval_ci95": 1.23,
+      "answer_mean": 8.32,
+      "answer_ci95": 0.77,
+      "n_arms": 40,
+      "n_errors": 0,
+      "error_rate": 0,
+      "n_account_errors": 0,
       "type": "product_lookup"
     },
     {
@@ -121,6 +233,7 @@
       "n_arms": 40,
       "n_errors": 0,
       "error_rate": 0,
+      "n_account_errors": 0,
       "type": "local_geo"
     },
     {
@@ -133,6 +246,33 @@
       "n_arms": 40,
       "n_errors": 16,
       "error_rate": 0.4,
+      "n_account_errors": 0,
+      "type": "local_geo"
+    },
+    {
+      "provider": "tavily",
+      "n_queries": 8,
+      "retrieval_mean": 3.13,
+      "retrieval_ci95": 1.4,
+      "answer_mean": 7.56,
+      "answer_ci95": 1.7,
+      "n_arms": 40,
+      "n_errors": 0,
+      "error_rate": 0,
+      "n_account_errors": 0,
+      "type": "local_geo"
+    },
+    {
+      "provider": "exa",
+      "n_queries": 8,
+      "retrieval_mean": 4.21,
+      "retrieval_ci95": 1.22,
+      "answer_mean": 7.78,
+      "answer_ci95": 1.61,
+      "n_arms": 40,
+      "n_errors": 0,
+      "error_rate": 0,
+      "n_account_errors": 0,
       "type": "local_geo"
     },
     {
@@ -145,6 +285,7 @@
       "n_arms": 40,
       "n_errors": 0,
       "error_rate": 0,
+      "n_account_errors": 0,
       "type": "recent_release"
     },
     {
@@ -157,6 +298,33 @@
       "n_arms": 40,
       "n_errors": 14,
       "error_rate": 0.35,
+      "n_account_errors": 0,
+      "type": "recent_release"
+    },
+    {
+      "provider": "tavily",
+      "n_queries": 8,
+      "retrieval_mean": 4.94,
+      "retrieval_ci95": 1.48,
+      "answer_mean": 5.14,
+      "answer_ci95": 1.96,
+      "n_arms": 40,
+      "n_errors": 0,
+      "error_rate": 0,
+      "n_account_errors": 0,
+      "type": "recent_release"
+    },
+    {
+      "provider": "exa",
+      "n_queries": 8,
+      "retrieval_mean": 7.1,
+      "retrieval_ci95": 0.8,
+      "answer_mean": 7.94,
+      "answer_ci95": 1.34,
+      "n_arms": 40,
+      "n_errors": 0,
+      "error_rate": 0,
+      "n_account_errors": 0,
       "type": "recent_release"
     },
     {
@@ -167,8 +335,9 @@
       "answer_mean": 6.73,
       "answer_ci95": 2.03,
       "n_arms": 40,
-      "n_errors": 2,
-      "error_rate": 0.05,
+      "n_errors": 0,
+      "error_rate": 0,
+      "n_account_errors": 2,
       "type": "numeric_live"
     },
     {
@@ -181,6 +350,33 @@
       "n_arms": 40,
       "n_errors": 13,
       "error_rate": 0.325,
+      "n_account_errors": 0,
+      "type": "numeric_live"
+    },
+    {
+      "provider": "tavily",
+      "n_queries": 8,
+      "retrieval_mean": 3.51,
+      "retrieval_ci95": 1.33,
+      "answer_mean": 4.75,
+      "answer_ci95": 2.4,
+      "n_arms": 40,
+      "n_errors": 0,
+      "error_rate": 0,
+      "n_account_errors": 0,
+      "type": "numeric_live"
+    },
+    {
+      "provider": "exa",
+      "n_queries": 8,
+      "retrieval_mean": 6.65,
+      "retrieval_ci95": 1.9,
+      "answer_mean": 6.63,
+      "answer_ci95": 1.72,
+      "n_arms": 40,
+      "n_errors": 0,
+      "error_rate": 0,
+      "n_account_errors": 0,
       "type": "numeric_live"
     }
   ],
@@ -189,23 +385,23 @@
       "metric": "retrieval",
       "judge_a": "glm-5p2",
       "judge_b": "deepseek-v4-pro",
-      "pearson": 0.596,
-      "mean_abs_diff": 1.96,
-      "within_1_rate": 0.468,
-      "n": 417
+      "pearson": 0.667,
+      "mean_abs_diff": 2.12,
+      "within_1_rate": 0.435,
+      "n": 895
     },
     {
       "metric": "answer",
       "judge_a": "glm-5p2",
       "judge_b": "deepseek-v4-pro",
-      "pearson": 0.427,
-      "mean_abs_diff": 2.53,
-      "within_1_rate": 0.564,
-      "n": 417
+      "pearson": 0.434,
+      "mean_abs_diff": 2.43,
+      "within_1_rate": 0.583,
+      "n": 895
     }
   ],
   "variance": {
-    "seed_std_mean": 1.04,
-    "judge_gap_mean": 1.962
+    "seed_std_mean": 0.981,
+    "judge_gap_mean": 2.122
   }
 }

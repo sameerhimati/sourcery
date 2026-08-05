@@ -1,6 +1,6 @@
 {
   "name": "sourcery-eval",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Find the best search API for your agent. Same query, same model, same judge, swap only the retrieval provider: Firecrawl, Tavily, Exa, Bright Data, keyless baseline.",
   "keywords": [
     "eval",

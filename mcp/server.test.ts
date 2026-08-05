@@ -186,11 +186,23 @@ describe("sourcery MCP server", () => {
     expect(res.isError).toBeFalsy();
 
     const out = JSON.parse(res.content[0].text);
+    // Derived from the shipped summary rather than pinned to today's winner.
+    // Re-running the reference eval legitimately changes who wins — it changed
+    // from firecrawl to exa the first time a fourth provider was measured — and
+    // a test that has to be edited whenever the data improves is testing the
+    // data, not the routing.
+    const summary = await import("../docs/s2-summary.json");
+    const forType = summary.by_type
+      .filter((t: { type: string }) => t.type === "breaking_news")
+      .sort(
+        (a: { retrieval_mean: number }, b: { retrieval_mean: number }) =>
+          b.retrieval_mean - a.retrieval_mean,
+      );
     expect(out).toMatchObject({
       type: "breaking_news",
-      provider: "firecrawl", // per docs/s2-summary.json, not the fixture above
-      retrieval_mean: 4.17,
-      runner_up: "bright_data",
+      provider: forType[0].provider,
+      retrieval_mean: forType[0].retrieval_mean,
+      runner_up: forType[1].provider,
       source: "sourcery reference run",
     });
     // Asserted by what it has to TELL the caller, not as a byte-exact string.

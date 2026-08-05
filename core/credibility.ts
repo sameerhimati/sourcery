@@ -142,12 +142,58 @@ export interface CredibilityOpts {
 export class ProviderDeadError extends Error {
   constructor(readonly provider: Provider, readonly sample: string) {
     super(
-      `Provider "${provider}" failed its first arms — aborting before this burns ` +
+      `Provider "${provider}" failed its first results — aborting before this burns ` +
         `hours and credits on a dead matrix. Last error: ${sample}\n` +
-        `Fix it, then re-run with --resume to keep the arms already on disk.`,
+        `Fix it, then re-run with --resume to keep the results already on disk.`,
     );
     this.name = "ProviderDeadError";
   }
+}
+
+/** Thrown when the network goes away mid-run, rather than at the start. */
+export class NetworkDeadError extends Error {
+  constructor(readonly consecutive: number, readonly sample: string) {
+    super(
+      `${consecutive} results in a row failed to reach the network — this machine ` +
+        `lost its connection, so nothing after this point would measure a provider.\n` +
+        `Stopped rather than racing to a false finish. Last error: ${sample}\n` +
+        `Re-run with --resume when you're back online: everything already on disk ` +
+        `is kept, and these attempts are retried.`,
+    );
+    this.name = "NetworkDeadError";
+  }
+}
+
+export const NETWORK_DEAD_AFTER = 12;
+
+/**
+ * Trips when the machine loses its connection partway through a run.
+ *
+ * Counts CONSECUTIVE transport failures across every provider, because that is
+ * the signature of a dead network: a genuinely broken provider still lets the
+ * others through, so the counter resets the moment anything succeeds.
+ *
+ * `failFast` could not catch this — it only ever inspected a provider's FIRST
+ * results. A connection that died 70 results into 480 was invisible to it, and
+ * the run churned the remaining 412 in minutes before finishing by overwriting
+ * the published summary with a matrix of nothing.
+ */
+export function createNetworkBreaker(limit = NETWORK_DEAD_AFTER) {
+  let consecutive = 0;
+  let last = "";
+  return {
+    /** True when this was a transport failure, so the caller stops counting it. */
+    observe(error: string | undefined): boolean {
+      if (!isTransportFailure(error)) {
+        consecutive = 0;
+        return false;
+      }
+      consecutive++;
+      last = error ?? "";
+      if (consecutive >= limit) throw new NetworkDeadError(consecutive, last.slice(0, 200));
+      return true;
+    },
+  };
 }
 
 /** Identity of one pipeline — the resume/dedup key. */
@@ -174,7 +220,7 @@ export function armKey(queryId: string, provider: Provider, seed: number): strin
  * than better than it is, which is not.
  */
 const TRANSPORT_FAILURES =
-  /\b(ENOTFOUND|EAI_AGAIN|ECONNREFUSED|ECONNRESET|ENETDOWN|ENETUNREACH|EHOSTUNREACH|UND_ERR_CONNECT_TIMEOUT|UND_ERR_SOCKET)\b|fetch failed|network is (down|unreachable)/i;
+  /\b(ENOTFOUND|EAI_AGAIN|ECONNREFUSED|ECONNRESET|ENETDOWN|ENETUNREACH|EHOSTUNREACH|UND_ERR_CONNECT_TIMEOUT|UND_ERR_SOCKET)\b|fetch failed|connection error|network is (down|unreachable)/i;
 
 export function isTransportFailure(error: string | undefined): boolean {
   return Boolean(error && TRANSPORT_FAILURES.test(error));
@@ -254,7 +300,22 @@ export async function runCredibility(
   // producing nothing but 402s (learned the hard way).
   const failFast = opts.failFast ?? 8;
   const tally = new Map<Provider, { ok: number; fail: number; last: string }>();
+
+  // failFast only ever looked at a provider's FIRST results, so a network that
+  // died 70 results into a 480-result run was invisible to it: the run churned
+  // through the remaining 412 in minutes, wrote 412 failures to the log, and
+  // would have finished by overwriting the published summary with a matrix of
+  // nothing. Learned by watching it happen.
+  //
+  // Counts CONSECUTIVE transport failures across all providers, because that is
+  // the signature of a dead connection — a genuinely broken provider still lets
+  // the others through, and this resets the moment anything succeeds.
+  const breaker = createNetworkBreaker();
+
   const record = (row: CredibilityRow): void => {
+    // Not the provider's fault, so it must not count toward failFast either.
+    if (breaker.observe(row.error)) return;
+
     const t = tally.get(row.provider) ?? { ok: 0, fail: 0, last: "" };
     if (row.error) {
       t.fail++;

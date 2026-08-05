@@ -8,6 +8,7 @@ import {
   summarize,
   armKey,
   runCredibility,
+  createNetworkBreaker,
   dedupeRows,
   isTransportFailure,
   isAccountFailure,
@@ -299,5 +300,44 @@ describe("whose fault was it", () => {
   it("counts a clean run as no failure at all", () => {
     expect(isProviderFailure(undefined)).toBe(false);
     expect(isAccountFailure(undefined)).toBe(false);
+  });
+});
+
+describe("a network that dies mid-run", () => {
+  it("classifies the SDK's connection error as transport", () => {
+    // The exact string the OpenAI-compatible client raises when it can't reach
+    // the host. It was being counted as a provider failure.
+    expect(isTransportFailure("Connection error.")).toBe(true);
+    expect(isProviderFailure("Connection error.")).toBe(false);
+  });
+
+  it("trips after N consecutive transport failures", () => {
+    // What actually happened: the connection died 70 results into 480, and
+    // failFast — which only ever looked at a provider's FIRST results — let the
+    // run burn the remaining 412 in minutes before finishing.
+    const b = createNetworkBreaker(4);
+    expect(b.observe("fetch failed")).toBe(true);
+    b.observe("fetch failed");
+    b.observe("Connection error.");
+    expect(() => b.observe("fetch failed")).toThrow(/lost its connection/);
+  });
+
+  it("resets on any success, so a slow provider never trips it", () => {
+    const b = createNetworkBreaker(3);
+    b.observe("fetch failed");
+    b.observe("fetch failed");
+    b.observe(undefined); // one result got through — the network is fine
+    expect(() => {
+      b.observe("fetch failed");
+      b.observe("fetch failed");
+    }).not.toThrow();
+  });
+
+  it("resets on a provider's own failure, which proves the network is up", () => {
+    const b = createNetworkBreaker(3);
+    b.observe("fetch failed");
+    b.observe("fetch failed");
+    expect(b.observe("Bright Data returned non-JSON")).toBe(false);
+    expect(() => b.observe("fetch failed")).not.toThrow();
   });
 });

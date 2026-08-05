@@ -91,11 +91,23 @@ export function registerCredibility(program: Command): void {
       // would publish your own outage as a provider's failure rate, and the
       // failure rate is the headline reliability claim.
       const done = resumableKeys(prior);
-      const retrying = prior.filter((r) => isTransportFailure(r.error)).length;
+      // Only the part of THIS run's matrix that's already covered. The log also
+      // holds every earlier run's rows — counting those said "550 already on
+      // disk, -70 to go" for a 480-result matrix, which reads like a bug in the
+      // arithmetic and undermines the number next to it.
+      const inMatrix = queries.flatMap((q) =>
+        armSet.flatMap((p) =>
+          Array.from({ length: seeds }, (_, seed) => armKey(q.id, p as Provider, seed)),
+        ),
+      );
+      const alreadyDone = inMatrix.filter((k) => done.has(k)).length;
+      const retrying = prior.filter(
+        (r) => isTransportFailure(r.error) && armSet.includes(r.provider),
+      ).length;
       process.stdout.write(
         `Credibility run: ${queries.length} queries × ${armSet.join("/")} × ${seeds} seeds ` +
           `= ${arms} results, each graded by ${judges.length} judge(s), concurrency ${concurrency}.\n` +
-          (done.size ? `Resuming: ${done.size} results already on disk, ${arms - done.size} to go.\n` : "") +
+          (alreadyDone ? `Resuming: ${alreadyDone} of those already on disk, ${arms - alreadyDone} to go.\n` : "") +
           (retrying
             ? `Retrying ${retrying} that failed with a network error — those measure your ` +
               `connection, not the provider.\n`

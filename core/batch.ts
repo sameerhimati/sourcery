@@ -1,6 +1,6 @@
 import { EVAL_DATASET, EvalQuery, QueryType } from "./eval-dataset";
 import { runArm } from "./orchestrator";
-import { DEFAULT_CONFIG, Provider, ProgressEvent, Source } from "./types";
+import { DEFAULT_CONFIG, ErrorStage, Provider, ProgressEvent, Source } from "./types";
 import { defaultProviders } from "./adapters";
 import { MODEL } from "./controls";
 import { mapWithConcurrency } from "./extract";
@@ -48,7 +48,13 @@ export interface BatchRow {
   num_sources: number;
   num_sources_extracted: number;
   latency_ms: number;
+  // The retrieval call alone. `latency_ms` above spans fetch + answer + judge,
+  // so it is not a provider number and must never be reported as one.
+  fetch_ms?: number;
   error?: string;
+  // Which step threw. Without it a failed answer call lands in the log looking
+  // exactly like a provider outage, and gets counted as one.
+  error_stage?: ErrorStage;
 }
 
 export interface HeatRow {
@@ -172,7 +178,8 @@ export async function runBatch(
       num_sources: arm.sources.length,
       num_sources_extracted: arm.sources.filter((s) => s.content).length,
       latency_ms: arm.latency_ms,
-      ...(arm.error ? { error: arm.error } : {}),
+      ...(arm.fetch_ms === undefined ? {} : { fetch_ms: arm.fetch_ms }),
+      ...(arm.error ? { error: arm.error, error_stage: arm.error_stage } : {}),
     };
     return row;
   });

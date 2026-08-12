@@ -95,6 +95,20 @@ export function ci95(xs: number[]): number {
   return tCrit(n - 1) * (stddev(xs) / Math.sqrt(n));
 }
 
+/**
+ * Nearest-rank percentile (p in 0..1). null on an empty sample.
+ *
+ * Deliberately returns null rather than 0: a latency of 0ms is a claim, and the
+ * absence of a measurement must not render as a fast provider. Every caller has
+ * to decide what to print when there's nothing to print.
+ */
+export function percentile(xs: number[], p: number): number | null {
+  if (!xs.length) return null;
+  const sorted = [...xs].sort((a, b) => a - b);
+  const rank = Math.ceil(p * sorted.length);
+  return sorted[Math.min(Math.max(rank, 1), sorted.length) - 1];
+}
+
 /** Pearson correlation. 0 if either side is constant or n<2. */
 export function pearson(a: number[], b: number[]): number {
   const n = Math.min(a.length, b.length);
@@ -452,6 +466,19 @@ export interface ProviderStat {
   // Your account dying mid-run. Reported rather than dropped: it explains a
   // truncated matrix, it just isn't a reliability signal about the provider.
   n_account_errors: number;
+  // Provider latency, over `fetch_ms` — the retrieval call ALONE. Never compute
+  // this from `latency_ms`: that spans fetch + answer + the whole judge panel,
+  // so it is mostly a measurement of my own LLM calls, and publishing it as a
+  // provider's latency would attribute my model's slowness to their API.
+  //
+  // null when nothing in the sample carried a fetch_ms — rows written before it
+  // existed don't have one, and a percentile over zero values must not render
+  // as a fast provider. `n_fetch_timed` is what makes that checkable: a p50 over
+  // 3 of 240 arms is not a latency claim, and the reader has to be able to see
+  // that without opening the raw log.
+  fetch_ms_p50: number | null;
+  fetch_ms_p95: number | null;
+  n_fetch_timed: number;
 }
 
 export interface TypeStat extends ProviderStat {
@@ -532,6 +559,14 @@ function providerStat(rows: CredibilityRow[], provider: Provider): ProviderStat 
   const errors = attempted.filter((r) => isProviderFailure(r.error, r.error_stage)).length;
   const accountErrors = attempted.filter((r) => isAccountFailure(r.error)).length;
 
+  // Timed fetches only, across every attempted arm — including arms whose answer
+  // or judge later failed, because the provider still returned and that fetch is
+  // a real measurement of it. A fetch that itself threw carries no fetch_ms, so
+  // a failed retrieval never lands in the latency sample as a fast one.
+  const fetchMs = attempted
+    .map((r) => r.fetch_ms)
+    .filter((ms): ms is number => typeof ms === "number");
+
   return {
     provider,
     n_queries: byQuery.size,
@@ -543,6 +578,9 @@ function providerStat(rows: CredibilityRow[], provider: Provider): ProviderStat 
     n_errors: errors,
     error_rate: attempted.length ? Number((errors / attempted.length).toFixed(4)) : 0,
     n_account_errors: accountErrors,
+    fetch_ms_p50: percentile(fetchMs, 0.5),
+    fetch_ms_p95: percentile(fetchMs, 0.95),
+    n_fetch_timed: fetchMs.length,
   };
 }
 

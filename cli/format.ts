@@ -173,6 +173,28 @@ export function renderCredibility(s: CredibilitySummary): string {
       "  " + pad(r.answer, wA) + "  " + r.n,
   );
 
+  // Provider latency block — fetch_ms only, and only for providers that actually
+  // carry it. Printed separately from the score table rather than as a column,
+  // because a run that mixes pre-fetch_ms rows with new ones would otherwise show
+  // a blank cell that reads like "fast" instead of "not measured".
+  const timed = s.by_provider.filter((p) => p.n_fetch_timed > 0);
+  const latencyLines = timed.length
+    ? [
+        "",
+        "Provider latency — the retrieval call alone, not the answer or the judges:",
+        "",
+        ...timed.map((p) => {
+          const secs = (ms: number | null) => (ms === null ? "—" : `${(ms / 1000).toFixed(1)}s`);
+          const coverage =
+            p.n_fetch_timed < p.n_arms ? `  (${p.n_fetch_timed} of ${p.n_arms} arms timed)` : "";
+          return `  ${pad(label(p.provider), 12)}  p50 ${pad(secs(p.fetch_ms_p50), 7)}  p95 ${pad(secs(p.fetch_ms_p95), 7)}${coverage}`;
+        }),
+      ]
+    : [
+        "",
+        "Provider latency: not measured in this run — no arm carried a fetch_ms.",
+      ];
+
   // Inter-judge agreement block.
   const agreeLines = s.agreement.map(
     (a) =>
@@ -196,6 +218,7 @@ export function renderCredibility(s: CredibilitySummary): string {
     "",
     provHeader,
     ...provBody,
+    ...latencyLines,
     "",
     "Inter-judge agreement:",
     ...agreeLines,

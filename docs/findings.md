@@ -172,7 +172,9 @@ The fix is additive, not a rewrite. `core/eval-dataset.ts` stays exactly as it i
 
 Half of it now exists. `sourcery batch --queries my-queries.json` runs your own set through the same harness, same scoring, same run log, and `--queries-template` prints a starting point. So the answer to "these queries aren't mine" is no longer "I know, sorry" — it's a flag.
 
-What's still owed is a curated second dataset of real retrieval tasks, shipped and measured the way these 48 were, so there's a published comparison rather than only a mechanism. Two datasets that disagree is a more interesting finding than either alone.
+The curated second dataset now exists: [`datasets/real-tasks.json`](../datasets/real-tasks.json) — 24 real retrieval tasks, 4 per type, each carrying the acceptance criterion for what a correct answer must contain. Open backend roles with comp bands, S3 request pricing, Node LTS end-of-life dates, which urgent care near Cambridge is open right now. [`docs/datasets.md`](datasets.md) covers how they were chosen, what it costs to run, and the rules for editing them.
+
+**It has not been run yet, so this document contains no numbers from it.** `credibility --queries` measures it the way the 48 were measured — same seeds, same judge panel, same intervals — and until that run happens the comparison between synthetic freshness and real tasks is a promise, not a finding. Two datasets that disagree is a more interesting result than either alone, and it is still owed.
 
 ## What I'd defend, and what I wouldn't
 

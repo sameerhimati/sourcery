@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
+import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 import { parseQuerySet, QuerySetError, QUERY_TYPES, querySetTemplate } from "./query-set";
+import { EVAL_DATASET } from "./eval-dataset";
 
 // This is the first file a new user hand-writes, so every failure mode needs an
 // error that names the entry and the fix. A stack trace here reads as "the tool
@@ -104,5 +107,69 @@ describe("querySetTemplate", () => {
     const queries = parseQuerySet(querySetTemplate()).map((q) => q.query);
     expect(queries.every((q) => q.includes("<"))).toBe(true);
     expect(queries.filter((q) => /latest|newest/i.test(q))).toHaveLength(0);
+  });
+});
+
+describe("the shipped real-task dataset", () => {
+  // datasets/real-tasks.json is the second dataset findings.md promises: real
+  // retrieval work, measured beside the synthetic 48 rather than replacing them.
+  // It is a hand-written JSON file, so nothing but a test stops it from drifting
+  // out of shape between runs — and it is meant to be edited as entities die.
+  const raw = readFileSync(
+    fileURLToPath(new URL("../datasets/real-tasks.json", import.meta.url)),
+    "utf8",
+  );
+
+  it("parses through the same loader the CLI uses", () => {
+    expect(() => parseQuerySet(raw, "real-tasks.json")).not.toThrow();
+  });
+
+  it("is balanced across all six types, so no type carries the result alone", () => {
+    const queries = parseQuerySet(raw, "real-tasks.json");
+    const counts = new Map<string, number>();
+    for (const q of queries) counts.set(q.type, (counts.get(q.type) ?? 0) + 1);
+    expect([...counts.keys()].sort()).toEqual([...QUERY_TYPES].sort());
+    // Equal weight per type: an unbalanced set silently reweights the headline
+    // mean toward whichever type happens to have the most rows.
+    expect([...new Set(counts.values())]).toEqual([4]);
+    expect(queries).toHaveLength(24);
+  });
+
+  it("shares no query verbatim with the built-in 48", () => {
+    // Only exact restatement is asserted here, and that is deliberate.
+    //
+    // Three of these tasks shipped as near-duplicates of pl-04, rr-01 and nl-06
+    // and were caught by reading them side by side, NOT by a similarity check —
+    // a content-word Jaccard scored the MacBook duplicate at 0.18, below any
+    // threshold that doesn't also reject unrelated queries sharing one noun.
+    // Near-duplication against the 48 is a review step when editing this file
+    // (docs/datasets.md says so); pretending a heuristic covers it would be the
+    // same mistake as a failure count nobody checked the stage on.
+    const builtIn = new Set(EVAL_DATASET.map((q) => q.query.replace(/\s+/g, " ").trim().toLowerCase()));
+    const dupes = parseQuerySet(raw, "real-tasks.json")
+      .filter((q) => builtIn.has(q.query.replace(/\s+/g, " ").trim().toLowerCase()))
+      .map((q) => q.id);
+    expect(dupes).toEqual([]);
+  });
+
+  it("has no unfilled template placeholders", () => {
+    // Placeholders belong in the template, not in a set that gets run for real —
+    // "<competitor>" would be sent to four providers verbatim and scored.
+    const queries = parseQuerySet(raw, "real-tasks.json");
+    expect(queries.filter((q) => q.query.includes("<"))).toHaveLength(0);
+  });
+
+  it("carries an acceptance criterion on every task", () => {
+    // `note` never reaches the judge — it is how a human re-checks a scored row
+    // months later, and how the set stays auditable when an entity changes.
+    const queries = parseQuerySet(raw, "real-tasks.json");
+    expect(queries.filter((q) => !q.note?.trim())).toHaveLength(0);
+  });
+
+  it("uses ids that stay distinguishable from the built-in 48 in a shared log", () => {
+    // .sourcery/s2-runs.jsonl has no dataset column: rows from both sets land in
+    // the same file and the id prefix is the only thing telling them apart.
+    const queries = parseQuerySet(raw, "real-tasks.json");
+    expect(queries.filter((q) => !q.id.startsWith("rt-"))).toHaveLength(0);
   });
 });

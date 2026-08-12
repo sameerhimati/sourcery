@@ -240,12 +240,28 @@ hand.** That's the project. The code change is a day.
 
 Answer model `kimi-k2p6`, the same answer and judge prompts from
 `core/controls.ts`, 8 sources per call, full page extraction, no date filter.
-Providers: Firecrawl, Exa, Tavily, Bright Data, plus the keyless baseline, which
-is not a contestant and only exists for the difficulty check in section 4.
+
+**Which providers.** Not the four that happened to have adapters. Every provider
+that meets a rule written down before the list was looked up: *offers a web-search
+API anyone can sign up for, at a price published on a public page.* Twenty clear
+it. The full list, the providers the rule excludes and the reason for each, and
+everything about them that isn't yet confirmed, is in
+[`provider-admission.md`](provider-admission.md), published with this document.
+
+Plus the keyless baseline, which is not a contestant and exists only for the
+difficulty check in section 4.
+
+**Most of those twenty return links and snippets, not page text**, and that is
+handled by scoring rather than by exclusion — see section 7. Throwing them out
+would mean excluding real search APIs on a criterion about content extraction;
+scoring them only on what they can fairly be scored on costs nothing and hides
+nothing.
 
 ### One fetch per question, not five
 
-**54 questions × 5 arms × 1 fetch = 270 fetches.**
+**54 questions × 1 fetch, per provider.** With the repeat sample below that's 90
+calls each, and the final arm count follows from however many providers the
+admission rule ends up seating.
 
 Run 1 fetched everything five times to average out noise. Going back over that
 run's own log, that was the wrong place to spend the money:
@@ -290,7 +306,7 @@ Repeats stay, for a different job: **measuring how consistent each provider is**
 which the numbers above show is a big, unreported difference between them.
 
 **18 questions (6 per tier) fetched 3 times each.** The main fetch counts as the
-first, so it's 180 extra fetches.
+first, so it's 36 extra calls per provider.
 
 That gives two things. **How often each provider returns the same links** — a
 provider whose results churn 50% between identical calls gives agent builders
@@ -302,11 +318,23 @@ identical on a chart.
 
 ### Budget
 
+Across every admitted provider the whole run comes to **under $20**, most of it
+absorbed by signup credits. Money is not what a wide provider list costs; an
+adapter per provider is.
+
+Firecrawl is still the one that binds, because it meters in credits against a
+monthly plan rather than billing per call:
+
 | | Firecrawl calls | credits (20–60 each, per run 1) |
 |---|---|---|
 | Main run | 54 | 1,080 – 3,240 |
 | Repeat sample | 36 | 720 – 2,160 |
 | **Total** | **90** | **1,800 – 5,400** |
+
+Those credit figures come from what run 1 actually consumed, not from a pricing
+page. Firecrawl's public rates imply roughly 900 credits for the same 90 calls —
+between two and six times lower. **The measured number wins.** A credit estimate
+derived from documentation has not once matched what this project actually spent.
 
 The top of that range is over a 5,000/month plan. **If the budget binds, the
 repeat sample shrinks from 6 questions per tier to 4.** The 54 questions are never
@@ -317,9 +345,27 @@ the results.
 
 ## 7. What we score
 
+**Every number below is published with the count of providers it covers.** They
+don't all cover the same set, and a score computed over ten providers printed
+beside one computed over twenty, without saying so, is the same class of mistake
+as a latency figure that was really measuring our own model.
+
+| Score | Who it covers |
+|---|---|
+| Did the right page come back | **every admitted provider.** Needs addresses only |
+| Did the text contain the fact | only providers that return page text |
+| The two judge scores | only providers that return page text |
+
 **The main number: did it return the right page?** Yes or no, per question per
 provider, checking whether any of the recorded answer pages appears among the 8
 sources returned.
+
+This is also what makes a wide provider list workable. The check reads web
+addresses and nothing else, so a provider that returns links and snippets is
+measured on it exactly as fairly as one that returns full page text. That was not
+the reason for moving off the judge — judge disagreement was — but it is a
+consequence worth stating, because the alternative was excluding most of the
+market on a criterion about content extraction.
 
 This is what run 2 turns on, and the reason is the judge disagreement above. When
 two judges differ by 2.13 points out of 10, a judge-based headline carries more
@@ -356,11 +402,18 @@ latency, source age.
 
 All of this is fixed now, before any run-2 data exists.
 
-**What "the gap" means.** For each question, take all 6 possible pairs of the 4
-providers, and average how far apart each pair is. Then average that within each
-tier. *Not* best-minus-worst — that grows with noise, grows with the number of
-providers, and is decided by whichever provider happens to be extreme. It's
-reported as a secondary number only.
+**What "the gap" means.** For each question, take every possible pair of the
+providers being compared, and average how far apart each pair is. Then average that
+within each tier. *Not* best-minus-worst — that grows with noise, grows with the
+number of providers, and is decided by whichever provider happens to be extreme.
+It's reported as a secondary number only.
+
+**Which providers go into that average is fixed here, before the run**, and the
+count is published with every gap number. It matters more than it looks: four
+providers is 6 pairs, twenty is 190, and an average over a different set of pairs
+is a different measurement. Two are reported — the gap across every admitted
+provider, and the gap across the original four alone, which is the only one that
+can be compared to run 1.
 
 For the main yes/no score, the gap reads as **how often two providers disagree
 about whether the right page was found** — which is directly interpretable.
@@ -433,7 +486,9 @@ published, so the denominator is always visible.
 5. The full error table and every dropped row.
 6. `datasets/hard-tasks.json` and the complete answer key.
 7. Every balance check from section 4, including any that came out lopsided.
-8. The changes log below, even if it's empty.
+8. The provider list, the rule that produced it, and **the providers the rule
+   excluded with the reason for each** — [`provider-admission.md`](provider-admission.md).
+9. The changes log below, even if it's empty.
 
 ---
 
@@ -456,6 +511,12 @@ The `prereg-v2` tag goes on only when all of these are true:
 - [ ] Duplicate check against the 48 and the 24, done by hand
 - [ ] Memory check run; any cut questions listed here
 - [ ] Balance checks computed and written into section 4
+- [ ] Provider list final, every admitted provider has a working adapter, and the
+      unconfirmed items in [`provider-admission.md`](provider-admission.md)
+      resolved by signing up and making one real call
+- [ ] Recorded here, for each provider, whether it returns page text — this
+      decides which scores cover it: `__________`
+- [ ] Which providers go into the gap average, fixed here: `__________`
 - [ ] The two extra judges named here: `__________`, `__________`
 - [ ] Fingerprint of the answer key recorded here: `__________`
 - [ ] This document published somewhere with a timestamp anyone can verify

@@ -186,28 +186,28 @@ raised by Exa, partly paid for in Exa credits, in a benchmark Exa currently wins
 *Why isn't X in here* and *you left out the one that beats you* both need an
 answer anyone can check.
 
-So the rule gets written first and the list discovered second, in that order:
+The rule got written first and the list found second. **Twenty providers clear it,
+and sixteen of them need an adapter.** The full table — admitted, excluded with
+reasons, and what still isn't confirmed — is in
+[`provider-admission.md`](provider-admission.md).
 
 > **A provider is in if, as of the date of the run, it offers a web-search API
 > anyone can sign up for, at a price published on a public page.**
 
-Then every provider that clears that bar goes in — one file in `core/adapters/`
-plus a row in `core/adapters/index.ts` each. **The providers the rule excludes get
-published too, with the reason.** That list carries as much weight as the
-inclusions.
+**Most of the twenty return links and snippets, not page text.** That is handled
+by scoring, not by exclusion: run 2's headline reads web addresses only, so a
+links-only provider is measured on it exactly as fairly as one that returns full
+text. The fact-in-text and judge scores cover only providers that return text, and
+every number is published with the count of providers behind it.
 
-Three consequences, all to be settled while the plan is still a draft, because
-section 11 forbids quietly editing it afterwards:
+Money is not the constraint — the whole run across all twenty is under $20, mostly
+absorbed by signup credits. **Sixteen adapters is the constraint**, and it's the
+reason to write them in waves rather than blocking run 2 on all of them.
 
-1. **"The gap" is currently defined as an average over the 6 possible pairs of 4
-   providers.** More providers means more pairs, and the trend line is then
-   measuring something else. Re-fix the definition against the final list.
-2. **New providers have no run-1 result to be compared against.** Run 2 lines up
-   with run 1 only for the original four. Say so; don't hide it.
-3. **The bill scales with the list.** Every admitted provider is another 54
-   fetches plus its share of the repeat sample, and its own account and key. The
-   credit ceiling in section 6 assumed one provider was the binding constraint;
-   that arithmetic gets redone.
+One number in the research was rejected: public pricing implies ~900 Firecrawl
+credits for 90 calls, where run 1 actually consumed 1,800–5,400. The measured
+range stands. A credit estimate from a docs page has never matched what this
+project spent.
 
 ---
 

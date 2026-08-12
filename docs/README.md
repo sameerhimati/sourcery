@@ -18,6 +18,7 @@ Everything in this repo, and which file answers which question.
 | [`s2-summary.json`](s2-summary.json) | run 1's numbers as data, per provider and per question type |
 | [`preregistration-v2.md`](preregistration-v2.md) | the plan for run 2, published before it runs |
 | [`run-2-build.md`](run-2-build.md) | what has to be built before run 2 can run, in what order, and who does which part |
+| [`provider-admission.md`](provider-admission.md) | the rule for which providers get measured, who it admits, and who it excludes and why |
 | [`datasets.md`](datasets.md) | the question sets, how they differ, and the rules for editing them |
 
 ## Using it

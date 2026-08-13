@@ -186,23 +186,26 @@ raised by Exa, partly paid for in Exa credits, in a benchmark Exa currently wins
 *Why isn't X in here* and *you left out the one that beats you* both need an
 answer anyone can check.
 
-The rule got written first and the list found second. **Twenty providers clear it,
-and sixteen of them need an adapter.** The full table — admitted, excluded with
-reasons, and what still isn't confirmed — is in
-[`provider-admission.md`](provider-admission.md).
+**Eight.** Firecrawl, Exa, Tavily and Bright Data, plus **Brave, Serper,
+Perplexity Search and Parallel** — four adapters to write. The rule, the evidence
+behind each name, the ones that qualify but aren't measured, and what isn't
+confirmed are all in [`provider-admission.md`](provider-admission.md).
 
-> **A provider is in if, as of the date of the run, it offers a web-search API
-> anyone can sign up for, at a price published on a public page.**
+The first version of this rule admitted everyone with a public API: twenty
+providers, sixteen adapters, most of them vendors no agent builder has heard of.
+Width is not neutrality — a headline averaged over that set is partly an average
+over providers with no users. The rule is now *real standing in the agent-retrieval
+market, on stated evidence*, **plus anyone who asks.** That second clause is what
+makes a short list defensible, and it costs a vendor who wants in exactly one
+issue.
 
-**Most of the twenty return links and snippets, not page text.** That is handled
-by scoring, not by exclusion: run 2's headline reads web addresses only, so a
-links-only provider is measured on it exactly as fairly as one that returns full
-text. The fact-in-text and judge scores cover only providers that return text, and
-every number is published with the count of providers behind it.
+**Brave is the one to get right.** It powers Claude's web search and Mistral's, it
+has never been publicly benchmarked, and whether its "LLM Context" endpoint returns
+page text or only richer snippets decides whether the judge scores cover five
+providers or six. That's a signup and one call, and it belongs before the tag.
 
-Money is not the constraint — the whole run across all twenty is under $20, mostly
-absorbed by signup credits. **Sixteen adapters is the constraint**, and it's the
-reason to write them in waves rather than blocking run 2 on all of them.
+Three of the eight return links only, which the scoring split already handles: the
+headline reads web addresses, so they're measured on exactly what they sell.
 
 One number in the research was rejected: public pricing implies ~900 Firecrawl
 credits for 90 calls, where run 1 actually consumed 1,800–5,400. The measured

@@ -241,21 +241,25 @@ hand.** That's the project. The code change is a day.
 Answer model `kimi-k2p6`, the same answer and judge prompts from
 `core/controls.ts`, 8 sources per call, full page extraction, no date filter.
 
-**Which providers.** Not the four that happened to have adapters. Every provider
-that meets a rule written down before the list was looked up: *offers a web-search
-API anyone can sign up for, at a price published on a public page.* Twenty clear
-it. The full list, the providers the rule excludes and the reason for each, and
-everything about them that isn't yet confirmed, is in
-[`provider-admission.md`](provider-admission.md), published with this document.
+**Which providers.** Eight, not the four that happened to have adapters:
+Firecrawl, Exa, Tavily, Bright Data, **Brave, Serper, Perplexity Search and
+Parallel**. Each is there on stated evidence of standing in the market this
+benchmark is about — retrieval sold to people building agents — and
+[`provider-admission.md`](provider-admission.md) records which evidence, along with
+the providers that qualify but aren't measured, the ones that can't be measured at
+all, and what about them isn't confirmed. It publishes with this document.
+
+**Anyone else can request inclusion**, publicly, and the same is true after the
+results are out. "Nobody asked" is a checkable answer; "I didn't feel like it" is
+not.
 
 Plus the keyless baseline, which is not a contestant and exists only for the
 difficulty check in section 4.
 
-**Most of those twenty return links and snippets, not page text**, and that is
+**Three of the eight return links and snippets, not page text**, and that is
 handled by scoring rather than by exclusion — see section 7. Throwing them out
-would mean excluding real search APIs on a criterion about content extraction;
-scoring them only on what they can fairly be scored on costs nothing and hides
-nothing.
+would mean excluding the API behind Claude's own web search on a criterion about
+content extraction.
 
 ### One fetch per question, not five
 
@@ -346,15 +350,15 @@ the results.
 ## 7. What we score
 
 **Every number below is published with the count of providers it covers.** They
-don't all cover the same set, and a score computed over ten providers printed
-beside one computed over twenty, without saying so, is the same class of mistake
-as a latency figure that was really measuring our own model.
+don't all cover the same set, and a score computed over five providers printed
+beside one computed over eight, without saying so, is the same class of mistake as
+a latency figure that was really measuring our own model.
 
 | Score | Who it covers |
 |---|---|
-| Did the right page come back | **every admitted provider.** Needs addresses only |
-| Did the text contain the fact | only providers that return page text |
-| The two judge scores | only providers that return page text |
+| Did the right page come back | **all 8.** Needs addresses only |
+| Did the text contain the fact | the 5 that return page text |
+| The two judge scores | the 5 that return page text |
 
 **The main number: did it return the right page?** Yes or no, per question per
 provider, checking whether any of the recorded answer pages appears among the 8
@@ -410,9 +414,9 @@ It's reported as a secondary number only.
 
 **Which providers go into that average is fixed here, before the run**, and the
 count is published with every gap number. It matters more than it looks: four
-providers is 6 pairs, twenty is 190, and an average over a different set of pairs
-is a different measurement. Two are reported — the gap across every admitted
-provider, and the gap across the original four alone, which is the only one that
+providers is 6 pairs, eight is 28, and an average over a different set of pairs is
+a different measurement. Two are reported — the gap across all eight, and the gap
+across Firecrawl, Exa, Tavily and Bright Data alone, which is the only one that
 can be compared to run 1.
 
 For the main yes/no score, the gap reads as **how often two providers disagree
@@ -511,9 +515,12 @@ The `prereg-v2` tag goes on only when all of these are true:
 - [ ] Duplicate check against the 48 and the 24, done by hand
 - [ ] Memory check run; any cut questions listed here
 - [ ] Balance checks computed and written into section 4
-- [ ] Provider list final, every admitted provider has a working adapter, and the
-      unconfirmed items in [`provider-admission.md`](provider-admission.md)
-      resolved by signing up and making one real call
+- [ ] All eight providers have a working adapter, and the unconfirmed items in
+      [`provider-admission.md`](provider-admission.md) resolved by signing up and
+      making one real call — Brave's LLM Context endpoint above all, since it
+      decides whether the judge scores cover five providers or six
+- [ ] Any inclusion request received before the tag either honoured or answered in
+      writing
 - [ ] Recorded here, for each provider, whether it returns page text — this
       decides which scores cover it: `__________`
 - [ ] Which providers go into the gap average, fixed here: `__________`

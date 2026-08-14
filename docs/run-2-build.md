@@ -1,5 +1,25 @@
 # Building run 2
 
+> ## ⚠ Superseded, 2026-08-14
+>
+> **This is the build order for a design that was replaced.** See the banner on
+> [`preregistration-v2.md`](preregistration-v2.md) for what changed and why.
+>
+> Three findings in here are still true and still load-bearing, which is why the
+> file is kept:
+>
+> - `parseQuerySet` doesn't validate a query file, it **rebuilds** one from a
+>   four-field whitelist and silently discards everything else. Any new field added
+>   to a dataset dies there without an error.
+> - The run log records `domains`, not addresses, and never records page text — so
+>   any score that needs either has to be computed **during** the run or it can't
+>   be recovered.
+> - The keyless baseline is documented as unfit for sustained runs and will be
+>   captcha'd, and nothing in the code knows what a non-contestant is.
+>
+> The provider section is also still current, and lives properly in
+> [`provider-admission.md`](provider-admission.md).
+
 [`preregistration-v2.md`](preregistration-v2.md) says what run 2 will measure and
 how. This says what has to be built first, in what order, and who does which
 part. It exists because the order turns out to matter more than the work does.

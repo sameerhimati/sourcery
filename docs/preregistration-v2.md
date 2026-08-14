@@ -1,6 +1,29 @@
 # The plan for run 2, published before it runs
 
-**Status: DRAFT — not binding yet.** This becomes the commitment when the checklist
+> ## ⚠ Superseded, 2026-08-14
+>
+> **This describes a design that was replaced. Nothing here is current.**
+>
+> It planned a third dataset of 54 questions sorted by hand into three difficulty
+> tiers, scored by checking whether pre-written answer pages came back. Two things
+> killed it. Sorting questions into difficulty buckets by judgment is a call the
+> data should make, not the author. And writing the answer pages in advance
+> punishes a provider for returning something genuinely useful nobody thought to
+> write down.
+>
+> What replaced it: run every provider, pool every page returned, judge each unique
+> question-and-page pair once. **The list of correct answers is an output, not an
+> input** — which is what retrieval has been evaluated on since 1992.
+>
+> Kept here rather than deleted, because a project that publishes its plans in
+> advance should also publish the ones it abandoned, and why.
+>
+> Still true and carried forward: the disclosure below about Exa's credits and the
+> bias that comes from a contestant proposing the question; the analysis of judge
+> disagreement in section 6; and the rule that a flat result gets published with
+> the same prominence as a positive one.
+
+**Status: SUPERSEDED — was never binding.** This becomes the commitment when the checklist
 at the bottom is filled in and the repo is tagged `prereg-v2`. **Nothing runs
 before that tag exists.** If you're reading this at an untagged commit, the plan
 was still being written.

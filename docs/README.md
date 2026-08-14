@@ -16,8 +16,8 @@ Everything in this repo, and which file answers which question.
 |---|---|
 | [`findings.md`](findings.md) | the full write-up of run 1 — 48 questions, 4 providers, 960 results |
 | [`s2-summary.json`](s2-summary.json) | run 1's numbers as data, per provider and per question type |
-| [`preregistration-v2.md`](preregistration-v2.md) | the plan for run 2, published before it runs |
-| [`run-2-build.md`](run-2-build.md) | what has to be built before run 2 can run, in what order, and who does which part |
+| [`preregistration-v2.md`](preregistration-v2.md) | **superseded** — a plan that was published in advance and then abandoned, kept with the reasons |
+| [`run-2-build.md`](run-2-build.md) | **superseded** — its build order is dead; three findings about the code in it are not |
 | [`provider-admission.md`](provider-admission.md) | the rule for which providers get measured, who it admits, and who it excludes and why |
 | [`datasets.md`](datasets.md) | the question sets, how they differ, and the rules for editing them |
 

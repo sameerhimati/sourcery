@@ -1,6 +1,6 @@
 // ─── Run 2: the pooled run ───
-// The instrument described in docs/preregistration-v3.md and argued for in
-// docs/assessors-problem-{1,2,3}.md. Three phases, each resumable:
+// The instrument committed to in docs/preregistration-v3.md, and argued for in
+// docs/eval-harness.md. Three phases, each resumable:
 //
 //   1. fetch  — every (query × provider), once. The only step that costs money.
 //   2. judge  — pool every returned page, then each unique question-and-page

@@ -17,7 +17,6 @@ Everything in this repo, and which file answers which question.
 | [`findings.md`](findings.md) | the full write-up of run 1 — 48 questions, 4 providers, 960 results |
 | [`eval-harness.md`](eval-harness.md) | **the method in one page** — seven rules for an honest search eval, readable cold |
 | [`preregistration-v3.md`](preregistration-v3.md) | **the plan of record for run 2** — what will be measured, how, and what would prove it wrong |
-| [`assessors-problem-1.md`](assessors-problem-1.md) ·[`2`](assessors-problem-2.md) ·[`3`](assessors-problem-3.md) | the long-form version of the same argument, in three parts |
 | [`s2-summary.json`](s2-summary.json) | run 1's numbers as data, per provider and per question type |
 | [`preregistration-v2.md`](preregistration-v2.md) | **superseded** — a plan that was published in advance and then abandoned, kept with the reasons |
 | [`run-2-build.md`](run-2-build.md) | **superseded** — its build order is dead; three findings about the code in it are not |
@@ -39,7 +38,7 @@ Everything in this repo, and which file answers which question.
 |---|---|---|
 | [`../core/eval-dataset.ts`](../core/eval-dataset.ts) | 48 | freshness probes — "what is the latest X". **Frozen**, run 1 is anchored to them |
 | [`../datasets/real-tasks.json`](../datasets/real-tasks.json) | 24 | work someone actually does. Written, not yet run |
-| `../datasets/hard-tasks.json` | 54 | three difficulty tiers, each with its answer recorded. **Not written yet** |
+| [`../datasets/run2-questions.json`](../datasets/run2-questions.json) | 96 | what run 2 is measured on. Half of each type has one checkable answer, half could be answered well by several pages. Written, not yet run |
 
 ## Code, in one line each
 
@@ -54,9 +53,13 @@ Everything in this repo, and which file answers which question.
 | `core/orchestrator.ts` | one question through one provider |
 | `core/batch.ts` | the quick run — one fetch, one judge, no error bars |
 | `core/credibility.ts` | the real run — repeats, judge panel, error bars, resumable |
+| `core/pooled.ts` | the run 2 instrument — one fetch per question and provider, judge the pool, score against it |
+| `core/pool.ts` | collapses every page every provider returned into one set of unique question-and-page pairs |
+| `core/relevanceJudge.ts` | run 2's judge — one question, one page, a rating from 0 to 3 |
+| `core/anchors.ts` | scores a candidate judge against pairs a human already settled, so a bad judge is caught before the run |
 | `core/stage.ts` | tags which step failed, so a provider never eats our bug |
 | `core/records.ts` | the write path. `.sourcery/*.jsonl` is the contract |
-| `cli/` | the seven commands: `run`, `batch`, `credibility`, `report`, `providers`, `init`, `mcp` |
+| `cli/` | six commands anyone can see — `run`, `batch`, `report`, `providers`, `init`, `mcp` — plus three hidden research ones: `credibility`, `pooled`, `calibrate` |
 | `mcp/` | the MCP server, so an agent can consult the eval instead of a human reading it |
 
 ## Demo assets

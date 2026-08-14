@@ -6,10 +6,9 @@ abandoned before anything ran. It is written before the run, because a method
 written after seeing the data is indistinguishable from a method picked to
 flatter it.
 
-The full argument for every choice here is the three-part series
-([part 1](assessors-problem-1.md) · [part 2](assessors-problem-2.md) ·
-[part 3](assessors-problem-3.md)). This document is the commitment, not the
-argument: what will be measured, how, and what would prove the design wrong.
+The argument for every choice here is [`eval-harness.md`](eval-harness.md), the
+method in one page. This document is the commitment, not the argument: what
+will be measured, how, and what would prove the design wrong.
 The code implementing it is `core/pooled.ts`, `core/pool.ts`,
 `core/relevanceJudge.ts`, and `core/anchors.ts`, run through
 `sourcery pooled` and `sourcery calibrate`.
@@ -121,10 +120,10 @@ seeing which story the data tells.
 
 | piece | owner | state |
 |---|---|---|
-| The question set (~100, sharp, checkable answers) | Sameer | not written |
+| The question set | Sameer | written — 96 questions in `datasets/run2-questions.json`, half of each type sharp, half open |
 | The anchor set + probes (real, not the shipped examples) | Sameer | examples only |
 | Keys: Brave, Serper, Perplexity Search, Parallel | Sameer | not created |
-| Four new adapters | code | blocked on keys |
+| Four new adapters | code | written, never run against a live key |
 | Five-judge panel, five labs, none sharing a family with each other | both | candidates TBD once keys exist |
 | Calibration pass with probes clean | run | gated on the above |
 

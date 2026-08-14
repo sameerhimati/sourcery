@@ -34,6 +34,17 @@ describe("parseQuerySet — formats", () => {
     const parsed = parseQuerySet(JSON.stringify([{ type: "how_to", query: "a", note: "why this one" }]));
     expect(parsed[0].note).toBe("why this one");
   });
+
+  it("keeps an optional sharpness, and leaves it off when it wasn't given", () => {
+    const parsed = parseQuerySet(
+      JSON.stringify([
+        { type: "how_to", query: "a", sharpness: "sharp" },
+        { type: "how_to", query: "b" },
+      ]),
+    );
+    expect(parsed[0].sharpness).toBe("sharp");
+    expect(parsed[1]).not.toHaveProperty("sharpness");
+  });
 });
 
 describe("parseQuerySet — rejections name the fix", () => {
@@ -54,6 +65,13 @@ describe("parseQuerySet — rejections name the fix", () => {
     // which_provider's routing all key off them. A seventh would parse here and
     // then be unroutable forever, so it has to be refused at the door.
     failsWith(JSON.stringify([{ type: "shopping", query: "a" }]), /how_to/);
+  });
+
+  it("rejects a sharpness that isn't one of the two, rather than dropping it", () => {
+    // The parser rebuilds each entry from a whitelist, so an unrecognised field
+    // vanishes silently. A misspelt sharpness would cost the whole slice it was
+    // added for and nothing would say why — so it fails at the door instead.
+    failsWith(JSON.stringify([{ type: "how_to", query: "a", sharpness: "vague" }]), /sharp, open/);
   });
 
   it("rejects a missing query", () => {

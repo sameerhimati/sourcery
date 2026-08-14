@@ -1,5 +1,5 @@
 import { TYPE_LABELS } from "./batch";
-import type { EvalQuery, QueryType } from "./eval-dataset";
+import type { EvalQuery, QueryType, Sharpness } from "./eval-dataset";
 
 // Your own queries, which is the entire pitch.
 //
@@ -13,6 +13,8 @@ import type { EvalQuery, QueryType } from "./eval-dataset";
 // result rather than improve it.
 
 export const QUERY_TYPES = Object.keys(TYPE_LABELS) as QueryType[];
+
+export const SHARPNESS_VALUES: Sharpness[] = ["sharp", "open"];
 
 /** A parse that failed in a way the user can act on. */
 export class QuerySetError extends Error {}
@@ -81,11 +83,28 @@ export function parseQuerySet(text: string, source = "query set"): EvalQuery[] {
     }
     seen.add(id);
 
+    // Optional, but a wrong value is an error rather than a silent drop. This
+    // function rebuilds each entry from the fields below instead of validating
+    // the object it was given, so anything it doesn't name disappears without
+    // complaint — a misspelt "sharpness" would cost a whole run's worth of the
+    // slice it was added for, and nothing would say why.
+    const sharp = o.sharpness;
+    if (sharp !== undefined && (typeof sharp !== "string" || !SHARPNESS_VALUES.includes(sharp as Sharpness))) {
+      fail(
+        source,
+        where,
+        `has sharpness ${JSON.stringify(sharp)}`,
+        `Use one of: ${SHARPNESS_VALUES.join(", ")}, or leave it out. ` +
+          `"sharp" means one checkable answer; "open" means several pages could each be right.`,
+      );
+    }
+
     return {
       id,
       type: type as QueryType,
       query,
       ...(typeof o.note === "string" ? { note: o.note } : {}),
+      ...(sharp !== undefined ? { sharpness: sharp as Sharpness } : {}),
     };
   });
 }

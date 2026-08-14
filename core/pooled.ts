@@ -16,7 +16,7 @@
 // different files, nothing here touches the paths the published run 1 numbers
 // came from.
 
-import type { EvalQuery, QueryType } from "./eval-dataset";
+import type { EvalQuery, QueryType, Sharpness } from "./eval-dataset";
 import { fetchSources } from "./adapters";
 import { DEFAULT_CONFIG, ErrorStage, Provider, Source } from "./types";
 import { stage, stageOf } from "./stage";
@@ -46,6 +46,10 @@ export interface PooledFetchRow {
   queryId: string;
   type: QueryType;
   query: string;
+  /** Carried onto the row, not just the query file, because nothing else in the
+   *  run log records it — a slice by sharpness computed after the fact would
+   *  otherwise need the query file to still exist, unedited, months later. */
+  sharpness?: Sharpness;
   provider: Provider;
   num_sources: number;
   num_extracted: number;
@@ -108,7 +112,13 @@ export async function runPooledFetch(
   };
 
   return mapWithConcurrency(jobs, concurrency, async ({ q, provider }) => {
-    const base = { queryId: q.id, type: q.type, query: q.query, provider };
+    const base = {
+      queryId: q.id,
+      type: q.type,
+      query: q.query,
+      provider,
+      ...(q.sharpness ? { sharpness: q.sharpness } : {}),
+    };
     const emit = (row: PooledFetchRow): PooledFetchRow => {
       opts.onRow?.(row, ++landed, total);
       record(row);
@@ -286,6 +296,20 @@ export interface PooledTypeStat extends PooledProviderStat {
   type: QueryType;
 }
 
+export interface PooledSharpnessStat extends PooledProviderStat {
+  sharpness: Sharpness;
+}
+
+/** The same pairwise agreement, computed over only the sharp questions or only
+ *  the open ones. The reason the sharpness tag exists: judges are expected to
+ *  agree less when several pages could each legitimately be the right answer,
+ *  and that expectation should be checked rather than assumed. If agreement
+ *  holds up on both, the tag has told us something; if it collapses on open
+ *  questions, the headline number is carrying the disagreement. */
+export interface PooledSharpnessAgreementStat extends PooledAgreementStat {
+  sharpness: Sharpness;
+}
+
 export interface PooledAgreementStat {
   judge_a: string;
   judge_b: string;
@@ -332,7 +356,11 @@ export interface PooledSummary {
   n_unjudged_pairs: number;
   by_provider: PooledProviderStat[];
   by_type: PooledTypeStat[];
+  /** Empty when no query in the set carried a sharpness tag — the built-in 48
+   *  don't, so a run over them simply has no slice rather than a fake one. */
+  by_sharpness: PooledSharpnessStat[];
   agreement: PooledAgreementStat[];
+  agreement_by_sharpness: PooledSharpnessAgreementStat[];
   rung_distribution: RungDistribution[];
   variance_shares: VarianceShares;
 }
@@ -595,11 +623,30 @@ export function summarizePooled(
     }
   }
 
+  // Sharpness comes off the fetch rows, not the query file — see PooledFetchRow.
+  // A set with no tags produces no slices at all rather than one empty bucket.
+  const sharpnessOf = new Map<string, Sharpness>();
+  for (const r of fetches) if (r.sharpness) sharpnessOf.set(r.queryId, r.sharpness);
+  const sharpnesses = [...new Set(sharpnessOf.values())];
+
+  const bySharpness: PooledSharpnessStat[] = [];
+  for (const sharpness of sharpnesses) {
+    const sub = fetches.filter((r) => r.sharpness === sharpness);
+    for (const provider of providers) {
+      bySharpness.push({ ...providerStat(sub, verdicts, relevantByQuery, provider), sharpness });
+    }
+  }
+
   const labels = meta.judges.map(judgeLabel);
   const agreement: PooledAgreementStat[] = [];
+  const agreementBySharpness: PooledSharpnessAgreementStat[] = [];
   for (let i = 0; i < labels.length; i++) {
     for (let k = i + 1; k < labels.length; k++) {
       agreement.push(agreementFor(judgements, labels[i], labels[k]));
+      for (const sharpness of sharpnesses) {
+        const sub = judgements.filter((j) => sharpnessOf.get(j.queryId) === sharpness);
+        agreementBySharpness.push({ ...agreementFor(sub, labels[i], labels[k]), sharpness });
+      }
     }
   }
 
@@ -631,7 +678,9 @@ export function summarizePooled(
     n_unjudged_pairs: [...allPairs].filter((k) => !verdicts.has(k)).length,
     by_provider: providers.map((p) => providerStat(fetches, verdicts, relevantByQuery, p)),
     by_type: byType,
+    by_sharpness: bySharpness,
     agreement,
+    agreement_by_sharpness: agreementBySharpness,
     rung_distribution: rungDistributions(judgements),
     variance_shares: varianceShares(cells),
   };

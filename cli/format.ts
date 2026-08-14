@@ -280,6 +280,21 @@ export function renderPooled(s: PooledSummary): string {
       `kappa ${a.kappa.toFixed(2)} (agreement beyond each judge's own habits)  (n=${a.n})`,
   );
 
+  // Only when the question set carried the tag. The built-in 48 don't, so a run
+  // over them prints nothing here rather than an empty heading.
+  const sharpAgree = s.agreement_by_sharpness.length
+    ? [
+        "",
+        "The same agreement split by how sharp the question was — sharp means one",
+        "checkable answer, open means several pages could each legitimately be right:",
+        ...s.agreement_by_sharpness.map(
+          (a) =>
+            `  ${pad(a.sharpness, 5)}  ${a.judge_a} vs ${a.judge_b}: agreed exactly on ` +
+            `${pct(a.raw_agreement)}; kappa ${a.kappa.toFixed(2)}  (n=${a.n})`,
+        ),
+      ]
+    : [];
+
   const dist = s.rung_distribution.map((d) => {
     const total = d.counts.reduce((a, b) => a + b, 0) + d.n_null;
     const parts = d.counts.map((c, rung) => `${rung}:${c}`).join("  ");
@@ -321,6 +336,7 @@ export function renderPooled(s: PooledSummary): string {
     "",
     "Judge agreement (read the three together — each alone can mislead):",
     ...agree,
+    ...sharpAgree,
     "",
     "How each judge used the scale (rung: count):",
     ...dist,

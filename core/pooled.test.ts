@@ -125,6 +125,46 @@ describe("agreement — via summarizePooled", () => {
   });
 });
 
+describe("the sharpness slice", () => {
+  it("splits agreement by whether the question had one right answer", () => {
+    // Two judges who agree perfectly on the question with a checkable answer and
+    // not at all on the open one. The headline number averages the two into 50%
+    // and hides which half the disagreement came from — showing that is the
+    // whole reason questions carry the tag.
+    const fetches: PooledFetchRow[] = [
+      fetchRow({ queryId: "q1", sharpness: "sharp", urls: ["https://a.com/1"] }),
+      fetchRow({ queryId: "q2", sharpness: "open", urls: ["https://a.com/2"] }),
+    ];
+    const judgements: PooledJudgementRow[] = [
+      judgement({ queryId: "q1", url: "https://a.com/1", judge: "j1", rung: 3 }),
+      judgement({ queryId: "q1", url: "https://a.com/1", judge: "j2", rung: 3 }),
+      judgement({ queryId: "q2", url: "https://a.com/2", judge: "j1", rung: 3 }),
+      judgement({ queryId: "q2", url: "https://a.com/2", judge: "j2", rung: 0 }),
+    ];
+    const summary = summarizePooled(fetches, judgements, {
+      judges: ["openai/j1", "openai/j2"],
+      now: 0,
+    });
+
+    const split = Object.fromEntries(summary.agreement_by_sharpness.map((a) => [a.sharpness, a]));
+    expect(split.sharp.raw_agreement).toBe(1);
+    expect(split.open.raw_agreement).toBe(0);
+    expect(summary.agreement[0].raw_agreement).toBe(0.5);
+    expect(summary.by_sharpness.map((r) => r.sharpness).sort()).toEqual(["open", "sharp"]);
+  });
+
+  it("produces no slice at all for an untagged set, rather than an empty bucket", () => {
+    // The built-in 48 carry no tag. A run over them should say nothing about
+    // sharpness instead of reporting a bucket that means nothing.
+    const summary = summarizePooled([fetchRow({})], [judgement({})], {
+      judges: ["openai/j1"],
+      now: 0,
+    });
+    expect(summary.by_sharpness).toEqual([]);
+    expect(summary.agreement_by_sharpness).toEqual([]);
+  });
+});
+
 describe("varianceShares", () => {
   it("attributes variance to providers when one is simply better everywhere", () => {
     const cells = [];

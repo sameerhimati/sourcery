@@ -61,11 +61,13 @@ Tested properly the gap vanished.
 | Sources returned per call | 7.7 | 8.0 |
 | Sources extracted | 33% | 90% |
 | Median source age | 286 days | 299 days |
-| Median latency | 76s | 52s |
+| Median time per result, whole pipeline | 76s | 52s |
 | Failed calls | 25% | 0% (2 more were my account's 402) |
 | Queries with data (of 48) | 46 | 48 |
 
 Answer model (Kimi) held constant throughout, judges a two-model open panel (GLM + DeepSeek). Full computed summary in [`s2-summary.json`](s2-summary.json).
+
+That latency row is **not** a provider latency and is labelled the long way round for a reason: it spans the retrieval call, the answer call and both judges, so most of it is my own LLM stack. Ranking two search APIs by it would be ranking Kimi. `fetch_ms` now isolates the retrieval call — see [the latency section](#provider-latency) below.
 
 On both quality scores the intervals overlap, so the two are statistically indistinguishable and that 2.6-point gap is gone. It was underpowering, not signal.
 
@@ -130,7 +132,13 @@ So: Exa retrieves substantially fresher sources than the alternatives, and that 
 
 Two things this eval already separated — the provider broke, versus my account ran out — and a third it did not: the provider broke, versus a step downstream of the provider broke. An arm is one retrieval call plus three LLM calls, all collapsing into one `error` field on a record stamped with a vendor's name, so anything unattributed is charged to them by default. `core/stage.ts` now tags each step and `isProviderFailure` treats that tag as authoritative; an error it cannot place is recorded as `unknown`, never as the provider's. Rows written before this have no tag and fall back to reading the message, which is exactly how the number above got published.
 
+### Provider latency
+
 It also means `latency_ms` was never a provider latency — it spans fetch, answer and both judges. `fetch_ms` now records the retrieval call alone, so the next run can report that honestly. This one can't, and the numbers here don't include it.
+
+`summarize()` now reports `fetch_ms_p50` and `fetch_ms_p95` per provider, alongside `n_fetch_timed`. That third number is the one to read first: it says how many arms actually carried a timing, and a run resumed across the change will mix timed and untimed rows. A percentile over an empty sample comes back `null` rather than `0`, because a provider that was never timed must not sort to the top of a latency table on the strength of not having been measured.
+
+**Rule this eval now runs on: never publish a small failure count, or any per-provider number, without checking which stage produced it.** Every single-digit failure this eval has reported turned out to be mine — Firecrawl's two were billing, Exa's and Tavily's one apiece were my LLM client. Aggregate scores survive a couple of misattributed rows; a claim naming one vendor and one defect does not, and the vendor is the only party with the ground truth to check it.
 
 **The judge still moves the score more than the retriever does.** Across 895 paired verdicts the two judges correlate at r = 0.67 on source quality and agree within a point only 44% of the time. Mean disagreement between judges is 2.12 points; re-running the same query moves it 0.98. Twice the noise comes from who is grading than from what came back. That replicates the earlier finding on double the data, and it is the reason every number here carries an interval.
 
@@ -164,7 +172,9 @@ The fix is additive, not a rewrite. `core/eval-dataset.ts` stays exactly as it i
 
 Half of it now exists. `sourcery batch --queries my-queries.json` runs your own set through the same harness, same scoring, same run log, and `--queries-template` prints a starting point. So the answer to "these queries aren't mine" is no longer "I know, sorry" — it's a flag.
 
-What's still owed is a curated second dataset of real retrieval tasks, shipped and measured the way these 48 were, so there's a published comparison rather than only a mechanism. Two datasets that disagree is a more interesting finding than either alone.
+The curated second dataset now exists: [`datasets/real-tasks.json`](../datasets/real-tasks.json) — 24 real retrieval tasks, 4 per type, each carrying the acceptance criterion for what a correct answer must contain. Open backend roles with comp bands, S3 request pricing, Node LTS end-of-life dates, which urgent care near Cambridge is open right now. [`docs/datasets.md`](datasets.md) covers how they were chosen, what it costs to run, and the rules for editing them.
+
+**It has not been run yet, so this document contains no numbers from it.** `credibility --queries` measures it the way the 48 were measured — same seeds, same judge panel, same intervals — and until that run happens the comparison between synthetic freshness and real tasks is a promise, not a finding. Two datasets that disagree is a more interesting result than either alone, and it is still owed.
 
 ## What I'd defend, and what I wouldn't
 

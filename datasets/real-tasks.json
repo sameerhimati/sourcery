@@ -1,0 +1,151 @@
+[
+  {
+    "id": "rt-bn-01",
+    "type": "breaking_news",
+    "query": "Which AI infrastructure startups announced funding rounds in the last 30 days, and how much did each raise?",
+    "note": "Correct: names at least two companies with round size and date inside the window. Wrong: a round from last year, or a named company with no amount."
+  },
+  {
+    "id": "rt-bn-02",
+    "type": "breaking_news",
+    "query": "What security advisories affecting widely-used npm packages were published in the last two weeks?",
+    "note": "Correct: a named package plus a CVE or GHSA id dated inside the window. Wrong: a generic 'keep dependencies updated' answer with no advisory."
+  },
+  {
+    "id": "rt-bn-03",
+    "type": "breaking_news",
+    "query": "What changes to US H-1B visa rules or fees have been announced in the last three months?",
+    "note": "Correct: a specific rule or fee change with its announcement date and effective date. Wrong: describing the H-1B program in general."
+  },
+  {
+    "id": "rt-bn-04",
+    "type": "breaking_news",
+    "query": "Which large US public companies announced layoffs in the last 30 days, and how many roles were cut?",
+    "note": "Correct: named company, headcount, date inside the window. Wrong: aggregate industry commentary with no company named."
+  },
+
+  {
+    "id": "rt-ht-01",
+    "type": "how_to",
+    "query": "How do I enable prompt caching on the Anthropic Messages API, and what is the minimum cacheable prefix length?",
+    "note": "Correct: names the cache_control breakpoint mechanism AND gives a concrete minimum token count. Wrong: explains caching conceptually without the API-level parameter."
+  },
+  {
+    "id": "rt-ht-02",
+    "type": "how_to",
+    "query": "How do I query a Parquet file stored in S3 from DuckDB, including how to pass credentials?",
+    "note": "Correct: shows the httpfs extension and a credential mechanism (SECRET or the s3_ settings). Wrong: reads the file locally, or omits credentials entirely."
+  },
+  {
+    "id": "rt-ht-03",
+    "type": "how_to",
+    "query": "How do I make a Next.js route handler run on the Node.js runtime instead of the Edge runtime?",
+    "note": "Correct: the runtime export and its accepted value, matching the current major version. Wrong: pages-router API-route advice, or a config key that no longer exists."
+  },
+  {
+    "id": "rt-ht-04",
+    "type": "how_to",
+    "query": "How do I require signed commits on a GitHub branch using the REST API rather than the web UI?",
+    "note": "Correct: the branch-protection endpoint and the specific field that enforces signatures. Wrong: click-path instructions through the settings UI."
+  },
+
+  {
+    "id": "rt-pl-01",
+    "type": "product_lookup",
+    "query": "What are the current per-token input and output prices for OpenAI's flagship model, and what does cached input cost?",
+    "note": "Correct: three numbers with units and the model named. Wrong: prices for a superseded model, or a range with no model attached."
+  },
+  {
+    "id": "rt-pl-02",
+    "type": "product_lookup",
+    "query": "What are Firecrawl's current pricing tiers, and how many credits does each tier include per month?",
+    "note": "Correct: tier names with dollar amounts and credit allowances. Wrong: describing what a credit is without listing the tiers."
+  },
+  {
+    "id": "rt-pl-03",
+    "type": "product_lookup",
+    "query": "What does Vercel's Pro plan cost per month, and what bandwidth and build-minute limits are included?",
+    "note": "Correct: monthly price plus at least two included limits with units. Wrong: the plan's feature list with no quantities."
+  },
+  {
+    "id": "rt-pl-04",
+    "type": "product_lookup",
+    "query": "What does AWS S3 Standard storage cost per GB-month in us-east-1, and what are the PUT and GET request prices?",
+    "note": "Correct: storage price per GB-month plus both request prices, region-specific. Wrong: a different storage class or region, or storage price with no request pricing — the request tier is what makes an estimate wrong in practice."
+  },
+
+  {
+    "id": "rt-lg-01",
+    "type": "local_geo",
+    "query": "Which coworking spaces in downtown Austin, Texas offer day passes, and what does a day pass cost?",
+    "note": "Correct: at least two named venues with day-pass prices. Wrong: a list of coworking spaces with no pricing, or venues outside downtown."
+  },
+  {
+    "id": "rt-lg-02",
+    "type": "local_geo",
+    "query": "Which urgent care clinics within five miles of Cambridge, Massachusetts are open right now?",
+    "note": "Correct: named clinics with today's hours, reflecting the current time of day. Wrong: a directory listing with no hours, or hours that contradict 'right now'."
+  },
+  {
+    "id": "rt-lg-03",
+    "type": "local_geo",
+    "query": "Which hardware stores near Portland, Oregon are open past 8pm today?",
+    "note": "Correct: named stores with closing times later than 20:00 local. Wrong: stores listed without closing times, or generic chain hours."
+  },
+  {
+    "id": "rt-lg-04",
+    "type": "local_geo",
+    "query": "What are the current opening hours and adult ticket price for the Getty Center in Los Angeles?",
+    "note": "Correct: current hours including any closed day, plus the admission price (which may legitimately be free — parking is the paid item). Wrong: stale pandemic-era hours."
+  },
+
+  {
+    "id": "rt-rr-01",
+    "type": "recent_release",
+    "query": "What breaking changes shipped in the most recent major version of Next.js, and what is the migration path?",
+    "note": "Correct: names the current major version and at least two breaking changes with the codemod or manual step. Wrong: changes from an older major."
+  },
+  {
+    "id": "rt-rr-02",
+    "type": "recent_release",
+    "query": "What changed in the most recent stable release of DuckDB?",
+    "note": "Correct: the current version number plus named features or fixes from its release notes. Wrong: a general description of DuckDB."
+  },
+  {
+    "id": "rt-rr-03",
+    "type": "recent_release",
+    "query": "Which Node.js versions are currently in active LTS versus maintenance, and when does each reach end of life?",
+    "note": "Upgrade-planning work, not a version probe. Correct: version lines with their LTS status and EOL dates. Wrong: naming only the newest release, which is the question this dataset is meant to stop asking."
+  },
+  {
+    "id": "rt-rr-04",
+    "type": "recent_release",
+    "query": "What changed in the most recent release of the Anthropic Python SDK?",
+    "note": "Correct: version number plus changelog entries. Wrong: describing the SDK's general capabilities."
+  },
+
+  {
+    "id": "rt-nl-01",
+    "type": "numeric_live",
+    "query": "How many open backend engineering roles does Stripe currently list, and what compensation bands are posted for them?",
+    "note": "The task this dataset exists for. Correct: a count of currently-open backend roles plus at least one posted salary band with currency and location. Wrong: a link to the careers page with no numbers, or bands quoted from a third-party aggregator rather than the posting."
+  },
+  {
+    "id": "rt-nl-02",
+    "type": "numeric_live",
+    "query": "What does an NVIDIA H100 instance cost per GPU-hour on the major cloud providers right now?",
+    "note": "Capacity-planning work. Correct: per-GPU-hour prices for at least two named providers, on-demand rate, with an as-of date. Wrong: a single blended figure with no provider attached, or reserved pricing quoted as on-demand."
+  },
+  {
+    "id": "rt-nl-03",
+    "type": "numeric_live",
+    "query": "How many weekly downloads does the npm package zod currently have, and how does that compare with yup?",
+    "note": "Dependency-choice work. Correct: both weekly download counts with an as-of date. Wrong: one package only, or total downloads where weekly was asked."
+  },
+  {
+    "id": "rt-nl-04",
+    "type": "numeric_live",
+    "query": "How many open positions does Anthropic currently list for engineering roles, and in which locations?",
+    "note": "Correct: a count plus named office locations or remote designations. Wrong: a description of the company's hiring philosophy."
+  }
+]

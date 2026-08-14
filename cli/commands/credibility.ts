@@ -18,6 +18,7 @@ import {
   S2_SUMMARY_PATH,
 } from "../persist";
 import { renderCredibility } from "../format";
+import { loadQuerySet } from "../query-file";
 
 // S2 credibility run: the full 48 × seeds × 2 providers matrix graded by a JUDGE
 // PANEL, producing confidence intervals + inter-judge agreement. Separate from
@@ -36,6 +37,7 @@ export function registerCredibility(program: Command): void {
     .option("--judges <list>", "comma-separated judge model refs (the panel)")
     .option("--model <model>", "answer model (held constant across results)")
     .option("--per-type <n>", "cap queries per type for a dry run (0 = full 48)", "0")
+    .option("--queries <file>", "measure a query set of your own instead of the built-in 48")
     .option("--concurrency <n>", "pipelines in flight (higher = faster, more load)", "4")
     .option("--providers <list>", "comma-separated provider ids to compare")
     .option("--resume", "skip results already in .sourcery/s2-runs.jsonl")
@@ -69,8 +71,19 @@ export function registerCredibility(program: Command): void {
       if (!Number.isInteger(seeds) || seeds < 1) {
         throw new Error(`--seeds must be a positive integer (got "${opts.seeds}").`);
       }
+      // --queries is what makes a second dataset measurable the way the built-in
+      // 48 were: same seeds, same judge panel, same CIs, same stage attribution.
+      // `batch --queries` already existed, but batch is single-seed, single-judge
+      // and has no --resume, so anything run through it can't be compared to the
+      // published table. --per-type only slices the built-in set, so the two
+      // flags are mutually exclusive rather than composed.
       const perType = Number(opts.perType);
-      const queries = selectQueries(Number.isFinite(perType) ? perType : 0);
+      if (opts.queries && perType > 0) {
+        throw new Error("--per-type slices the built-in 48; it does nothing to --queries. Trim the file instead.");
+      }
+      const queries = opts.queries
+        ? loadQuerySet(opts.queries)
+        : selectQueries(Number.isFinite(perType) ? perType : 0);
       const concurrency = Number(opts.concurrency);
       if (!Number.isInteger(concurrency) || concurrency < 1) {
         throw new Error(`--concurrency must be a positive integer (got "${opts.concurrency}").`);
@@ -195,6 +208,7 @@ interface CredOptions {
   judges?: string;
   model?: string;
   perType: string;
+  queries?: string;
   concurrency: string;
   providers?: string;
   resume?: boolean;

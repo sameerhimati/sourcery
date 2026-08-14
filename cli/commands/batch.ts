@@ -1,7 +1,6 @@
 import type { Command } from "commander";
-import { readFileSync } from "node:fs";
 import { runBatch, selectQueries } from "@core/batch";
-import { parseQuerySet, QuerySetError, querySetTemplate } from "@core/query-set";
+import { querySetTemplate } from "@core/query-set";
 import { MODEL } from "@core/controls";
 import { requiredEnvKeys } from "@core/llm";
 import { readCached, setCacheEnabled } from "@core/fetch-cache";
@@ -14,6 +13,7 @@ import { loadConfig } from "../config";
 import { appendRecords, toBatchRecords, RUNS_PATH } from "../persist";
 import { renderBatch } from "../format";
 import { createProgress } from "../progress";
+import { loadQuerySet } from "../query-file";
 
 export function registerBatch(program: Command): void {
   program
@@ -186,30 +186,4 @@ interface BatchOptions {
   progress?: boolean;
   queries?: string;
   queriesTemplate?: boolean;
-}
-
-/**
- * Read a user query set, and fail with something actionable.
- *
- * A malformed query file is the most likely thing to go wrong on someone's first
- * real use of this tool, so the error has to name the file, the entry and the
- * fix — not surface a JSON.parse stack trace from three frames down.
- */
-function loadQuerySet(file: string): ReturnType<typeof parseQuerySet> {
-  let text: string;
-  try {
-    text = readFileSync(file, "utf8");
-  } catch {
-    process.stderr.write(`Cannot read ${file}\n  \`sourcery batch --queries-template\` prints a starting point.\n`);
-    process.exit(1);
-  }
-  try {
-    return parseQuerySet(text, file);
-  } catch (e) {
-    if (e instanceof QuerySetError) {
-      process.stderr.write(`${e.message}\n`);
-      process.exit(1);
-    }
-    throw e;
-  }
 }

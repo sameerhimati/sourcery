@@ -13,6 +13,7 @@ import {
   isTransportFailure,
   isAccountFailure,
   isProviderFailure,
+  percentile,
   resumableKeys,
   type CredibilityRow,
 } from "./credibility";
@@ -39,6 +40,22 @@ describe("stats helpers", () => {
   it("judgeLabel takes the last path segment", () => {
     expect(judgeLabel("fireworks/accounts/fireworks/models/glm-5p2")).toBe("glm-5p2");
     expect(judgeLabel("gpt-4o-mini")).toBe("gpt-4o-mini");
+  });
+
+  it("percentile returns null on an empty sample rather than 0", () => {
+    // 0 would render as an infinitely fast provider. The absence of a
+    // measurement has to be distinguishable from a measurement of zero.
+    expect(percentile([], 0.5)).toBeNull();
+    expect(percentile([], 0.95)).toBeNull();
+  });
+
+  it("percentile picks by nearest rank", () => {
+    const xs = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100];
+    expect(percentile(xs, 0.5)).toBe(50);
+    expect(percentile(xs, 0.95)).toBe(100);
+    expect(percentile([42], 0.5)).toBe(42);
+    // unsorted input must not change the answer
+    expect(percentile([90, 10, 50], 0.5)).toBe(50);
   });
 });
 
@@ -300,6 +317,59 @@ describe("whose fault was it", () => {
   it("counts a clean run as no failure at all", () => {
     expect(isProviderFailure(undefined)).toBe(false);
     expect(isAccountFailure(undefined)).toBe(false);
+  });
+});
+
+describe("provider latency is the fetch alone", () => {
+  // latency_ms spans fetch + answer + the whole judge panel. Reporting it as a
+  // provider's latency publishes my own LLM's slowness under their name — the
+  // same class of mistake as charging them for my failed answer call.
+  function timed(queryId: string, provider: CredibilityRow["provider"], fetchMs?: number): CredibilityRow {
+    const r = row(queryId, provider, 0, { a_ret: 5, b_ret: 5, a_ans: 5, b_ans: 5 });
+    // latency_ms is deliberately enormous next to fetch_ms: if anything ever
+    // reads the wrong field, these numbers make it obvious which one it took.
+    return { ...r, latency_ms: 90_000, ...(fetchMs === undefined ? {} : { fetch_ms: fetchMs }) };
+  }
+
+  it("reports percentiles over fetch_ms, never latency_ms", () => {
+    const rows = [
+      timed("q1", "exa", 1000),
+      timed("q2", "exa", 2000),
+      timed("q3", "exa", 3000),
+    ];
+    const stat = summarize(rows, { seeds: 1, answer_model: "m", judges: ["prov/jA", "prov/jB"], now: 0 })
+      .by_provider.find((p) => p.provider === "exa")!;
+    expect(stat.fetch_ms_p50).toBe(2000);
+    expect(stat.n_fetch_timed).toBe(3);
+    // the 90s full-arm number must not have leaked in anywhere
+    expect(stat.fetch_ms_p95).toBeLessThan(90_000);
+  });
+
+  it("reports null, not zero, when no arm carried a fetch_ms", () => {
+    // Every row predates the field. A p50 of 0 here would rank this provider
+    // fastest in the table on the strength of never having been measured.
+    const rows = [timed("q1", "exa"), timed("q2", "exa")];
+    const stat = summarize(rows, { seeds: 1, answer_model: "m", judges: ["prov/jA", "prov/jB"], now: 0 })
+      .by_provider.find((p) => p.provider === "exa")!;
+    expect(stat.fetch_ms_p50).toBeNull();
+    expect(stat.fetch_ms_p95).toBeNull();
+    expect(stat.n_fetch_timed).toBe(0);
+  });
+
+  it("counts only the timed arms, so partial coverage is visible", () => {
+    // A resumed run mixes old untimed rows with new ones. The p50 is honest for
+    // what it covers; n_fetch_timed vs n_arms is what stops it being read as all.
+    const rows = [
+      timed("q1", "exa", 1000),
+      timed("q2", "exa"),
+      timed("q3", "exa"),
+      timed("q4", "exa"),
+    ];
+    const stat = summarize(rows, { seeds: 1, answer_model: "m", judges: ["prov/jA", "prov/jB"], now: 0 })
+      .by_provider.find((p) => p.provider === "exa")!;
+    expect(stat.fetch_ms_p50).toBe(1000);
+    expect(stat.n_fetch_timed).toBe(1);
+    expect(stat.n_arms).toBe(4);
   });
 });
 

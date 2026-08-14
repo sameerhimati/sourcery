@@ -11,6 +11,10 @@ import {
 import { fetchPlain } from "./plain";
 import { fetchTavily } from "./tavily";
 import { fetchExa } from "./exa";
+import { fetchBrave } from "./brave";
+import { fetchSerper } from "./serper";
+import { fetchPerplexity } from "./perplexity";
+import { fetchParallel } from "./parallel";
 
 // The whole trick: one identical interface for every provider. An adapter is a
 // (query, config) → {sources, context} function plus the metadata needed to tell
@@ -94,6 +98,38 @@ export const ADAPTERS: Record<string, AdapterSpec> = {
     blurb: "Neural/embedding search over its own index, with page text included.",
     signup: "https://dashboard.exa.ai/api-keys",
     fetch: fetchExa,
+  },
+  brave: {
+    id: "brave",
+    label: "Brave",
+    requiredEnv: ["BRAVE_API_KEY"],
+    blurb: "Its own crawler and index; returns short snippets, never page text.",
+    signup: "https://api-dashboard.search.brave.com/app/keys",
+    fetch: fetchBrave,
+  },
+  serper: {
+    id: "serper",
+    label: "Serper",
+    requiredEnv: ["SERPER_API_KEY"],
+    blurb: "Google's results as JSON — links and snippets, fast and cheap; no page text.",
+    signup: "https://serper.dev/dashboard",
+    fetch: fetchSerper,
+  },
+  perplexity: {
+    id: "perplexity",
+    label: "Perplexity",
+    requiredEnv: ["PERPLEXITY_API_KEY"],
+    blurb: "Ranked results from Perplexity's own index; page excerpts, not whole pages.",
+    signup: "https://www.perplexity.ai/account/api/group",
+    fetch: fetchPerplexity,
+  },
+  parallel: {
+    id: "parallel",
+    label: "Parallel",
+    requiredEnv: ["PARALLEL_API_KEY"],
+    blurb: "An index built for agents; ranked URLs with dense excerpts and a real publish date.",
+    signup: "https://platform.parallel.ai",
+    fetch: fetchParallel,
   },
   plain: {
     id: "plain",

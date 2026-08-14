@@ -15,6 +15,9 @@ Everything in this repo, and which file answers which question.
 | | |
 |---|---|
 | [`findings.md`](findings.md) | the full write-up of run 1 — 48 questions, 4 providers, 960 results |
+| [`assessors-problem-1.md`](assessors-problem-1.md) | part 1 of the method series — why grading answers failed, and what librarians knew in 1958 |
+| [`assessors-problem-2.md`](assessors-problem-2.md) | part 2 — pooling, how model judges cheat, and what drug trials, skating and wine contribute |
+| [`assessors-problem-3.md`](assessors-problem-3.md) | part 3 — agreement numbers that lie, map vs ranking, and the method as twelve decisions |
 | [`s2-summary.json`](s2-summary.json) | run 1's numbers as data, per provider and per question type |
 | [`preregistration-v2.md`](preregistration-v2.md) | **superseded** — a plan that was published in advance and then abandoned, kept with the reasons |
 | [`run-2-build.md`](run-2-build.md) | **superseded** — its build order is dead; three findings about the code in it are not |

@@ -100,8 +100,13 @@ export function freshStatus(days: number | null): keyof typeof STATUS {
 // assigned in a fixed order and never recycled by rank, so a reader who learns
 // "Firecrawl is orange" keeps that when a filter changes the set on screen.
 //
-// The four hues clear the CVD and normal-vision floors in both light and dark,
-// validated in the order they render. Blue is deliberately absent: it is the
+// Each hue clears the CVD and normal-vision floors in both light and dark,
+// checked against its neighbours in the order they render. Eight is the ceiling
+// and this set is at it: every pair of neighbours is far enough apart, but not
+// every pair in the whole set is — that was already true of the original four
+// (amber and orange are close), and adding four more only tightened it. Colour
+// is a redundant channel here, never the only one. A ninth provider needs a
+// different answer than a ninth hue. Blue is deliberately absent: it is the
 // magnitude ramp above, and a hue that means "which provider" in one mark and
 // "how good" in the next is the ambiguity the whole scheme exists to prevent.
 // Two of the light steps sit under 3:1 against the page, so every use of a
@@ -118,6 +123,10 @@ export const PROVIDERS: Record<string, { label: string; color: string; dark: str
   firecrawl: { label: "Firecrawl", color: "#eb6834", dark: "#d95926" },
   tavily: { label: "Tavily", color: "#1baf7a", dark: "#199e70" },
   exa: { label: "Exa", color: "#eda100", dark: "#c98500" },
+  brave: { label: "Brave", color: "#0a8f9e", dark: "#189eb0" },
+  serper: { label: "Serper", color: "#a83a3a", dark: "#c9564f" },
+  perplexity: { label: "Perplexity", color: "#b02a9e", dark: "#b94fb2" },
+  parallel: { label: "Parallel", color: "#5a7d2a", dark: "#7d9435" },
   // Grey on purpose — the baseline shouldn't read as a peer of the paid arms.
   plain: { label: "Plain fetch", color: "#6b6a66", dark: "#9b9a94" },
 };

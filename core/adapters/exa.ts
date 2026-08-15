@@ -67,7 +67,7 @@ export async function fetchExa(
       return {
         title: r.title ?? r.url,
         url: r.url,
-        // Native date first — this is the one adapter that reliably has one.
+        // Native date first — one of the few adapters that reliably has one.
         published:
           parsePublished(r.publishedDate, now) ??
           dateFromSnippet(snippet, now) ??

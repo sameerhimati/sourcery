@@ -1,7 +1,9 @@
 #!/usr/bin/env node
 import { Command } from "commander";
 import { registerBatch } from "./commands/batch";
+import { registerCalibrate } from "./commands/calibrate";
 import { registerCredibility } from "./commands/credibility";
+import { registerPooled } from "./commands/pooled";
 import { registerInit } from "./commands/init";
 import { registerMcp } from "./commands/mcp";
 import { registerProviders } from "./commands/providers";
@@ -19,6 +21,8 @@ registerInit(program);
 registerRun(program);
 registerBatch(program);
 registerCredibility(program);
+registerPooled(program);
+registerCalibrate(program);
 registerReport(program);
 registerProviders(program);
 registerMcp(program);

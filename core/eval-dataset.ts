@@ -20,11 +20,27 @@ export type QueryType =
   | "recent_release"
   | "numeric_live";
 
+/**
+ * Whether a question has one right answer or several defensible ones.
+ *
+ * `sharp` — a number, a date, a version, a named thing. Two careful people
+ * looking at the same page would agree on whether it answers the question.
+ * `open` — real work where several different pages could each genuinely be the
+ * best result.
+ *
+ * It exists because judges are expected to agree less on open questions, and
+ * that is a claim the run should be able to check rather than assume. Optional,
+ * and absent from the 48 below: they were written before the distinction, and
+ * they are frozen.
+ */
+export type Sharpness = "sharp" | "open";
+
 export interface EvalQuery {
   id: string;
   type: QueryType;
   query: string;
   note?: string; // author-only, NOT sent to the judge
+  sharpness?: Sharpness; // author-only, NOT sent to the judge
 }
 
 export const EVAL_DATASET: EvalQuery[] = [

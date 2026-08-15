@@ -1,6 +1,7 @@
 import { appendFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
 import type { CredibilityRow, CredibilitySummary } from "@core/credibility";
+import type { PooledFetchRow, PooledJudgementRow, PooledSummary } from "@core/pooled";
 
 // The runs.jsonl contract lives in @core/records so every door onto the engine
 // shares one write path; re-exported here because this is still the CLI's, and
@@ -40,4 +41,52 @@ export function writeCredibilitySummary(
   const dir = dirname(summaryPath);
   if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
   writeFileSync(summaryPath, JSON.stringify(summary, null, 2) + "\n");
+}
+
+// Run 2 (the pooled run) writes to its own files again — fetches and judgements
+// are different record shapes with different resume keys, and mixing them into
+// one log is how a summary ends up computed over the wrong rows.
+export const POOLED_FETCHES_PATH = ".sourcery/pooled-fetches.jsonl";
+export const POOLED_JUDGEMENTS_PATH = ".sourcery/pooled-judgements.jsonl";
+export const POOLED_SUMMARY_PATH = ".sourcery/pooled-summary.json";
+
+function appendLine(path: string, value: unknown): void {
+  const dir = dirname(path);
+  if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
+  appendFileSync(path, JSON.stringify(value) + "\n");
+}
+
+function readLines<T>(path: string): T[] {
+  if (!existsSync(path)) return [];
+  return readFileSync(path, "utf8")
+    .split("\n")
+    .filter(Boolean)
+    .map((line) => JSON.parse(line) as T);
+}
+
+export function appendPooledFetch(row: PooledFetchRow, path = POOLED_FETCHES_PATH): void {
+  appendLine(path, row);
+}
+
+export function readPooledFetches(path = POOLED_FETCHES_PATH): PooledFetchRow[] {
+  return readLines<PooledFetchRow>(path);
+}
+
+export function appendPooledJudgement(
+  row: PooledJudgementRow,
+  path = POOLED_JUDGEMENTS_PATH,
+): void {
+  appendLine(path, row);
+}
+
+export function readPooledJudgements(
+  path = POOLED_JUDGEMENTS_PATH,
+): PooledJudgementRow[] {
+  return readLines<PooledJudgementRow>(path);
+}
+
+export function writePooledSummary(summary: PooledSummary, path = POOLED_SUMMARY_PATH): void {
+  const dir = dirname(path);
+  if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
+  writeFileSync(path, JSON.stringify(summary, null, 2) + "\n");
 }

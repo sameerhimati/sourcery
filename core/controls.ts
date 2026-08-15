@@ -71,6 +71,30 @@ Rubric:
 Reward fresh, on-topic, cleanly-extracted sources. Penalize stale, off-topic, or empty/garbled content.
 Return JSON only: {"score": <int 0-10>, "rationale": "<one sentence>"}.`;
 
+// ─── Run 2: the pooled relevance judge ───
+// Additive: the constants above are run 1's instrument and stay untouched so its
+// results remain reproducible. Run 2 (core/pooled.ts) judges each unique
+// question-and-page pair once, on a short scale with named rungs, per
+// docs/preregistration-v3.md. The judge never learns which provider returned a
+// page — pooling detaches pages from providers before judging, so blinding is
+// structural rather than promised.
+
+export const RELEVANCE_JUDGE_TEMP = 0;
+
+/** The four rungs, each with a meaning a person can argue with. Order matters:
+ *  index = the rung's numeric value. */
+export const RELEVANCE_RUNGS = [
+  { rung: 0, name: "not relevant", meaning: "does not address the question" },
+  { rung: 1, name: "marginal", meaning: "on the topic, but would not help answer it" },
+  { rung: 2, name: "relevant", meaning: "contains part of the answer, or usable evidence toward it" },
+  { rung: 3, name: "highly relevant", meaning: "answers the question directly" },
+] as const;
+
+export const RELEVANCE_JUDGE_SYSTEM = `You judge whether ONE web page helps answer ONE question. Grade the page on this scale:
+${RELEVANCE_RUNGS.map((r) => `${r.rung} = ${r.name}: ${r.meaning}`).join("\n")}
+A page can contain every word of the question and answer nothing — judge whether it answers, not whether it matches keywords. A missing publish date is not itself disqualifying; stale content that the question implicitly needs fresh is.
+Return JSON only: {"rung": <int 0-3>, "rationale": "<one sentence>"}.`;
+
 // Pipeline facts shown in the Controls tab. Mirror the defaults in types.ts
 // (DEFAULT_CONFIG) and extract.ts — kept here as display copy for the tab.
 export interface ControlItem {

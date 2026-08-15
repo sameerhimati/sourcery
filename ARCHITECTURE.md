@@ -14,7 +14,7 @@ having to read the code to find out.
 
 | I'm looking for | It's here |
 |---|---|
-| **The questions** we ship | `core/eval-dataset.ts` (the 48) · `datasets/real-tasks.json` (the 24) |
+| **The questions** we ship | `core/eval-dataset.ts` (the 48) · `datasets/real-tasks.json` (the 24) · `datasets/run2-questions.json` (the 96 run 2 measures) |
 | **Loading your own questions** | `core/query-set.ts` parses the file, `cli/query-file.ts` reads it off disk |
 | **The code that calls each search API** | `core/adapters/` — one file per provider |
 | **The code that calls the LLM** | `core/llm/` — one shared door for every model call |
@@ -114,8 +114,9 @@ Worth knowing about, because each one is load-bearing:
 
 ## The rest
 
-**`cli/`** — `index.ts` wires up seven commands: `run`, `batch`, `credibility`,
-`report`, `providers`, `init`, `mcp`. Each lives in `cli/commands/`. Views over
+**`cli/`** — `index.ts` wires up six commands anyone can see — `run`, `batch`,
+`report`, `providers`, `init`, `mcp` — plus three hidden research ones:
+`credibility`, `pooled`, `calibrate`. Each lives in `cli/commands/`. Views over
 the results live in `cli/format.ts` (terminal), `cli/report-html.ts`, and
 `cli/report-tui.ts`.
 

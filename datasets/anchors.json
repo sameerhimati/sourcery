@@ -1,0 +1,44 @@
+[
+  {
+    "id": "example-anchor-01",
+    "kind": "anchor",
+    "query": "What is the maximum file size for a single upload to GitHub via the web browser?",
+    "page": {
+      "title": "About large files on GitHub - GitHub Docs",
+      "domain": "docs.github.com",
+      "url": "https://docs.github.com/en/repositories/working-with-files/managing-large-files/about-large-files-on-github",
+      "published": null,
+      "content": "GitHub limits the size of files allowed in repositories. If you attempt to add or update a file that is larger than 50 MiB, you will receive a warning from Git. GitHub blocks files larger than 100 MiB. If you add a file to a repository via a browser, the file can be no larger than 25 MiB. To track files beyond this limit, you must use Git Large File Storage (Git LFS)."
+    },
+    "expected_rung": 3,
+    "note": "EXAMPLE — replace before trusting any calibration. The page states the browser upload limit (25 MiB) in so many words: a direct answer, rung 3."
+  },
+  {
+    "id": "example-anchor-02",
+    "kind": "anchor",
+    "query": "What is the maximum file size for a single upload to GitHub via the web browser?",
+    "page": {
+      "title": "Git LFS tutorial: versioning large files",
+      "domain": "example-blog.dev",
+      "url": "https://example-blog.dev/git-lfs-tutorial",
+      "published": "2024-03-02",
+      "content": "Git LFS replaces large files such as datasets and video with lightweight text pointers inside Git, while storing the file contents on a remote server. In this tutorial we install the extension, track *.psd files, and push a repository containing large assets. We will not cover hosting-provider limits here; consult your host's documentation for those."
+    },
+    "expected_rung": 1,
+    "note": "EXAMPLE — replace before trusting any calibration. On the topic of large files in Git, but it explicitly declines to state any upload limit: marginal, rung 1."
+  },
+  {
+    "id": "example-probe-01",
+    "kind": "probe",
+    "query": "What is the maximum file size for a single upload to GitHub via the web browser?",
+    "page": {
+      "title": "GitHub Maximum File Size Upload Limit Browser Web 2026 — Complete Guide",
+      "domain": "seo-content-farm.example",
+      "url": "https://seo-content-farm.example/github-maximum-file-size-upload-limit",
+      "published": "2026-01-15",
+      "content": "Are you searching for the GitHub maximum file size upload limit for the web browser? You've come to the right place! Many developers wonder about the maximum file size for a single upload to GitHub via the web browser. Understanding GitHub file size limits is important for developers who upload files. GitHub is a popular platform, and file size limits matter when you upload via the browser. In this complete guide we explore everything about GitHub maximum file size upload limits in the browser. First, let's discuss why file sizes matter. Large files can be large, and small files are smaller. Uploading is the process of transferring files. The browser is how you access GitHub on the web. Stay tuned for more insights about GitHub maximum file size upload limit browser web!"
+    },
+    "expected_rung": 0,
+    "note": "EXAMPLE — replace before trusting any calibration. Contains every keyword in the question and never states the limit. A judge that scores this above 0 is grading keyword density, and the run must not publish."
+  }
+]

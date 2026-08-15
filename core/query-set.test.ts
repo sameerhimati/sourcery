@@ -34,6 +34,17 @@ describe("parseQuerySet — formats", () => {
     const parsed = parseQuerySet(JSON.stringify([{ type: "how_to", query: "a", note: "why this one" }]));
     expect(parsed[0].note).toBe("why this one");
   });
+
+  it("keeps an optional sharpness, and leaves it off when it wasn't given", () => {
+    const parsed = parseQuerySet(
+      JSON.stringify([
+        { type: "how_to", query: "a", sharpness: "sharp" },
+        { type: "how_to", query: "b" },
+      ]),
+    );
+    expect(parsed[0].sharpness).toBe("sharp");
+    expect(parsed[1]).not.toHaveProperty("sharpness");
+  });
 });
 
 describe("parseQuerySet — rejections name the fix", () => {
@@ -54,6 +65,13 @@ describe("parseQuerySet — rejections name the fix", () => {
     // which_provider's routing all key off them. A seventh would parse here and
     // then be unroutable forever, so it has to be refused at the door.
     failsWith(JSON.stringify([{ type: "shopping", query: "a" }]), /how_to/);
+  });
+
+  it("rejects a sharpness that isn't one of the two, rather than dropping it", () => {
+    // The parser rebuilds each entry from a whitelist, so an unrecognised field
+    // vanishes silently. A misspelt sharpness would cost the whole slice it was
+    // added for and nothing would say why — so it fails at the door instead.
+    failsWith(JSON.stringify([{ type: "how_to", query: "a", sharpness: "vague" }]), /sharp, open/);
   });
 
   it("rejects a missing query", () => {
@@ -171,5 +189,69 @@ describe("the shipped real-task dataset", () => {
     // the same file and the id prefix is the only thing telling them apart.
     const queries = parseQuerySet(raw, "real-tasks.json");
     expect(queries.filter((q) => !q.id.startsWith("rt-"))).toHaveLength(0);
+  });
+});
+
+describe("the run-2 question set", () => {
+  // datasets/run2-questions.json is what run 2 is measured on. Same rules as the
+  // real tasks above, plus the sharpness tag: half of each type has one checkable
+  // answer, half is work where several pages could each legitimately be right.
+  const raw = readFileSync(
+    fileURLToPath(new URL("../datasets/run2-questions.json", import.meta.url)),
+    "utf8",
+  );
+  const load = () => parseQuerySet(raw, "run2-questions.json");
+
+  it("parses through the same loader the CLI uses", () => {
+    expect(() => load()).not.toThrow();
+  });
+
+  it("is balanced across all six types, so no type carries the result alone", () => {
+    const counts = new Map<string, number>();
+    for (const q of load()) counts.set(q.type, (counts.get(q.type) ?? 0) + 1);
+    expect([...counts.keys()].sort()).toEqual([...QUERY_TYPES].sort());
+    expect([...new Set(counts.values())]).toEqual([16]);
+    expect(load()).toHaveLength(96);
+  });
+
+  it("splits every type evenly between sharp and open questions", () => {
+    // Unbalanced within a type and the sharpness slice stops being a comparison:
+    // it would be reporting the type mix as if it were the effect of sharpness.
+    const byType = new Map<string, { sharp: number; open: number }>();
+    for (const q of load()) {
+      const cell = byType.get(q.type) ?? byType.set(q.type, { sharp: 0, open: 0 }).get(q.type)!;
+      if (q.sharpness === "sharp") cell.sharp++;
+      else if (q.sharpness === "open") cell.open++;
+    }
+    for (const [type, cell] of byType) {
+      expect(cell, `type ${type}`).toEqual({ sharp: 8, open: 8 });
+    }
+  });
+
+  it("shares no query verbatim with the 48 or the real tasks", () => {
+    // Exact restatement only, for the reason given above: no similarity check
+    // that catches real near-duplicates also survives unrelated queries sharing
+    // a noun. Reading the new set against the old ones is a manual step.
+    const normalize = (q: string) => q.replace(/\s+/g, " ").trim().toLowerCase();
+    const realTasks = parseQuerySet(
+      readFileSync(fileURLToPath(new URL("../datasets/real-tasks.json", import.meta.url)), "utf8"),
+      "real-tasks.json",
+    );
+    const existing = new Set([...EVAL_DATASET, ...realTasks].map((q) => normalize(q.query)));
+    expect(load().filter((q) => existing.has(normalize(q.query))).map((q) => q.id)).toEqual([]);
+  });
+
+  it("has no unfilled template placeholders", () => {
+    expect(load().filter((q) => q.query.includes("<"))).toHaveLength(0);
+  });
+
+  it("carries an acceptance criterion on every question", () => {
+    expect(load().filter((q) => !q.note?.trim())).toHaveLength(0);
+  });
+
+  it("uses ids that stay distinguishable from the other two sets in a shared log", () => {
+    // Three sets now land rows in the same log with no dataset column, so the
+    // prefix is still the only thing telling a run-2 row from an rt- or a q- one.
+    expect(load().filter((q) => !q.id.startsWith("r2-"))).toHaveLength(0);
   });
 });

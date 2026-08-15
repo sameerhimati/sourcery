@@ -1,6 +1,7 @@
 import type { Arm, Run } from "@core/types";
 import type { BatchOutput } from "@core/batch";
 import type { CredibilitySummary } from "@core/credibility";
+import type { PooledSummary } from "@core/pooled";
 import { ADAPTERS } from "@core/adapters";
 import { providerMeta } from "@core/viz";
 import { SEED_NOISE } from "@core/controls";
@@ -226,5 +227,124 @@ export function renderCredibility(s: CredibilitySummary): string {
     "Variance decomposition (retrieval_score, the primary metric):",
     `  seed noise (std across seeds, avg):   ${s.variance.seed_std_mean.toFixed(3)}`,
     `  judge gap (|A−B|, avg):               ${s.variance.judge_gap_mean.toFixed(3)}`,
+  ].join("\n");
+}
+
+/** Render the pooled-run summary. Pure (summary in, string out), like the rest
+ *  of this file. Every statistic is said in words where it appears, because
+ *  this block is the first thing a reader meets after a two-hour run. */
+export function renderPooled(s: PooledSummary): string {
+  const meanCi = (m: number, ci: number) => `${m.toFixed(2)} ± ${ci.toFixed(2)}`;
+  const pct = (x: number) => `${(x * 100).toFixed(0)}%`;
+
+  const rows = s.by_provider.map((p) => ({
+    provider: label(p.provider),
+    rung: meanCi(p.mean_rung, p.mean_rung_ci95),
+    precision: meanCi(p.precision, p.precision_ci95),
+    recall: p.n_recall_queries ? meanCi(p.recall, p.recall_ci95) : "—",
+    misses: String(p.n_misses),
+    excluded: String(p.n_excluded),
+    n: String(p.n_queries),
+  }));
+  const w = (head: string, key: keyof (typeof rows)[number]) =>
+    Math.max(head.length, ...rows.map((r) => r[key].length));
+  const cols: { head: string; key: keyof (typeof rows)[number] }[] = [
+    { head: "PROVIDER", key: "provider" },
+    { head: "MEAN RUNG (0–3)", key: "rung" },
+    { head: "PRECISION", key: "precision" },
+    { head: "RECALL", key: "recall" },
+    { head: "MISSES", key: "misses" },
+    { head: "EXCL", key: "excluded" },
+    { head: "N", key: "n" },
+  ];
+  const header = "  " + cols.map((c) => pad(c.head, w(c.head, c.key))).join("  ");
+  const body = rows.map(
+    (r) => "  " + cols.map((c) => pad(r[c.key], w(c.head, c.key))).join("  "),
+  );
+
+  const timed = s.by_provider.filter((p) => p.n_fetch_timed > 0);
+  const secs = (ms: number | null) => (ms === null ? "—" : `${(ms / 1000).toFixed(1)}s`);
+  const latency = timed.length
+    ? [
+        "",
+        "Provider latency — the retrieval call alone:",
+        ...timed.map(
+          (p) => `  ${pad(label(p.provider), 12)}  p50 ${pad(secs(p.fetch_ms_p50), 7)}  p95 ${secs(p.fetch_ms_p95)}`,
+        ),
+      ]
+    : [];
+
+  const agree = s.agreement.map(
+    (a) =>
+      `  ${a.judge_a} vs ${a.judge_b}: agreed exactly on ${pct(a.raw_agreement)} of pairs; ` +
+      `kappa ${a.kappa.toFixed(2)} (agreement beyond each judge's own habits)  (n=${a.n})`,
+  );
+
+  // Only when the question set carried the tag. The built-in 48 don't, so a run
+  // over them prints nothing here rather than an empty heading.
+  const sharpAgree = s.agreement_by_sharpness.length
+    ? [
+        "",
+        "The same agreement split by how sharp the question was — sharp means one",
+        "checkable answer, open means several pages could each legitimately be right:",
+        ...s.agreement_by_sharpness.map(
+          (a) =>
+            `  ${pad(a.sharpness, 5)}  ${a.judge_a} vs ${a.judge_b}: agreed exactly on ` +
+            `${pct(a.raw_agreement)}; kappa ${a.kappa.toFixed(2)}  (n=${a.n})`,
+        ),
+      ]
+    : [];
+
+  const dist = s.rung_distribution.map((d) => {
+    const total = d.counts.reduce((a, b) => a + b, 0) + d.n_null;
+    const parts = d.counts.map((c, rung) => `${rung}:${c}`).join("  ");
+    return `  ${pad(d.judge, 12)}  ${parts}` + (d.n_null ? `  none:${d.n_null}` : "") + `  (of ${total})`;
+  });
+
+  const v = s.variance_shares;
+  const mapNotRanking =
+    v.n_cells > 0 && v.provider < 0.05 && v.provider_by_query > v.provider * 2
+      ? [
+          "",
+          "  Which provider you use explains almost none of the variation, while",
+          "  provider-by-question explains more — providers have specialities, not",
+          "  general ability. The honest output of this run is a map, not a ranking.",
+        ]
+      : [];
+
+  return [
+    `Pooled run — ${s.n_queries} queries × ${s.providers.map(label).join(" / ")}, ` +
+      `${s.n_pairs} unique question-page pairs, judged by ${s.judges.length} judge(s)`,
+    `Generated: ${s.generated_at}`,
+    (s.n_null_rungs
+      ? `⚠ ${s.n_null_rungs} verdict(s) were not a valid rung — counted, never scored as 0.\n`
+      : "") +
+      (s.n_judge_errors
+        ? `⚠ ${s.n_judge_errors} judge call(s) errored — resume retries them.\n`
+        : "") +
+      (s.n_unjudged_pairs
+        ? `⚠ ${s.n_unjudged_pairs} pair(s) never got a valid verdict from any judge.\n`
+        : ""),
+    "Mean rung is graded relevance 0–3 averaged over a provider's returned links.",
+    "Precision: share of returned links that were relevant (rung ≥ 2). Recall:",
+    "share of all relevant pooled pages the provider returned. Misses are",
+    "provider-fault failures scored 0; excluded rows are our fault, never scored.",
+    "",
+    header,
+    ...body,
+    ...latency,
+    "",
+    "Judge agreement (read the three together — each alone can mislead):",
+    ...agree,
+    ...sharpAgree,
+    "",
+    "How each judge used the scale (rung: count):",
+    ...dist,
+    "",
+    "Where the score variation comes from (shares of total):",
+    `  provider ${pct(v.provider)} · question ${pct(v.query)} · ` +
+      `provider×question ${pct(v.provider_by_query)} · judge ${pct(v.judge)} · ` +
+      `residual ${pct(v.residual)}`,
+    ...mapNotRanking,
   ].join("\n");
 }

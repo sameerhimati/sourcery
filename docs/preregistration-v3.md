@@ -122,9 +122,9 @@ seeing which story the data tells.
 |---|---|---|
 | The question set | Sameer | written — 96 questions in `datasets/run2-questions.json`, half of each type sharp, half open |
 | The anchor set + probes (real, not the shipped examples) | Sameer | examples only |
-| Keys: Brave, Serper, Perplexity Search, Parallel | Sameer | not created |
-| Four new adapters | code | written, never run against a live key |
-| Five-judge panel, five labs, none sharing a family with each other | both | candidates TBD once keys exist |
+| Keys: Brave, Serper, Perplexity Search, Parallel | Sameer | created — `sourcery providers` shows eight of eight ready |
+| Four new adapters | code | written, and each has answered one live question |
+| Five-judge panel, five labs, none sharing a family with each other | both | candidates TBD |
 | Calibration pass with probes clean | run | gated on the above |
 
 Providers measured: the eight from [`provider-admission.md`](provider-admission.md),

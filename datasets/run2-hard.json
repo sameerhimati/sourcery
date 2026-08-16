@@ -1,0 +1,674 @@
+[
+  {
+    "id": "r2h-bn-01",
+    "type": "breaking_news",
+    "sharpness": "sharp",
+    "query": "Under the EU AI Act, what is the maximum administrative fine for engaging in a prohibited AI practice, expressed both as a euro figure and as a share of worldwide annual turnover, and which of the two applies?",
+    "note": "HARD(trap+buried). Correct: 35 million euro or 7% of total worldwide annual turnover for the preceding financial year, whichever is HIGHER, set by Article 99. Wrong: the draft-stage 30 million / 6%, still widely republished; the 15 million / 3% tier that applies to other breaches; or omitting 'whichever is higher', which inverts the answer for any large company. The correct figure is in the regulation's own text while the wrong ones dominate secondary coverage."
+  },
+  {
+    "id": "r2h-bn-02",
+    "type": "breaking_news",
+    "sharpness": "sharp",
+    "query": "Under the EU's Digital Markets Act, what is the maximum fine for a first finding of non-compliance as a share of worldwide turnover, and what is the maximum for a repeated infringement?",
+    "note": "HARD(trap). Correct: up to 10% of total worldwide turnover, rising to up to 20% for repeated infringement. Wrong: quoting the AI Act's 7% or the DSA's 6% instead, which is the commonest confusion between the three instruments; or giving 10% with no mention of the doubled repeat ceiling."
+  },
+  {
+    "id": "r2h-bn-03",
+    "type": "breaking_news",
+    "sharpness": "open",
+    "query": "For the most recent enforcement action taken under the EU's Digital Services Act against a very large online platform, what specific obligation was the platform found to have breached, and what did the Commission require it to do?",
+    "note": "HARD(buried+obscure). Correct: names the platform, the dated decision, the specific DSA obligation at issue rather than 'the DSA' generally, and the required remedy. Wrong: a general explainer on what the DSA requires, a news piece that says 'faces fines of up to 6%' without naming the breached obligation, or a DMA action reported as a DSA one."
+  },
+  {
+    "id": "r2h-bn-04",
+    "type": "breaking_news",
+    "sharpness": "open",
+    "query": "In the most recent published post-incident review of a major cloud or CDN outage, what was the specific technical root cause, and what change did the provider commit to making as a result?",
+    "note": "HARD(buried). Correct: draws on the provider's own post-incident write-up and names a mechanism — a race condition between named components, a config propagation failure, a bad automated update — plus the stated remediation. Wrong: press coverage reporting duration and affected customers with no cause, or a status-page timeline with no analysis. The answer exists only in the primary document."
+  },
+  {
+    "id": "r2h-ht-01",
+    "type": "how_to",
+    "sharpness": "sharp",
+    "query": "On Linux, what does setting the kernel parameter vm.overcommit_memory to 2 actually do, and what is the default value of vm.overcommit_ratio?",
+    "note": "HARD(buried+obscure). Correct: mode 2 disables overcommit and limits total address space to swap plus a percentage of physical RAM given by vm.overcommit_ratio, whose default is 50. Wrong: describing mode 2 as 'strict' with no formula, confusing it with mode 1 (always overcommit), or quoting overcommit_kbytes as if it applied alongside the ratio. The answer is in the kernel documentation, not in the blog posts that outrank it."
+  },
+  {
+    "id": "r2h-ht-02",
+    "type": "how_to",
+    "sharpness": "sharp",
+    "query": "In PostgreSQL, what is the default value of commit_siblings, and under what condition does commit_delay actually take effect?",
+    "note": "HARD(obscure). Correct: commit_siblings defaults to 5, and commit_delay only takes effect when at least that many transactions are active at the moment of commit. Wrong: describing commit_delay as an unconditional sleep, which is the common misreading, or giving a value for commit_delay while ignoring the sibling precondition that governs whether it does anything at all."
+  },
+  {
+    "id": "r2h-ht-03",
+    "type": "how_to",
+    "sharpness": "open",
+    "query": "I need to make a Kafka consumer group rebalance without stopping the world every time one instance restarts. Which rebalance protocol should I use, what has to be configured on both the client and the broker, and what does it cost me?",
+    "note": "HARD(multi+trap). Correct: names cooperative incremental rebalancing and the newer broker-coordinated protocol, the partition assignor setting, the required upgrade path between them, and the trade-off — extra rebalance rounds, or broker version requirements. Wrong: recommending static group membership alone as if it solved rebalancing rather than restart-triggered rebalancing specifically, or naming a setting without the migration constraint that makes a live rollout non-trivial."
+  },
+  {
+    "id": "r2h-ht-04",
+    "type": "how_to",
+    "sharpness": "open",
+    "query": "How do I make a Postgres logical replication slot safe to leave in place on a busy primary, given that an inactive slot can fill the disk?",
+    "note": "HARD(buried+multi). Correct: names the setting that caps retained WAL per slot, what happens to the slot when the cap is exceeded, how to see retained bytes per slot, and monitoring on the lag. Wrong: 'just drop unused slots' with no mention of the WAL-size cap, or advice predating that setting existing, which is abundant and reads as current."
+  },
+  {
+    "id": "r2h-pl-01",
+    "type": "product_lookup",
+    "sharpness": "sharp",
+    "query": "What is the minimum storage duration for an object in S3 Glacier Deep Archive, and what exactly are you charged if you delete an object before that period is up?",
+    "note": "HARD(buried). Correct: 180 days minimum, and early deletion incurs the normal storage charge plus a pro-rated charge for the remaining days of the minimum period. Wrong: quoting the 90-day minimum that applies to Glacier Flexible Retrieval, quoting a retrieval fee instead of an early-deletion charge, or saying deletion is free. The number sits in a pricing footnote."
+  },
+  {
+    "id": "r2h-pl-02",
+    "type": "product_lookup",
+    "sharpness": "sharp",
+    "query": "For AWS S3 Standard in us-east-1, what is the per-1,000-request charge for PUT, COPY, POST and LIST requests, and what is the equivalent charge for GET and SELECT?",
+    "note": "HARD(buried). Correct: both per-1,000-request figures, correctly distinguished, for the named region and storage class. Wrong: giving the storage price per GB instead of request pricing, quoting a different region, or collapsing the two request classes into one figure — they differ by roughly an order of magnitude, so the distinction is the whole answer."
+  },
+  {
+    "id": "r2h-pl-03",
+    "type": "product_lookup",
+    "sharpness": "open",
+    "query": "For an application doing roughly 50 million small writes a month, what would DynamoDB on-demand and DynamoDB provisioned capacity each cost, and at what point does provisioned become cheaper?",
+    "note": "HARD(multi+buried). Correct: the on-demand write-request-unit price, the provisioned write-capacity-unit hourly price, how a small write maps to units, and a crossover derived from both. Wrong: a features comparison with no rates, free-tier limits quoted as production cost, or an answer that gives one pricing model without the other, which makes the crossover unanswerable."
+  },
+  {
+    "id": "r2h-pl-04",
+    "type": "product_lookup",
+    "sharpness": "open",
+    "query": "Which large language model APIs currently charge separately for cached input tokens, and what discount does each apply relative to its normal input rate?",
+    "note": "HARD(multi+obscure). Correct: at least two named providers with the cached-input rate expressed against the standard input rate, and any conditions such as minimum prefix length or cache lifetime. Wrong: a general explanation of what prompt caching is with no rates, or a single vendor's page presented as the market. Requires several pricing pages read together, since no one page covers competitors."
+  },
+  {
+    "id": "r2h-lg-01",
+    "type": "local_geo",
+    "sharpness": "sharp",
+    "query": "What does the Refuge du Goûter on the normal route up Mont Blanc charge a non-member for a night, and what does it charge separately for breakfast and for dinner?",
+    "note": "HARD(buried+obscure). Correct: the three separate figures in euro from the hut's own FFCAM price list, for a non-member in the current season. Wrong: a single blended 'half board' number, which is what every trekking blog and aggregator publishes; the member rate quoted as the non-member rate; or a figure for a different Mont Blanc hut. The breakdown exists only on the primary page."
+  },
+  {
+    "id": "r2h-lg-02",
+    "type": "local_geo",
+    "sharpness": "sharp",
+    "query": "To walk the Inca Trail to Machu Picchu you must book through a licensed operator. How many permits are released per day, and how is that number split between trekkers and support staff?",
+    "note": "HARD(trap+obscure). Correct: the daily permit cap with the split between visitors and guides/porters, which is why the trekker allocation is much smaller than the headline number. Wrong: quoting the total as if all of it were available to trekkers, which is the near-universal error in travel content, or giving a Machu Picchu site-entry cap instead of a trail permit cap."
+  },
+  {
+    "id": "r2h-lg-03",
+    "type": "local_geo",
+    "sharpness": "open",
+    "query": "Which huts on New Zealand's Milford Track must be booked in advance during the Great Walks season, what does a night cost an international visitor, and what happens if you walk it outside that season?",
+    "note": "HARD(multi+trap). Correct: the booked huts, the international adult per-night fee, the one-direction fixed-itinerary rule, and how fees and bookings change out of season. Wrong: the New Zealand resident rate quoted for an international visitor, a backcountry hut pass presented as valid on a Great Walk in season, or an itinerary that ignores the fixed direction."
+  },
+  {
+    "id": "r2h-lg-04",
+    "type": "local_geo",
+    "sharpness": "open",
+    "query": "I want to drive from mainland Norway to Lofoten and use ferries where needed. Which ferry crossings are involved, what does a car plus driver cost on each, and which of them take advance booking?",
+    "note": "HARD(multi+obscure). Correct: named crossings with an operator, per-crossing car-and-driver fares in kroner, and which accept reservations rather than queue-only. Wrong: a single generic 'ferries cost about X' figure, a passenger-only fare given for a car, or a route description with no fares at all. No single page carries all the legs."
+  },
+  {
+    "id": "r2h-rr-01",
+    "type": "recent_release",
+    "sharpness": "sharp",
+    "query": "In OpenSSH, which release deprecated the ssh-rsa signature algorithm by default, and what is the exact configuration line that re-enables it for a legacy server?",
+    "note": "HARD(buried+trap). Correct: names the release that turned it off by default and gives the PubkeyAcceptedAlgorithms or HostkeyAlgorithms line with the +ssh-rsa syntax. Wrong: advising the user to re-enable SHA-1 wholesale, confusing the key type with the signature algorithm — an RSA key remains fine, it is the signature algorithm that changed — or giving a fix for a different OpenSSH deprecation."
+  },
+  {
+    "id": "r2h-rr-02",
+    "type": "recent_release",
+    "sharpness": "sharp",
+    "query": "Node.js changed the default DNS result ordering in a major release, which broke some local development setups. Which release changed it, which way did the default flip, and what flag restores the old behaviour?",
+    "note": "HARD(trap+obscure). Correct: names the release, states the direction of the change in dns.setDefaultResultOrder, and gives the CLI flag that restores the previous ordering. Wrong: recommending an /etc/hosts edit or a code change to the application as the fix, both of which are widely suggested and neither of which is the documented flag."
+  },
+  {
+    "id": "r2h-rr-03",
+    "type": "recent_release",
+    "sharpness": "open",
+    "query": "We pin a base image to a Debian release that has just moved to LTS. What changes about who publishes security updates, which packages are still covered, and what should we check before assuming our image is patched?",
+    "note": "HARD(multi+trap). Correct: distinguishes the Debian security team's support window from the separate LTS team's, notes that architecture and package coverage narrows under LTS, and names how to verify a given package is in scope. Wrong: treating 'LTS' as an unbroken continuation of normal support, which is the assumption the question is built to catch."
+  },
+  {
+    "id": "r2h-rr-04",
+    "type": "recent_release",
+    "sharpness": "open",
+    "query": "What breaks in a project using OpenTelemetry's Python SDK when moving to the current major version, and which changes are in the API package rather than the SDK?",
+    "note": "HARD(buried+multi). Correct: names concrete breaking changes from the release notes and correctly attributes them between the API and SDK packages, which version independently. Wrong: a getting-started guide for the current version with no migration section, or advice that treats the API and SDK as one versioned unit."
+  },
+  {
+    "id": "r2h-nl-01",
+    "type": "numeric_live",
+    "sharpness": "sharp",
+    "query": "In the EIA's most recent Short-Term Energy Outlook, what is the forecast for US crude oil production next year in million barrels per day, and how does that compare with this year's forecast?",
+    "note": "HARD(buried). Correct: both forecast figures with their units and the named report month, taken from the outlook's own tables. Wrong: a current weekly production figure presented as a forecast, an OPEC or IEA forecast substituted for the EIA's, or a price forecast given instead of a production one. The numbers live in a table inside a PDF."
+  },
+  {
+    "id": "r2h-nl-02",
+    "type": "numeric_live",
+    "sharpness": "sharp",
+    "query": "According to the most recent Federal Reserve H.4.1 release, what is the current size of the Federal Reserve's total assets, and how much has it changed over the past year?",
+    "note": "HARD(buried+obscure). Correct: the total assets figure with its date from the H.4.1 statistical release, plus a year-over-year change. Wrong: a commentary article citing a round number with no date, the monetary base or a reserve-balances line substituted for total assets, or a figure from a chart with no vintage. The release is a primary statistical table."
+  },
+  {
+    "id": "r2h-nl-03",
+    "type": "numeric_live",
+    "sharpness": "open",
+    "query": "How much electricity did data centres consume in the United States in the most recent year with published figures, what share of national consumption is that, and which sources disagree about it?",
+    "note": "HARD(multi+trap). Correct: a TWh figure and a national share for a named year, attributed to its source, plus acknowledgement that estimates differ materially between the national laboratory studies, the EIA, and industry analyses. Wrong: one headline number presented as settled fact, or a global figure quoted as a US one. The disagreement between sources is part of the correct answer."
+  },
+  {
+    "id": "r2h-nl-04",
+    "type": "numeric_live",
+    "sharpness": "open",
+    "query": "What is the current estimated hashrate of the Bitcoin network, what is the current mining difficulty, and why do published hashrate figures differ between sources?",
+    "note": "HARD(obscure+trap). Correct: a hashrate with units and a difficulty value, plus the reason estimates diverge — hashrate is inferred from block times over a chosen window, so different averaging windows give different answers. Wrong: quoting a single hashrate as a measured quantity, which is the common error; difficulty is directly readable from the chain while hashrate is not."
+  },
+  {
+    "id": "r2h-ht-05",
+    "type": "how_to",
+    "sharpness": "sharp",
+    "query": "In Redis, what is the default value of maxmemory, and what does the default maxmemory-policy do when that limit is reached?",
+    "note": "HARD(trap+buried). Correct: maxmemory defaults to 0, meaning no limit (on 64-bit builds), and the default policy noeviction returns errors on writes rather than evicting anything. Wrong: claiming Redis evicts by LRU by default, which is the near-universal assumption and is false; or giving a policy list without saying which one is the default."
+  },
+  {
+    "id": "r2h-ht-06",
+    "type": "how_to",
+    "sharpness": "sharp",
+    "query": "In Kubernetes, what does a pod's terminationGracePeriodSeconds default to, and which signal is sent to the container first?",
+    "note": "HARD(buried). Correct: 30 seconds, and SIGTERM is sent first, with SIGKILL following if the container has not exited when the grace period expires. Wrong: quoting a value from a chart's values.yaml as if it were the Kubernetes default, or describing the preStop hook as running after SIGTERM when it runs before."
+  },
+  {
+    "id": "r2h-ht-07",
+    "type": "how_to",
+    "sharpness": "sharp",
+    "query": "When using Postgres with pgbouncer in transaction pooling mode, which client features stop working, and what is the standard workaround for prepared statements?",
+    "note": "HARD(obscure+trap). Correct: names session-scoped features that break — session-level SET, advisory locks held across statements, LISTEN/NOTIFY, and traditionally server-side prepared statements — plus the modern protocol-level workaround or the client setting that disables prepared statements. Wrong: advice written before transaction-mode prepared statement support existed, presented as current."
+  },
+  {
+    "id": "r2h-ht-08",
+    "type": "how_to",
+    "sharpness": "sharp",
+    "query": "In Git, what is the difference between core.autocrlf set to true and set to input, and which should a Linux developer on a mixed-OS team use?",
+    "note": "HARD(trap). Correct: true converts to CRLF on checkout and back to LF on commit; input converts to LF on commit but leaves the working tree untouched on checkout; Linux developers want input. Wrong: recommending true universally, which is Windows advice widely copied onto Linux setups, or conflating this with the .gitattributes text setting that supersedes it."
+  },
+  {
+    "id": "r2h-ht-09",
+    "type": "how_to",
+    "sharpness": "open",
+    "query": "How do I make an S3 bucket policy that allows access only from a specific VPC endpoint, without accidentally locking myself out of the bucket?",
+    "note": "HARD(multi+trap). Correct: a Deny with a condition on aws:SourceVpce, plus explicit carve-outs for the principals that administer the bucket, and a note that a Deny evaluated before you have a working path in is how people lock themselves out. Wrong: a bare Allow-only policy, which does not restrict anything because other Allows still apply, or an example with no lockout carve-out."
+  },
+  {
+    "id": "r2h-ht-10",
+    "type": "how_to",
+    "sharpness": "open",
+    "query": "How should I handle database connections in a serverless function so I do not exhaust the Postgres connection limit under load?",
+    "note": "HARD(multi). Correct: names an external pooler as the core answer, explains why in-process pooling does not help when each concurrent invocation is its own process, and covers connection reuse across warm invocations and the pooling mode implications. Wrong: 'use a connection pool' with no acknowledgement that the pool lives in the wrong place in a serverless model."
+  },
+  {
+    "id": "r2h-ht-11",
+    "type": "how_to",
+    "sharpness": "open",
+    "query": "How do I write a Dockerfile for a Python application that installs dependencies with uv and produces a small final image without leaking the build toolchain?",
+    "note": "HARD(multi). Correct: a multi-stage build, uv sync against a lockfile with a cache mount, --no-dev for the final stage, copying the resolved environment rather than reinstalling, and a non-root user. Wrong: a single-stage pip install of requirements.txt with uv swapped in, which changes the installer and nothing about the image size."
+  },
+  {
+    "id": "r2h-ht-12",
+    "type": "how_to",
+    "sharpness": "open",
+    "query": "How do I make a long-running HTTP request survive behind a load balancer that closes idle connections, when the work legitimately takes several minutes?",
+    "note": "HARD(multi+trap). Correct: names the idle-timeout mismatch between client, load balancer and origin, and gives real options — polling with a job id, streaming a heartbeat, server-sent events, or raising the timeouts consistently at every hop. Wrong: 'increase the timeout' naming only one hop, which is the commonest incomplete answer and leaves the connection dying at whichever hop was missed."
+  },
+  {
+    "id": "r2h-ht-13",
+    "type": "how_to",
+    "sharpness": "sharp",
+    "query": "In Nginx, what is the default value of proxy_read_timeout, and what error does the client see when it is exceeded?",
+    "note": "HARD(buried). Correct: 60 seconds, and the client receives a 504 Gateway Time-out. Wrong: quoting proxy_connect_timeout's default instead, which is a different directive with a different value, or describing a 502 which indicates a different failure."
+  },
+  {
+    "id": "r2h-ht-14",
+    "type": "how_to",
+    "sharpness": "sharp",
+    "query": "In Python's asyncio, what happens to a task if you do not keep a reference to the object returned by create_task, and what is the documented way to avoid it?",
+    "note": "HARD(obscure+trap). Correct: the task can be garbage-collected mid-execution because the event loop holds only a weak reference, so the documented advice is to keep a strong reference in a set and discard it in a done callback. Wrong: claiming the loop keeps tasks alive, which is what most tutorials imply and is the reason this bug is common."
+  },
+  {
+    "id": "r2h-ht-15",
+    "type": "how_to",
+    "sharpness": "open",
+    "query": "How do I safely change a column type on a large Postgres table that is being written to continuously?",
+    "note": "HARD(multi+trap). Correct: whether the change can be done without a rewrite, and if not, the add-new-column, backfill in batches, dual-write, swap approach, plus lock levels and a lock_timeout with retries. Wrong: a bare ALTER TABLE ALTER COLUMN TYPE presented as safe, with no mention that it takes an ACCESS EXCLUSIVE lock and rewrites the table."
+  },
+  {
+    "id": "r2h-ht-16",
+    "type": "how_to",
+    "sharpness": "open",
+    "query": "How do I stop a Kubernetes deployment from dropping requests during a rolling update, when the application takes time to become ready?",
+    "note": "HARD(multi). Correct: a readiness probe distinct from the liveness probe, a preStop sleep to let endpoint propagation catch up, terminationGracePeriodSeconds longer than the drain, and maxUnavailable/maxSurge tuned accordingly. Wrong: adding a readiness probe alone, which does not fix the race between pod termination and endpoint removal — the specific cause of the dropped requests."
+  },
+  {
+    "id": "r2h-bn-05",
+    "type": "breaking_news",
+    "sharpness": "sharp",
+    "query": "In the most recent decision the European Commission has published under the Digital Markets Act, which company was found non-compliant, which obligation did it breach, and what was the penalty?",
+    "note": "HARD(buried+obscure). Correct: the named company, the specific DMA article or obligation, the fine, and the decision date, from the Commission's own decision or press release. Wrong: an article about DMA enforcement generally, a DSA action reported as DMA, or a figure from an earlier decision presented as the latest."
+  },
+  {
+    "id": "r2h-bn-06",
+    "type": "breaking_news",
+    "sharpness": "sharp",
+    "query": "What did the most recent published US Supreme Court opinion on an administrative-law question actually hold, and what was the vote?",
+    "note": "HARD(buried+trap). Correct: the case name, the holding stated in terms of what the court decided rather than what commentators think it implies, and the vote split. Wrong: an opinion piece about consequences with no holding stated, a lower-court ruling mistaken for the Supreme Court's, or a cert grant reported as a decision."
+  },
+  {
+    "id": "r2h-bn-07",
+    "type": "breaking_news",
+    "sharpness": "sharp",
+    "query": "Which specific CVE was behind the most recent widely-reported enterprise software compromise, what is its CVSS score, and which versions are affected?",
+    "note": "HARD(buried+multi). Correct: the CVE identifier, its score, and the affected version range, matched to the incident. Wrong: naming the vendor and incident with no CVE, quoting a score for a different CVE in the same product, or giving a version range from the initial advisory after it was revised."
+  },
+  {
+    "id": "r2h-bn-08",
+    "type": "breaking_news",
+    "sharpness": "open",
+    "query": "Which national data protection authorities have issued fines against AI companies in the past year, what conduct was penalised, and how much were the fines?",
+    "note": "HARD(multi+obscure). Correct: at least two named authorities with the company, the conduct — unlawful basis for training data, failure to provide information, inadequate age controls — and the amounts. Wrong: an explainer on GDPR and AI with no enforcement named, or a proposed fine reported as issued."
+  },
+  {
+    "id": "r2h-bn-09",
+    "type": "breaking_news",
+    "sharpness": "open",
+    "query": "What changed in the most recent update to US export controls on advanced semiconductors, and which specific parameters determine whether a chip is covered?",
+    "note": "HARD(buried+trap). Correct: the dated rule, and the actual technical thresholds used in the control text rather than a paraphrase. Wrong: reporting that 'the US tightened chip export rules' with no thresholds, or quoting superseded thresholds from an earlier rule, which remain heavily indexed."
+  },
+  {
+    "id": "r2h-bn-10",
+    "type": "breaking_news",
+    "sharpness": "open",
+    "query": "Which recent large-scale layoffs at technology companies were disclosed in a regulatory filing rather than only announced in the press, and what did the filing say the charge would be?",
+    "note": "HARD(buried+multi). Correct: a named company, the filing type, the stated restructuring charge with its range, and the period. Wrong: a layoff tracker's headcount number with no filing, or a press report of a charge that the filing states differently."
+  },
+  {
+    "id": "r2h-bn-11",
+    "type": "breaking_news",
+    "sharpness": "sharp",
+    "query": "For the most recent aviation incident investigated by a national safety board, what did the preliminary report identify, and how does a preliminary report differ from a final one in what it may conclude?",
+    "note": "HARD(trap+obscure). Correct: what the preliminary report factually recorded, plus the point that preliminary reports state facts and do not assign probable cause. Wrong: reporting media speculation about cause as though the board had concluded it — the single commonest error in coverage of these investigations."
+  },
+  {
+    "id": "r2h-bn-12",
+    "type": "breaking_news",
+    "sharpness": "open",
+    "query": "Which central banks changed their policy rate at their most recent meeting, by how much, and which of them dissented?",
+    "note": "HARD(multi+buried). Correct: at least two named central banks with the direction and size of the move, the meeting date, and any recorded dissent from the statement or minutes. Wrong: a rate-tracker table with no dates, forecasts of the next move presented as decisions, or omitting dissent, which is only in the primary statement."
+  },
+  {
+    "id": "r2h-bn-13",
+    "type": "breaking_news",
+    "sharpness": "sharp",
+    "query": "What is the current status of the most recent major merger to be challenged by a competition regulator, and on what theory of harm was it challenged?",
+    "note": "HARD(buried). Correct: the parties, the regulator, the stated theory of harm — horizontal overlap, vertical foreclosure, elimination of a nascent competitor — and the current procedural status. Wrong: 'regulators are reviewing the deal' with no theory named, or a resolved case reported as pending."
+  },
+  {
+    "id": "r2h-bn-14",
+    "type": "breaking_news",
+    "sharpness": "open",
+    "query": "Which open-source projects have changed their software licence in the past year, what did they change from and to, and what reason did the maintainers give?",
+    "note": "HARD(multi+obscure). Correct: named projects with the before and after licences and the maintainers' own stated reason. Wrong: commentary on the trend with no project named, a fork described as a licence change, or a licence name given without the transition."
+  },
+  {
+    "id": "r2h-bn-15",
+    "type": "breaking_news",
+    "sharpness": "sharp",
+    "query": "In the most recent published report from a national election observation mission, what specific irregularities were documented, and what did the mission recommend?",
+    "note": "HARD(buried+obscure). Correct: the mission, the country and election, documented findings, and stated recommendations, from the mission's own report. Wrong: a political party's characterisation of the election, or news coverage citing the mission without its findings."
+  },
+  {
+    "id": "r2h-bn-16",
+    "type": "breaking_news",
+    "sharpness": "open",
+    "query": "Which submarine communications cables have been damaged or cut in the past year, where, and what was determined about the cause?",
+    "note": "HARD(obscure+multi). Correct: named cables or routes with locations, dates, and what investigations concluded about cause — anchor drag, seismic activity, deliberate act — distinguishing determined cause from speculation. Wrong: an article about cable vulnerability with no incident, or attributing a cause that no investigation has established."
+  },
+  {
+    "id": "r2h-pl-05",
+    "type": "product_lookup",
+    "sharpness": "sharp",
+    "query": "What does Cloudflare R2 charge for storage per GB-month, and what does it charge for egress to the internet?",
+    "note": "HARD(trap). Correct: the per-GB-month storage rate and the fact that egress is not charged, with Class A and Class B operation pricing noted. Wrong: quoting S3-style egress rates by analogy, which is the specific misconception R2 exists to defeat, or giving storage price with no operation pricing at all."
+  },
+  {
+    "id": "r2h-pl-06",
+    "type": "product_lookup",
+    "sharpness": "sharp",
+    "query": "For AWS Lambda, what is the price per GB-second of compute and the price per million requests, and how is duration billed — to what granularity?",
+    "note": "HARD(buried). Correct: both rates plus billing to 1-millisecond granularity. Wrong: quoting the older 100-millisecond rounding, which is stale and still widely republished, or giving a price with no memory dimension when the unit is GB-seconds."
+  },
+  {
+    "id": "r2h-pl-07",
+    "type": "product_lookup",
+    "sharpness": "sharp",
+    "query": "What is the annual fee for a .io domain versus a .com at a registrar that does not use first-year promotional pricing, and what is the renewal price for each?",
+    "note": "HARD(trap+multi). Correct: first-year and renewal prices for both, from a registrar that publishes renewal pricing. Wrong: quoting a promotional first-year price as the cost, which is the standard registrar tactic and the reason renewal price is the number that matters."
+  },
+  {
+    "id": "r2h-pl-08",
+    "type": "product_lookup",
+    "sharpness": "sharp",
+    "query": "What does GitHub charge per additional GB of Actions storage and per minute of a Linux 2-core runner beyond the included allowance, and how are Windows and macOS minutes multiplied?",
+    "note": "HARD(buried+trap). Correct: the per-minute Linux rate, the storage overage rate, and the multipliers for Windows and macOS. Wrong: quoting only the included free minutes, or giving Linux pricing without the multipliers, which is what makes a macOS-heavy bill a surprise."
+  },
+  {
+    "id": "r2h-pl-09",
+    "type": "product_lookup",
+    "sharpness": "open",
+    "query": "For sending 500,000 transactional emails a month, what would the main providers each charge, and which of them price by email volume versus by contact?",
+    "note": "HARD(multi+trap). Correct: at least three named providers with rates at that volume and the distinction between per-email and per-contact pricing models. Wrong: a features comparison with no rates, marketing-email pricing quoted for transactional volume, or free-tier limits presented as production pricing."
+  },
+  {
+    "id": "r2h-pl-10",
+    "type": "product_lookup",
+    "sharpness": "open",
+    "query": "What do the main managed Kubernetes services charge for the control plane itself, and which of them charge nothing for it?",
+    "note": "HARD(multi+obscure). Correct: the per-cluster-hour control plane charge for the providers that levy one, and correctly identifies those that do not, separate from node costs. Wrong: quoting total cluster cost including nodes, which conflates the two, or assuming all providers charge for the control plane."
+  },
+  {
+    "id": "r2h-pl-11",
+    "type": "product_lookup",
+    "sharpness": "open",
+    "query": "For a team of 20 needing SSO and audit logs, what do the main issue trackers and documentation tools charge, and which of them put SSO behind an enterprise tier?",
+    "note": "HARD(multi+trap). Correct: named tools with the per-seat price of the tier that actually includes SSO, and identifies where SSO is gated to a quote-only enterprise plan. Wrong: quoting the standard per-seat price of a tier that does not include SSO, which is the specific trap in this purchase."
+  },
+  {
+    "id": "r2h-pl-12",
+    "type": "product_lookup",
+    "sharpness": "open",
+    "query": "What do the major CDNs charge for egress in North America versus in Asia-Pacific at around 50 TB a month, and which of them charge nothing for egress at all?",
+    "note": "HARD(multi+buried). Correct: per-GB rates for at least two regions from named providers at that commitment level, and identifies any that do not meter egress. Wrong: a first-tier price quoted for a 50 TB volume where tiering applies, or a single global rate where regional pricing differs by multiples."
+  },
+  {
+    "id": "r2h-pl-13",
+    "type": "product_lookup",
+    "sharpness": "sharp",
+    "query": "What is the current annual fee for the Apple Developer Program, and what does it cost for an organisation versus an individual?",
+    "note": "HARD(obscure). Correct: the annual fee and the fact that it is the same for both, plus the additional requirement an organisation must satisfy. Wrong: quoting the enterprise programme fee, which is a different and much more expensive programme with different eligibility, as though it were the standard organisation price."
+  },
+  {
+    "id": "r2h-pl-14",
+    "type": "product_lookup",
+    "sharpness": "sharp",
+    "query": "What does it cost to file a US trademark application through the standard electronic route, and is that fee per class or per application?",
+    "note": "HARD(buried+trap). Correct: the filing fee with the explicit statement that it is charged per class of goods or services, plus any base-application surcharge. Wrong: quoting the fee as a flat per-application cost, which understates a multi-class filing several-fold, or quoting a superseded fee schedule."
+  },
+  {
+    "id": "r2h-pl-15",
+    "type": "product_lookup",
+    "sharpness": "open",
+    "query": "What do the leading vector databases charge for storing and querying roughly 10 million embeddings of 1,536 dimensions, and how does each one meter usage?",
+    "note": "HARD(multi+obscure). Correct: named services with their metering unit — pod-hour, read/write unit, storage plus compute — and enough rates to build a monthly figure at that scale. Wrong: a features table with no prices, or free-tier limits quoted for a 10-million-vector workload."
+  },
+  {
+    "id": "r2h-pl-16",
+    "type": "product_lookup",
+    "sharpness": "open",
+    "query": "For a small business accepting payments in the EU, what do the main processors charge for a European card versus a non-European card, and what are the SEPA direct debit fees?",
+    "note": "HARD(multi+trap). Correct: EEA card rates, the surcharge or separate rate for non-EEA cards, and SEPA direct debit pricing, for at least two named processors. Wrong: quoting US pricing for a European business, which is the default result for most searches, or omitting the non-EEA surcharge that decides the real blended rate."
+  },
+  {
+    "id": "r2h-lg-05",
+    "type": "local_geo",
+    "sharpness": "sharp",
+    "query": "What does a foreign visitor pay for a permit to trek to Everest Base Camp, counting both the national park entry and the local municipality permit?",
+    "note": "HARD(multi+buried). Correct: both fees with currency, correctly named, and the note that the older TIMS card was replaced for this route by the municipality permit. Wrong: quoting only one of the two, or citing the TIMS card as still required for this trek, which older guides still say."
+  },
+  {
+    "id": "r2h-lg-06",
+    "type": "local_geo",
+    "sharpness": "sharp",
+    "query": "What is the entrance fee for Japan's Mount Fuji climbing routes now that a levy applies, and which routes does it cover?",
+    "note": "HARD(trap+obscure). Correct: the mandatory fee per climber with the routes it applies to and whether the older voluntary donation still exists alongside it. Wrong: describing the fee as a voluntary contribution, which was the previous arrangement and dominates older content, or applying it to routes it does not cover."
+  },
+  {
+    "id": "r2h-lg-07",
+    "type": "local_geo",
+    "sharpness": "sharp",
+    "query": "What does an adult pay to enter the Alhambra on a general ticket including the Nasrid Palaces, and what is the rule about the time slot printed on the ticket?",
+    "note": "HARD(buried+trap). Correct: the general admission price and the rule that the Nasrid Palaces entry time is fixed and non-transferable, with entry refused outside the slot. Wrong: quoting a reseller's bundled tour price as the ticket price, or omitting the time-slot rule, which is what actually causes visitors to be turned away."
+  },
+  {
+    "id": "r2h-lg-08",
+    "type": "local_geo",
+    "sharpness": "sharp",
+    "query": "What is the tourist tax per person per night in Venice's hotels, and separately what is the day-tripper access fee and when does it apply?",
+    "note": "HARD(trap+multi). Correct: both charges kept distinct — the per-night accommodation tax that varies by star rating and season, and the separate day-visitor access fee with the days it operates. Wrong: conflating the two, which almost all coverage does, or quoting the access fee as applying every day of the year."
+  },
+  {
+    "id": "r2h-lg-09",
+    "type": "local_geo",
+    "sharpness": "open",
+    "query": "Which mountain huts on Slovenia's route up Triglav take advance bookings, what does a bed cost a non-member of the alpine association, and what discount does membership give?",
+    "note": "HARD(obscure+multi). Correct: named huts, non-member bed prices in euro, and the reciprocal-membership discount. Wrong: a route description with no accommodation prices, or member prices presented as the general rate."
+  },
+  {
+    "id": "r2h-lg-10",
+    "type": "local_geo",
+    "sharpness": "open",
+    "query": "What are the options for getting from central Tokyo to Mount Takao and back in a day, what does each cost, and which passes cover the trip?",
+    "note": "HARD(multi+trap). Correct: the rail options with fares, the cable car or chairlift fare separately, and which regional passes actually cover the route. Wrong: assuming the Japan Rail Pass covers a private railway line, which it does not — the specific trap here — or giving a route with no fares."
+  },
+  {
+    "id": "r2h-lg-11",
+    "type": "local_geo",
+    "sharpness": "open",
+    "query": "Which campsites in Iceland's highlands are accessible without a modified vehicle, what do they charge per night, and what is the rule about wild camping there?",
+    "note": "HARD(obscure+multi). Correct: named sites with per-night fees in krona, the road classification that determines vehicle requirements, and the legal position on wild camping, which is far more restricted than commonly believed. Wrong: repeating that wild camping is broadly permitted in Iceland, which is outdated and now largely false."
+  },
+  {
+    "id": "r2h-lg-12",
+    "type": "local_geo",
+    "sharpness": "open",
+    "query": "What permits does a foreign visitor need to trek in Nepal's restricted areas such as Upper Mustang, what do they cost, and what group-size rules apply?",
+    "note": "HARD(buried+multi). Correct: the restricted-area permit fee with its duration structure, the conservation area fee on top, the minimum group size and the licensed-guide requirement. Wrong: quoting a standard trekking permit fee, which does not apply in restricted areas, or omitting the two-trekker minimum that makes solo travel impossible."
+  },
+  {
+    "id": "r2h-lg-13",
+    "type": "local_geo",
+    "sharpness": "sharp",
+    "query": "What does a non-resident adult pay for a one-day fishing licence in a named US state, and what additional stamp or endorsement is needed for trout?",
+    "note": "HARD(buried+trap). Correct: the non-resident daily licence fee for a named state plus the separate trout stamp or endorsement fee. Wrong: quoting the resident fee, or the annual licence instead of the daily, or omitting the trout endorsement, which is a separate charge in most states."
+  },
+  {
+    "id": "r2h-lg-14",
+    "type": "local_geo",
+    "sharpness": "sharp",
+    "query": "What is the congestion or low-emission zone charge for driving a non-compliant older diesel car into a named European city centre, and how is it enforced?",
+    "note": "HARD(obscure+multi). Correct: the named city, the emissions standard that defines non-compliance, the daily charge or the fact that entry is prohibited outright, and the enforcement mechanism. Wrong: conflating a congestion charge with a low-emission zone, which are different schemes with different rules, sometimes in the same city."
+  },
+  {
+    "id": "r2h-lg-15",
+    "type": "local_geo",
+    "sharpness": "open",
+    "query": "Which ferries connect the Greek island of Amorgos to Athens, how long does each take, and how do the fares compare between conventional and high-speed vessels?",
+    "note": "HARD(multi+obscure). Correct: named operators and port, both vessel classes with journey times and fares in euro, and the seasonal variation in frequency. Wrong: a booking aggregator's landing page with no times or fares, or summer-only schedules presented as year-round."
+  },
+  {
+    "id": "r2h-lg-16",
+    "type": "local_geo",
+    "sharpness": "open",
+    "query": "What does it cost to visit the Galapagos as an independent traveller, counting the national park entry fee, the transit control card, and the inter-island ferry fares?",
+    "note": "HARD(multi+trap). Correct: the park entrance fee for a non-resident adult, the transit control card fee, and typical inter-island speedboat fares, kept separate. Wrong: quoting a cruise package price as the cost of visiting, which is what most content returns, or citing the pre-increase park fee."
+  },
+  {
+    "id": "r2h-rr-05",
+    "type": "recent_release",
+    "sharpness": "sharp",
+    "query": "Which Python version first made the global interpreter lock optional in an official build, what is that build called, and what is the flag or variable that disables the lock?",
+    "note": "HARD(buried+trap). Correct: names the version, the free-threaded build designation, and the mechanism for disabling the lock. Wrong: claiming the GIL was removed outright, which is the widespread misreading — the free-threaded build is a separate, optional build, not the default."
+  },
+  {
+    "id": "r2h-rr-06",
+    "type": "recent_release",
+    "sharpness": "sharp",
+    "query": "In which Node.js version did require() of an ES module become possible without a flag, and what kinds of ES module still cannot be required?",
+    "note": "HARD(buried+obscure). Correct: the version where it shipped unflagged and the limitation — modules with top-level await cannot be required synchronously. Wrong: stating that ESM and CommonJS remain fully incompatible, which was true for years and is heavily indexed, or omitting the top-level await exception which is the whole subtlety."
+  },
+  {
+    "id": "r2h-rr-07",
+    "type": "recent_release",
+    "sharpness": "sharp",
+    "query": "Which Java release made the Vector API a permanent feature rather than an incubator module, or if it is still incubating, which release most recently re-incubated it?",
+    "note": "HARD(trap+obscure). Correct: the accurate current status, including that it has been re-incubated across many releases rather than finalised, with the most recent JEP number. Wrong: asserting it was finalised in some release, which numerous posts claim, or citing an old incubator JEP as current."
+  },
+  {
+    "id": "r2h-rr-08",
+    "type": "recent_release",
+    "sharpness": "sharp",
+    "query": "What is the current supported upgrade path from Ubuntu 22.04 LTS to the latest LTS, and can it be done in a single step?",
+    "note": "HARD(trap+buried). Correct: whether a direct jump is supported or an intermediate LTS is required, and the command plus the release-upgrader setting that governs which target is offered. Wrong: assuming any LTS can upgrade directly to any later LTS, which is the common and costly assumption."
+  },
+  {
+    "id": "r2h-rr-09",
+    "type": "recent_release",
+    "sharpness": "open",
+    "query": "What has to change in a project using Pydantic v1 to move to the current major version, and which changes have no automatic migration?",
+    "note": "HARD(multi+buried). Correct: names concrete renames and behavioural changes, the migration tooling that exists, and the parts it cannot handle — custom validators with complex signatures, arbitrary types, config classes. Wrong: presenting the migration as fully automated by the tool, which it is not."
+  },
+  {
+    "id": "r2h-rr-10",
+    "type": "recent_release",
+    "sharpness": "open",
+    "query": "What breaks when upgrading a project from Tailwind CSS v3 to the current major version, and what happens to a v3 config file?",
+    "note": "HARD(multi+trap). Correct: names the configuration model change, what happens to an existing JavaScript config, removed or renamed utilities, and the browser support floor. Wrong: a feature announcement with no migration content, or advice that assumes the JavaScript config file remains the primary mechanism."
+  },
+  {
+    "id": "r2h-rr-11",
+    "type": "recent_release",
+    "sharpness": "open",
+    "query": "Which parts of the Kubernetes API were removed in the most recent release, and what is the documented way to find out whether a cluster is still using them before upgrading?",
+    "note": "HARD(buried+multi). Correct: named removed APIs from the release's deprecation notes plus the tooling or audit approach for detecting live usage before the upgrade. Wrong: a general statement that deprecated APIs get removed, with no version-specific list and no detection method."
+  },
+  {
+    "id": "r2h-rr-12",
+    "type": "recent_release",
+    "sharpness": "open",
+    "query": "What changes for a library author when moving a package to the current major version of setuptools or to a different build backend entirely?",
+    "note": "HARD(obscure+multi). Correct: names deprecated interfaces such as direct setup.py invocation, the pyproject-based configuration that replaces setup.cfg, and what changes if the backend is swapped. Wrong: instructions still centred on python setup.py commands, which are deprecated and abundantly indexed."
+  },
+  {
+    "id": "r2h-rr-13",
+    "type": "recent_release",
+    "sharpness": "sharp",
+    "query": "Which version of OpenSSL is the current long-term-support release, when does its support end, and what is the status of the 1.1.1 branch?",
+    "note": "HARD(buried+trap). Correct: the current LTS version with its end-of-support date and the confirmation that 1.1.1 has reached end of life for public support. Wrong: describing 1.1.1 as still supported, which many distribution-specific pages imply because of vendor backports, conflating vendor support with upstream support."
+  },
+  {
+    "id": "r2h-rr-14",
+    "type": "recent_release",
+    "sharpness": "sharp",
+    "query": "In the current TypeScript release, which compiler option changed default behaviour in a way that can break an existing build, and how is the previous behaviour restored?",
+    "note": "HARD(buried+obscure). Correct: names the option and the release, describes the behavioural change, and gives the setting that restores the old behaviour. Wrong: a features summary listing new syntax with no breaking-change section, which is what most release coverage is."
+  },
+  {
+    "id": "r2h-rr-15",
+    "type": "recent_release",
+    "sharpness": "open",
+    "query": "What is required to migrate a Terraform configuration to the current major version, and what changes about state files?",
+    "note": "HARD(multi+trap). Correct: the required provider constraints, any syntax changes, and whether the state file format changes in a way that prevents older versions from reading it after an apply. Wrong: omitting the one-way state upgrade, which is the change that actually hurts, because it prevents rolling back."
+  },
+  {
+    "id": "r2h-rr-16",
+    "type": "recent_release",
+    "sharpness": "open",
+    "query": "Which browser APIs have been removed or had their behaviour changed in the current Safari release, and which of them have no direct replacement?",
+    "note": "HARD(obscure+buried). Correct: named APIs from the release notes with the change described, distinguishing those with a documented replacement from those without. Wrong: a summary of newly-added features, or Chrome deprecations presented as Safari's, which differ substantially."
+  },
+  {
+    "id": "r2h-nl-05",
+    "type": "numeric_live",
+    "sharpness": "sharp",
+    "query": "What is the current US federal funds target range, and what is the interest rate paid on reserve balances?",
+    "note": "HARD(trap+buried). Correct: the target range with both bounds and the separate interest-on-reserve-balances rate, which sits inside the range rather than equalling either bound. Wrong: giving a single rate rather than a range, or conflating the target range with the effective federal funds rate, which is a market-determined number."
+  },
+  {
+    "id": "r2h-nl-06",
+    "type": "numeric_live",
+    "sharpness": "sharp",
+    "query": "According to the most recent JOLTS release, how many job openings were there, and what is the ratio of unemployed people per opening?",
+    "note": "HARD(buried+multi). Correct: the openings figure for the named month and the derived ratio, which requires the unemployment level from a different release. Wrong: quoting the hires or separations series instead of openings, or giving openings with no ratio, which is the part requiring two sources."
+  },
+  {
+    "id": "r2h-nl-07",
+    "type": "numeric_live",
+    "sharpness": "sharp",
+    "query": "What is the current total value locked in decentralised finance, and why do the major trackers report materially different figures for it?",
+    "note": "HARD(trap+obscure). Correct: a figure with its source and date, plus the reason trackers disagree — differing treatment of double-counting across protocols, of liquid staking derivatives, and of which chains are included. Wrong: a single number presented as authoritative with no methodology note."
+  },
+  {
+    "id": "r2h-nl-08",
+    "type": "numeric_live",
+    "sharpness": "sharp",
+    "query": "What is the most recently reported figure for US crude oil inventories excluding the Strategic Petroleum Reserve, and separately what is the SPR level?",
+    "note": "HARD(trap+buried). Correct: both figures in million barrels with the report date, kept separate. Wrong: quoting a total that includes the SPR as the commercial figure, which is the specific confusion this question targets, or giving a weekly change without a level."
+  },
+  {
+    "id": "r2h-nl-09",
+    "type": "numeric_live",
+    "sharpness": "open",
+    "query": "How much have global sales of electric vehicles grown in the most recent reported period, and how do the figures differ between sources counting battery-electric only and those including plug-in hybrids?",
+    "note": "HARD(multi+trap). Correct: a growth figure with its period and source, plus the definitional split that explains why headline numbers differ by a wide margin. Wrong: one growth number with no definition of what was counted, which makes the figure unusable for comparison."
+  },
+  {
+    "id": "r2h-nl-10",
+    "type": "numeric_live",
+    "sharpness": "open",
+    "query": "What is the current estimated global installed base of solar photovoltaic capacity, and how does the figure differ between DC and AC measurement?",
+    "note": "HARD(obscure+trap). Correct: a capacity figure in gigawatts with its source and the DC versus AC distinction, which changes the number by roughly a fifth. Wrong: a single figure with no measurement basis stated, which is how most reporting handles it and why totals appear to conflict."
+  },
+  {
+    "id": "r2h-nl-11",
+    "type": "numeric_live",
+    "sharpness": "open",
+    "query": "How many active satellites are currently in orbit, how many are in low Earth orbit specifically, and which catalogue is the figure drawn from?",
+    "note": "HARD(multi+obscure). Correct: an active-satellite count distinguished from total tracked objects including debris, an LEO subset, and the naming of a catalogue with its update date. Wrong: quoting total tracked objects as active satellites, which inflates the figure severalfold."
+  },
+  {
+    "id": "r2h-nl-12",
+    "type": "numeric_live",
+    "sharpness": "open",
+    "query": "What is the current rate of Amazon deforestation in Brazil for the most recent monitoring period, and how do the two Brazilian monitoring systems differ in what they measure?",
+    "note": "HARD(multi+trap). Correct: a figure in square kilometres for a named period and source, plus the distinction between the near-real-time alert system and the annual high-precision estimate, which are not interchangeable. Wrong: comparing a figure from one system against a figure from the other as though they were the same series."
+  },
+  {
+    "id": "r2h-nl-13",
+    "type": "numeric_live",
+    "sharpness": "sharp",
+    "query": "What is the most recent monthly figure for US nonfarm payroll growth, and by how much were the two prior months revised?",
+    "note": "HARD(buried). Correct: the headline change for the named month plus both prior-month revisions, which appear only in the release text. Wrong: the headline number alone, which omits the revisions that frequently reverse the story, or the unemployment rate given instead of payrolls."
+  },
+  {
+    "id": "r2h-nl-14",
+    "type": "numeric_live",
+    "sharpness": "sharp",
+    "query": "What is the current 30-year fixed US mortgage rate according to the weekly survey, and how does that differ from what a rate-tracking site quotes today?",
+    "note": "HARD(trap+multi). Correct: the survey figure with its date and an acknowledgement that daily trackers differ because the survey is a lagging weekly average with its own methodology. Wrong: quoting a daily tracker as though it were the survey figure, or one number with no source."
+  },
+  {
+    "id": "r2h-nl-15",
+    "type": "numeric_live",
+    "sharpness": "open",
+    "query": "How much freshwater does a large data centre consume, what is the industry's water usage effectiveness benchmark, and why are reported figures contested?",
+    "note": "HARD(obscure+multi). Correct: a consumption range with units, the WUE metric defined, and the reason figures are contested — on-site versus source water including power generation. Wrong: a single litres-per-day figure with no scope, which is meaningless without saying whether upstream power generation is counted."
+  },
+  {
+    "id": "r2h-nl-16",
+    "type": "numeric_live",
+    "sharpness": "open",
+    "query": "What share of global container shipping is currently routing around the Cape of Good Hope rather than through the Suez Canal, and what has that done to transit times and rates?",
+    "note": "HARD(multi+buried). Correct: a share or transit-count figure with its source and date, the added transit days, and the freight-rate effect on a named lane. Wrong: general commentary on Red Sea disruption with no figures, or 2024 figures presented as current."
+  }
+]

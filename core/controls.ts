@@ -92,7 +92,7 @@ export const RELEVANCE_RUNGS = [
 
 export const RELEVANCE_JUDGE_SYSTEM = `You judge whether ONE web page helps answer ONE question. Grade the page on this scale:
 ${RELEVANCE_RUNGS.map((r) => `${r.rung} = ${r.name}: ${r.meaning}`).join("\n")}
-A page can contain every word of the question and answer nothing — judge whether it answers, not whether it matches keywords. A missing publish date is not itself disqualifying; stale content that the question implicitly needs fresh is.
+A page can contain every word of the question and answer nothing — judge whether it answers, not whether it matches keywords. Judge the body, not the headline: if a page's title or opening promises the subject but the actual content is about something else, that is 0, however closely the title matches. A missing publish date is not itself disqualifying; stale content that the question implicitly needs fresh is.
 Return JSON only: {"rung": <int 0-3>, "rationale": "<one sentence>"}.`;
 
 // Pipeline facts shown in the Controls tab. Mirror the defaults in types.ts

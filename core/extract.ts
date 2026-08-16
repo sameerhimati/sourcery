@@ -6,9 +6,14 @@
 
 const ENDPOINT = "https://api.brightdata.com/request";
 
-const EXTRACT_CONCURRENCY = 4; // ~3–8s/URL; cap so a 6-source arm stays under maxDuration
+const EXTRACT_CONCURRENCY = 4; // cap so one arm cannot monopolise the unlocker
 const CONTENT_CHARS = 1600; // per-source truncation handed into the answer context
-const PER_URL_TIMEOUT_MS = 15000;
+// Measured against the live unlocker on 2026-08-16: 3.2s, 10.3s, 65.3s for three
+// real pages. The old 15s cap was set from a stale "~3–8s/URL" estimate, and it
+// was aborting extractions we then recorded as pages with no content — charging
+// the provider for our own timeout. extractAll() swallows failures into null, so
+// this was invisible: 7% of Bright Data's sources carried text before the change.
+const PER_URL_TIMEOUT_MS = 60000;
 
 /**
  * Run `fn` over `items` with a bounded number in flight at once. Order of
@@ -81,17 +86,56 @@ export async function unlock(url: string): Promise<string> {
   }
 }
 
+/** Why one URL produced no text. `null` content without one of these is a bug. */
+export type ExtractMiss = "timeout" | "empty" | "http_error" | "network";
+
+export interface ExtractResult {
+  content: string | null;
+  miss?: ExtractMiss;
+  ms: number;
+}
+
 /**
- * Extract content for a batch of URLs in parallel (bounded). Returns a
- * cleaned-markdown string per input index, or null where extraction failed.
+ * Extract content for a batch of URLs in parallel (bounded), recording WHY each
+ * miss happened.
+ *
+ * This used to collapse timeout, empty-body and error into a bare `null`, which
+ * made our own aborted extractions indistinguishable from a page the provider
+ * genuinely could not return. That is how a 15s cap on a provider needing 10-65s
+ * was nearly published as "Bright Data returns almost no page text". A miss we
+ * cannot explain must never be attributed to a vendor.
  */
-export function extractAll(urls: string[]): Promise<(string | null)[]> {
+export async function extractAllDetailed(urls: string[]): Promise<ExtractResult[]> {
   return mapWithConcurrency(urls, EXTRACT_CONCURRENCY, async (url) => {
-    try {
-      const content = await unlock(url);
-      return content.length > 40 ? content : null; // empty/near-empty = miss
-    } catch {
-      return null;
+    const started = Date.now();
+    // One retry on an empty body. Measured 2026-08-16 over 40 URLs that returned
+    // nothing during a run: 10 produced full text on a second attempt and 30 were
+    // consistently empty. The unlocker is flaky as well as selective, so a single
+    // attempt understates what the provider can actually return — and that
+    // understatement lands on the provider's score, not ours.
+    for (let attempt = 0; attempt < 2; attempt++) {
+      try {
+        const content = await unlock(url);
+        if (content.length > 40) return { content, ms: Date.now() - started };
+        if (attempt === 1) return { content: null, miss: "empty" as const, ms: Date.now() - started };
+      } catch (e) {
+        const aborted = e instanceof Error && (e.name === "AbortError" || /abort/i.test(e.message));
+        const http = e instanceof Error && /^Unlocker \d/.test(e.message);
+        // A timeout or an HTTP error is not the flakiness the retry is for.
+        if (aborted || http || attempt === 1) {
+          return {
+            content: null,
+            miss: aborted ? ("timeout" as const) : http ? ("http_error" as const) : ("network" as const),
+            ms: Date.now() - started,
+          };
+        }
+      }
     }
+    return { content: null, miss: "empty" as const, ms: Date.now() - started };
   });
+}
+
+/** Content-only view, for callers that do not report on misses. */
+export async function extractAll(urls: string[]): Promise<(string | null)[]> {
+  return (await extractAllDetailed(urls)).map((r) => r.content);
 }

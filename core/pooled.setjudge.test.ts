@@ -53,7 +53,7 @@ describe("runSetJudging — which rows are worth a judge call", () => {
     const rows = await runSetJudging(
       [
         fetchRow({ urls: [], sources: [], error: "500", error_stage: "provider" }),
-        fetchRow({ queryId: "q2", urls: [], sources: [], error: "billing", error_stage: "our" }),
+        fetchRow({ queryId: "q2", urls: [], sources: [], error: "our judge died", error_stage: "judge" }),
       ],
       ["j1"],
     );
@@ -126,7 +126,7 @@ describe("set scores in the summary follow the same failure rules as rungs", () 
     const s = summarizePooled(
       [
         fetchRow(),
-        fetchRow({ queryId: "q2", urls: [], sources: [], error: "no API key", error_stage: "our" }),
+        fetchRow({ queryId: "q2", urls: [], sources: [], error: "our judge died", error_stage: "judge" }),
       ],
       [],
       meta([verdict({ score: 6 })]),

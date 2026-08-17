@@ -29,6 +29,7 @@ import { RELEVANCE_JUDGE_TEMP, RETRIEVAL_JUDGE_TEMP } from "./controls";
 import {
   ci95,
   createNetworkBreaker,
+  isAccountFailure,
   isProviderFailure,
   isTransportFailure,
   judgeLabel,
@@ -163,12 +164,27 @@ export async function runPooledFetch(
   });
 }
 
-/** What resume may skip: everything on disk except transport failures — those
- *  measured this machine's connection, not the provider, and get retried. */
+/**
+ * What resume may skip: everything on disk that is actually evidence.
+ *
+ * Two kinds of failure are not evidence and must be tried again:
+ *
+ * - **transport** — measured this machine's connection, not the provider.
+ * - **account** — measured the wallet. A 402 or "out of credits" at question
+ *   150 says nothing whatever about the provider, and it is fixed by topping up
+ *   and running again.
+ *
+ * Skipping account failures is the more dangerous of the two to get wrong,
+ * because it fails quietly in the direction of a wrong published number: the
+ * metered provider gets scored on the questions it reached, the rest land in
+ * `n_excluded`, and nothing in the output says the comparison was uneven. Only
+ * Firecrawl meters, so only Firecrawl could be silently under-measured — which
+ * is precisely the arm a reader would look at hardest.
+ */
 export function resumableFetchKeys(rows: PooledFetchRow[]): Set<string> {
   const keys = new Set<string>();
   for (const r of rows) {
-    if (isTransportFailure(r.error)) continue;
+    if (isTransportFailure(r.error) || isAccountFailure(r.error)) continue;
     keys.add(fetchKey(r.queryId, r.provider));
   }
   return keys;

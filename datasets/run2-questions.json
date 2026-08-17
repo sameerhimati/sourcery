@@ -1,103 +1,770 @@
 [
-  {"id":"r2-bn-01","type":"breaking_news","sharpness":"sharp","query":"Which Starship flight test flew most recently, and how did the booster and the upper stage each end the flight?","note":"Correct: the flight number, its date, and the fate of both stages. Wrong: an older flight test, or a page about the Starship programme generally with no flight outcome."},
-  {"id":"r2-bn-02","type":"breaking_news","sharpness":"sharp","query":"What monthly output change did the OPEC+ group of eight agree to at its most recent meeting, and which month does it apply to?","note":"Correct: a barrels-per-day figure tied to a named month and the meeting date. Wrong: a quota decision from an earlier month, or commentary on oil prices with no production number. Known hazard: outlets have described the same decision as a cut and as an increase."},
-  {"id":"r2-bn-03","type":"breaking_news","sharpness":"sharp","query":"How much data center revenue did Nvidia report in its most recent quarterly results, and how did that compare with the previous quarter?","note":"Correct: the data center segment figure for the named quarter plus the sequential or year-over-year change. Wrong: total company revenue only, or a figure from a quarter since superseded. The right answer flips each earnings date, so runs either side of one are not comparable on this row."},
-  {"id":"r2-bn-04","type":"breaking_news","sharpness":"sharp","query":"Who is Japan's prime minister right now, and when did they take office?","note":"Correct: the sitting prime minister by name with the month they took office. Wrong: a predecessor, or a page about the office with no current holder named."},
-  {"id":"r2-bn-05","type":"breaking_news","sharpness":"sharp","query":"Who won the most recent Formula 1 Grand Prix, and at which circuit was it run?","note":"Correct: the winning driver and the named circuit or Grand Prix, matching the last race actually held. Wrong: the championship leader instead of the race winner, or the next scheduled race rather than the last completed one."},
-  {"id":"r2-bn-06","type":"breaking_news","sharpness":"sharp","query":"Which company received the most recent fine under the EU's Digital Markets Act, and how large was the penalty?","note":"Correct: the named company, the euro amount, and the decision date. Wrong: an older DMA or general antitrust fine against a different company, or a page describing the DMA's rules with no penalty figure."},
-  {"id":"r2-bn-07","type":"breaking_news","sharpness":"sharp","query":"Have the EU AI Act's obligations for high-risk AI systems been postponed, and what compliance date applies now?","note":"Correct: says the high-risk deadlines were deferred and gives the new dates. Wrong: repeats the original August 2026 deadline as still binding, or answers only about the general-purpose AI obligations that did take effect. The stale answer is widely published, which is what makes this a good discriminator."},
-  {"id":"r2-bn-08","type":"breaking_news","sharpness":"sharp","query":"What is the largest transfer fee agreed in the current European football transfer window, and which player and clubs were involved?","note":"Correct: the fee with currency, the player, and both clubs, from the window open or most recently closed. Wrong: an all-time record from a previous year, or a rumoured fee reported as agreed."},
-  {"id":"r2-bn-09","type":"breaking_news","sharpness":"open","query":"What caused the most recent major outage at AWS, Azure, or Google Cloud, and which services were affected?","note":"Correct: a specific dated incident with a named provider, a stated cause, and the affected services or regions. Wrong: a general article about cloud reliability, or an outage-tracker homepage with no incident described."},
-  {"id":"r2-bn-10","type":"breaking_news","sharpness":"open","query":"Which AI copyright lawsuits against model developers have produced a court ruling or a settlement in the past six months, and what was decided?","note":"Correct: at least one named case with the holding or settlement terms and a date inside the window. Wrong: an explainer on whether AI training is fair use with no ruling cited, or a case tracker listing filings only."},
-  {"id":"r2-bn-11","type":"breaking_news","sharpness":"open","query":"Which passenger vehicles have been recalled in the past month over a fire or crash risk, and what is the defect in each case?","note":"Correct: named make, model and model years with the specific defect and ideally the unit count or campaign number. Wrong: the NHTSA lookup tool with no recall described, or a recall from a prior year."},
-  {"id":"r2-bn-12","type":"breaking_news","sharpness":"open","query":"Which foodborne illness outbreak is the CDC currently investigating, what food has been implicated, and how many people have been sickened?","note":"Correct: a named pathogen and implicated food with a case count and state count from a current investigation. Wrong: general food-safety advice, or a closed investigation from a previous year presented as active."},
-  {"id":"r2-bn-13","type":"breaking_news","sharpness":"open","query":"Which US states have enacted laws governing how AI companion chatbots may interact with minors, and what do those laws require operators to do?","note":"Correct: named states with the substantive duties — self-harm protocols, disclosure that the bot is not human, limits on romantic content with minors, reporting. Wrong: describing a pending federal bill as if enacted, or listing states with no requirement stated."},
-  {"id":"r2-bn-14","type":"breaking_news","sharpness":"open","query":"Which new drugs has the FDA approved in the past month, and what condition does each treat?","note":"Correct: at least one brand and generic name with its approved indication and an approval date inside the window. Wrong: a calendar of decisions still expected, or an approval from earlier in the year."},
-  {"id":"r2-bn-15","type":"breaking_news","sharpness":"open","query":"Which US cities or counties have blocked or paused new data center projects recently, and what reasons did they give?","note":"Correct: a named jurisdiction with the action taken, its date, and the stated concern — water, power, noise, tax abatements. Wrong: a national think-piece on data center backlash with no jurisdiction named, or a project that was approved."},
-  {"id":"r2-bn-16","type":"breaking_news","sharpness":"open","query":"Which large US employers currently have workers on strike or facing a strike deadline, and what are the unions demanding?","note":"Correct: a named employer and union with the status and at least one concrete demand such as staffing ratios, wage percentage, or job security. Wrong: historical strike coverage, or an aggregate strike-tracker chart with no employer named."},
-
-  {"id":"r2-ht-01","type":"how_to","sharpness":"sharp","query":"How do I create an HNSW index on a pgvector column in Postgres, and what are the default values of m and ef_construction?","note":"Correct: the CREATE INDEX ... USING hnsw form plus both defaults. Wrong: describing IVFFlat's lists parameter, or explaining HNSW as an algorithm with no pgvector defaults."},
-  {"id":"r2-ht-02","type":"how_to","sharpness":"sharp","query":"How do I pass a secret to a Docker build so it never ends up in an image layer, and where does the secret appear inside the RUN step?","note":"Correct: RUN --mount=type=secret,id=X with docker build --secret, and the default mount path under /run/secrets. Wrong: ARG/ENV build args, or multi-stage copying, both of which leave the value recoverable."},
-  {"id":"r2-ht-03","type":"how_to","sharpness":"sharp","query":"How do I give a Cloudflare Worker access to an R2 bucket, and what do I add to the Wrangler configuration file to bind it?","note":"Correct: the r2_buckets array with binding and bucket_name keys, plus reading the object off the env binding. Wrong: S3-compatible API credentials and an SDK client, which works but is not the binding asked for."},
-  {"id":"r2-ht-04","type":"how_to","sharpness":"sharp","query":"How do I run a TypeScript file directly with node and no build step, and which TypeScript syntax will still fail to run?","note":"Correct: type stripping runs .ts directly on current Node, and names the non-erasable syntax — enums, namespaces with runtime values, parameter properties, decorators. Wrong: recommending ts-node or tsx as the only option, or claiming Node cannot run TypeScript."},
-  {"id":"r2-ht-05","type":"how_to","sharpness":"sharp","query":"How do I pin a code-generation tool like sqlc to an exact version inside a Go module so every contributor runs the same build of it?","note":"Correct: go get -tool writing a tool directive into go.mod, then go tool to run it. Wrong: the old tools.go file with blank imports, or a bare go install with @latest, which pins nothing."},
-  {"id":"r2-ht-06","type":"how_to","sharpness":"sharp","query":"How do I make the OpenAI API return output that always matches my JSON schema, and what must the schema itself satisfy for strict mode to be accepted?","note":"Correct: the structured-outputs response format with a named json_schema and strict mode, plus the schema constraints. Wrong: JSON mode alone, or prompt-only 'reply in JSON' advice with no schema enforcement."},
-  {"id":"r2-ht-07","type":"how_to","sharpness":"sharp","query":"How do I make a GitHub Actions workflow cancel the run that is already in progress when I push another commit to the same pull request?","note":"Correct: a concurrency block with a group keyed on workflow plus ref or head_ref, and cancel-in-progress enabled. Wrong: a third-party cancel-workflow action."},
-  {"id":"r2-ht-08","type":"how_to","sharpness":"sharp","query":"How do I run a Polars query with the streaming engine so a dataset larger than memory doesn't blow up, and which argument to collect() turns it on?","note":"Correct: build a LazyFrame with scan_ rather than read_, and pass the streaming engine to collect(). Wrong: the removed streaming=True argument that older posts still show."},
-  {"id":"r2-ht-09","type":"how_to","sharpness":"open","query":"How should I run database schema migrations as part of a Kubernetes deploy when the application runs several replicas?","note":"Correct: a strategy that serializes the migration — a Job or pre-upgrade hook, or an init container holding an advisory lock — and says why naive per-pod init containers race. Wrong: 'add an init container that runs migrate' with no mention of concurrency between replicas."},
-  {"id":"r2-ht-10","type":"how_to","sharpness":"open","query":"How do I lay out a Python monorepo with uv workspaces so several services can share an internal library without publishing it to an index?","note":"Correct: a root pyproject.toml with a workspace members list, per-package pyproject files, one shared lockfile, members resolved as editable local sources. Wrong: path dependencies via pip install -e, or a src-layout explanation that never mentions workspaces."},
-  {"id":"r2-ht-11","type":"how_to","sharpness":"open","query":"How do I cut cold start latency for a Python AWS Lambda function sitting behind API Gateway?","note":"Correct: names concrete levers with tradeoffs — SnapStart, provisioned concurrency and its always-on cost, smaller packages, arm64, moving work into or out of init. Wrong: 'ping the function on a schedule' as the whole answer, or Java-only SnapStart advice."},
-  {"id":"r2-ht-12","type":"how_to","sharpness":"open","query":"How do I add tracing to an LLM application so I can see the prompt, token counts, and latency for each model call in my existing observability stack?","note":"Correct: OpenTelemetry's GenAI semantic conventions with the gen_ai span attributes, exported to any OTLP backend. Wrong: a vendor pitch for one observability product with no attribute names or instrumentation mechanics."},
-  {"id":"r2-ht-13","type":"how_to","sharpness":"open","query":"How should I package and publish a TypeScript library so that both ESM and CommonJS consumers get working types?","note":"Correct: an exports map with types listed first inside each condition, matching import and require entry points, the right module resolution setting, and a verification step. Wrong: only setting top-level main and types, or advice that stops at 'set type: module'."},
-  {"id":"r2-ht-14","type":"how_to","sharpness":"open","query":"How should I design error types in a Rust library so callers can match on specific failures, and which crates are worth depending on?","note":"Correct: a concrete enum implementing the standard Error trait, wrapping via from and source, and why anyhow or eyre belong in binaries because they erase the type callers need. Wrong: telling a library author to return anyhow::Result."},
-  {"id":"r2-ht-15","type":"how_to","sharpness":"open","query":"How do I stop Docker image builds from rebuilding every layer on each CI run?","note":"Correct: an external buildx cache backend with cache-to and cache-from, plus Dockerfile ordering and cache mounts for package managers. Wrong: inline cache alone presented as sufficient for multi-stage builds, or 'the daemon caches automatically', which is false on ephemeral runners."},
-  {"id":"r2-ht-16","type":"how_to","sharpness":"open","query":"How do I add a NOT NULL column to a large, busy Postgres table without blocking writes?","note":"Correct: add nullable, backfill in batches, then reach NOT NULL without a blocking full scan, with a note on lock levels and lock_timeout. Wrong: a single ALTER TABLE ADD COLUMN NOT NULL DEFAULT presented as safe with no discussion of locks or backfill."},
-
-  {"id":"r2-pl-01","type":"product_lookup","sharpness":"sharp","query":"What does a Costco Gold Star membership cost per year in the US, what does the Executive upgrade cost on top of that, and what is the cap on the Executive 2% reward?","note":"Correct: both annual fees in dollars plus the annual dollar cap on the reward. Wrong: the fees alone with no cap, or business or Canadian pricing quoted as US consumer pricing."},
-  {"id":"r2-pl-02","type":"product_lookup","sharpness":"sharp","query":"What do Netflix's three US plans cost per month right now, and which one is required for 4K streaming and four simultaneous screens?","note":"Correct: three monthly dollar figures with tier names, and the 4K four-stream tier identified. Wrong: pre-hike prices, or a tier list with resolutions but no dollar amounts."},
-  {"id":"r2-pl-03","type":"product_lookup","sharpness":"sharp","query":"What is the standard Medicare Part B monthly premium this year, what is the annual Part B deductible, and at what income does the higher IRMAA premium start?","note":"Correct: the standard premium, the annual deductible, and the first income threshold, all for the current year. Wrong: last year's figures, which change every January, or Part A and Part D numbers."},
-  {"id":"r2-pl-04","type":"product_lookup","sharpness":"sharp","query":"What does Stripe charge per successful card payment for a US online business, and what does it charge for an ACH direct debit including the fee cap?","note":"Correct: the percentage-plus-fixed card rate and the ACH percentage with its dollar cap. Wrong: in-person or international rates presented as the standard online rate, or ACH quoted without the cap, which is what makes a volume estimate wrong."},
-  {"id":"r2-pl-05","type":"product_lookup","sharpness":"sharp","query":"What does the Cloudflare Workers Paid plan cost per month, how many requests and how much CPU time does that include, and what do overages cost beyond the included amounts?","note":"Correct: the monthly base price, both included allowances with units, and both overage rates. Wrong: the free-tier daily limit quoted as the paid allowance, or wall-clock time described where Cloudflare bills CPU time."},
-  {"id":"r2-pl-06","type":"product_lookup","sharpness":"sharp","query":"What does a First-Class Forever stamp cost today, and what are the current USPS rates for a postcard and for each additional ounce on a letter?","note":"Correct: all three retail rates in cents, matching the schedule now in effect. Wrong: the previous schedule, or metered and commercial rates given where retail rates were asked."},
-  {"id":"r2-pl-07","type":"product_lookup","sharpness":"sharp","query":"What is the manufacturer's suggested retail price of a base front-wheel-drive Toyota RAV4 LE, what is the destination charge, and what does all-wheel drive add?","note":"Correct: base MSRP, the destination fee as a separate number, and the AWD upcharge. Wrong: a dealer listing or used-car figure, or an 'as low as' number that silently folds destination in."},
-  {"id":"r2-pl-08","type":"product_lookup","sharpness":"sharp","query":"What does Starlink Residential service cost per month in the US, what are the speed tiers, and what does the standard dish hardware kit cost up front?","note":"Correct: monthly price or prices tied to the named residential tiers plus the one-time hardware price. Wrong: Roam, Business or maritime pricing, or a hardware rental fee presented as the purchase price."},
-  {"id":"r2-pl-09","type":"product_lookup","sharpness":"open","query":"I need four lines of unlimited data for my family. What do the comparable unlimited plans from Verizon, AT&T, and T-Mobile cost per month for four lines, and how much hotspot data does each include?","note":"Correct: a named plan from at least one major carrier with the four-line monthly total and its hotspot allowance. Wrong: a single-line price presented as the family price, or promotional first-year pricing with no note that it expires."},
-  {"id":"r2-pl-10","type":"product_lookup","sharpness":"open","query":"Which streaming subscriptions do I need to watch every NFL regular-season game this season, and what does each one cost per month?","note":"Correct: names at least three services carrying games this season with a monthly price for each. Wrong: last season's rights split, or a rights explainer with no prices."},
-  {"id":"r2-pl-11","type":"product_lookup","sharpness":"open","query":"What are the annual fees on the Amex Platinum, Chase Sapphire Reserve, and Capital One Venture X, and which statement credits does each one give you to offset the fee?","note":"Correct: at least two of the three cards with the current annual fee and named credits with dollar values. Wrong: superseded fee levels, or a benefits list with no fee attached."},
-  {"id":"r2-pl-12","type":"product_lookup","sharpness":"open","query":"For a small production Postgres database of about 50 GB with steady traffic, what would Neon, Supabase, and AWS RDS each cost per month, and how is each one billed?","note":"Correct: a named vendor with its billing unit — compute-hour, flat plan fee, instance-hour — and enough rates to build a monthly estimate. Wrong: a feature comparison with no rates, or free-tier limits quoted as production cost."},
-  {"id":"r2-pl-13","type":"product_lookup","sharpness":"open","query":"I fly a few times a month and want lounge access. What does an annual Delta Sky Club membership cost, what does a United Club membership cost, and what do single-visit day passes run?","note":"Correct: at least one airline's annual membership price with a day-pass or guest fee. Wrong: credit-card lounge benefits described in place of the paid membership price, or Priority Pass quoted for United Clubs, which it does not cover."},
-  {"id":"r2-pl-14","type":"product_lookup","sharpness":"open","query":"I am going to Japan for two weeks and want a travel eSIM. What do the main eSIM providers charge for roughly 10-20 GB over that period, and how much data does each plan actually include?","note":"Correct: at least two named providers with a price, a data amount, and a validity window covering two weeks. Wrong: a physical SIM or pocket-wifi rental, or a 'best eSIM' listicle with no prices."},
-  {"id":"r2-pl-15","type":"product_lookup","sharpness":"open","query":"What do Walmart+, Instacart+, and Amazon Prime cost per year, and what delivery minimum or fee does each still charge on a grocery order?","note":"Correct: at least two memberships with the annual price and the order minimum or remaining per-order fee. Wrong: the annual price alone with no minimum, or a free-trial price presented as the membership price."},
-  {"id":"r2-pl-16","type":"product_lookup","sharpness":"open","query":"What do the family plans from 1Password, Bitwarden, and Dashlane cost per year, and how many people does each one cover?","note":"Correct: at least two vendors with an annual or clearly monthly price and the number of included users. Wrong: individual-plan pricing labelled as family, or a security feature comparison with no prices or seat counts."},
-
-  {"id":"r2-lg-01","type":"local_geo","sharpness":"sharp","query":"How much is adult admission to Shinjuku Gyoen in Tokyo, and which day of the week is the garden closed?","note":"Correct: the adult entry fee in yen plus the regular closed day, ideally noting it shifts when a national holiday falls on it. Wrong: calling the garden free, which most Tokyo parks are, or giving hours without the closed day."},
-  {"id":"r2-lg-02","type":"local_geo","sharpness":"sharp","query":"What does it cost to drive a car into central London's congestion charge zone for a day, and what hours does the charge apply?","note":"Correct: the daily amount plus both charging windows, weekday and weekend. Wrong: a superseded rate, or weekday hours quoted as if they applied all week."},
-  {"id":"r2-lg-03","type":"local_geo","sharpness":"sharp","query":"What does a foreign adult pay for a Machu Picchu entrance ticket on the classic circuit, and does the ticket tie you to a specific entry time?","note":"Correct: a soles or dollar figure for the adult foreign classic-route ticket, plus that entry is by assigned time slot on a named circuit. Wrong: a tour-operator package price presented as the entrance fee, or a Peruvian-national rate quoted for a foreigner. Resellers disagree on the exact figure; the Ministry of Culture page is the arbiter."},
-  {"id":"r2-lg-04","type":"local_geo","sharpness":"sharp","query":"What is the adult daily fare cap on an Opal card in Sydney, and is the cap different on weekends?","note":"Correct: both figures, the Monday-to-Thursday cap and the lower Friday-to-Sunday and public holiday cap. Wrong: only the weekly cap, or quoting the airport station access fee as counting toward the cap, which it does not."},
-  {"id":"r2-lg-05","type":"local_geo","sharpness":"sharp","query":"What does an adult return ticket on the Table Mountain Aerial Cableway in Cape Town cost, and what are the first and last cable car times?","note":"Correct: the adult return fare in rand plus the season's first-up and last-down times. Wrong: a one-way fare labelled as return, or hours that ignore the seasonal schedule and the annual maintenance shutdown."},
-  {"id":"r2-lg-06","type":"local_geo","sharpness":"sharp","query":"How much is a single AB-zone ticket on Berlin's U-Bahn and S-Bahn, and how long is it valid for transfers?","note":"Correct: the euro price of the adult AB single ticket and its 120-minute one-direction validity. Wrong: the reduced fare quoted as the adult fare, an ABC price where AB was asked, or 'valid for one journey' with no time limit."},
-  {"id":"r2-lg-07","type":"local_geo","sharpness":"sharp","query":"What does a visitor who is not a US resident pay to enter Yosemite National Park in a private car, and how many days does that cover?","note":"Correct: both components, the per-vehicle pass and the per-person nonresident surcharge, each valid seven consecutive days. Wrong: the vehicle fee alone, which was the complete answer until recently and is the likeliest stale reply."},
-  {"id":"r2-lg-08","type":"local_geo","sharpness":"sharp","query":"What does a foreign visitor pay to enter the Taj Mahal, and which day of the week is it closed?","note":"Correct: the base foreign-tourist fee and the closed day; a strong answer also flags the extra charge for the mausoleum chamber and the online discount. Wrong: the Indian-national or SAARC rate given for a foreigner, or a claim that it opens daily."},
-  {"id":"r2-lg-09","type":"local_geo","sharpness":"open","query":"Which jjimjilbang in Seoul allow you to stay overnight, and what do they charge for an overnight stay?","note":"Correct: at least two named 24-hour bathhouses with an overnight price in won, ideally noting the late-night rate exceeds the daytime rate. Wrong: general jjimjilbang etiquette with no venue and no price, or a venue that has since closed."},
-  {"id":"r2-lg-10","type":"local_geo","sharpness":"open","query":"Which refuges on the Tour du Mont Blanc take online bookings, and what does a dormitory bed with half board cost per night?","note":"Correct: at least two named refuges with a per-person half-board dorm price and how to book. Wrong: a trek-cost article giving only a daily budget range with no refuge named, or camping prices where half board was asked."},
-  {"id":"r2-lg-11","type":"local_geo","sharpness":"open","query":"Which bus companies run overnight service from Buenos Aires to Mendoza, and what does a cama seat cost one way?","note":"Correct: at least two named operators with a cama-class one-way fare and a currency. Wrong: a fare quoted with no seat class, since semicama and cama differ materially, or a route summary with duration but no price."},
-  {"id":"r2-lg-12","type":"local_geo","sharpness":"open","query":"Which public swimming pools in Amsterdam have early-morning lane swimming sessions, and what does a single adult entry cost?","note":"Correct: at least two named municipal pools with their lane-swimming morning times and a single-entry euro price. Wrong: a pool listed with prices but no lane-swim schedule, or a private gym rather than a public pool."},
-  {"id":"r2-lg-13","type":"local_geo","sharpness":"open","query":"Which national parks and reserves within a few hours' drive of Nairobi can be visited self-drive, and what do a non-resident adult and a private vehicle pay to enter?","note":"Correct: at least two named parks with the non-resident adult fee and the separate vehicle fee, noting the two stack. Wrong: the resident or citizen rate quoted for a non-resident, or a per-person fee with no vehicle fee when both were asked."},
-  {"id":"r2-lg-14","type":"local_geo","sharpness":"open","query":"Which US national parks require a timed-entry or vehicle reservation for a summer 2026 visit, and how far in advance do those reservations open?","note":"Correct: at least two named parks with the dates and hours the requirement applies plus the booking release schedule. Wrong: naming a park that dropped its requirement for 2026, or describing the standard entrance fee as if it were a reservation."},
-  {"id":"r2-lg-15","type":"local_geo","sharpness":"open","query":"Which of New Zealand's Great Walks require booked hut tickets, and what does a hut night cost an international visitor in the 2026/27 season?","note":"Correct: at least two named Great Walks with a per-night hut fee at the international-visitor rate, which is higher than the resident rate. Wrong: the resident price given for an overseas visitor, or listing tracks with no fees at all."},
-  {"id":"r2-lg-16","type":"local_geo","sharpness":"open","query":"What are the options for travelling from Kuala Lumpur to Singapore by train, and what does each leg cost?","note":"Correct: explains it is two legs, an ETS service to JB Sentral and the shuttle across to Woodlands, with a fare for each and its currency. Wrong: implying a single through-train, which has not existed since 2011, or giving only the shuttle fare as the whole journey."},
-
-  {"id":"r2-rr-01","type":"recent_release","sharpness":"sharp","query":"I need to plan a PostgreSQL upgrade — which major versions are still receiving patch releases, and when does the oldest one still supported reach end of life?","note":"Correct: names the currently supported major versions and gives the end-of-life date for the oldest, ideally citing the five-year policy. Wrong: names only the newest release, or gives the five-year rule with no dated version list."},
-  {"id":"r2-rr-02","type":"recent_release","sharpness":"sharp","query":"MySQL 8.0 is past its end of life — which MySQL release is the current long-term-support version, and how long will it get support?","note":"Correct: names the current LTS line and its premier and extended support end dates. Wrong: recommends an Innovation release as if it were LTS, or gives 8.0's end-of-life date without naming what to move to. Oracle publishes no single clean LTS roadmap page, so partial answers will be common."},
-  {"id":"r2-rr-03","type":"recent_release","sharpness":"sharp","query":"We are still running JDK 17 in production — when does Oracle Premier Support for it end, and which JDK release is the newest long-term-support version to move to?","note":"Correct: the Premier Support end date for JDK 17 plus the current newest LTS. Wrong: quoting the end of free public updates instead of Premier Support without saying which is which, or naming the newest JDK release rather than the newest LTS."},
-  {"id":"r2-rr-04","type":"recent_release","sharpness":"sharp","query":"Our service targets .NET 8 — what is its end-of-support date, and which .NET release is the current long-term-support version we should move to?","note":"Correct: the end-of-support date for .NET 8 plus the current LTS. Wrong: quoting the general three-year LTS policy with no date, or pointing at a standard-term-support release as the LTS target."},
-  {"id":"r2-rr-05","type":"recent_release","sharpness":"sharp","query":"What target API level does an Android app update have to meet to stay publishable on Google Play this year, and what is the deadline date?","note":"Correct: the API level required for new apps and updates this cycle and the deadline date; the extension window is a bonus. Wrong: last year's API level, or explaining what targetSdkVersion means without the number and date."},
-  {"id":"r2-rr-06","type":"recent_release","sharpness":"sharp","query":"How long does Amazon EKS keep a Kubernetes minor version in standard support before it moves to extended support, and what does extended support cost per cluster-hour?","note":"Correct: the standard window, the extended window, and the extended-support hourly price per cluster. Wrong: the upstream Kubernetes support policy with no EKS specifics, or a per-node price where per-cluster was asked."},
-  {"id":"r2-rr-07","type":"recent_release","sharpness":"sharp","query":"Which OpenAI API models and endpoints have announced shutdown dates coming up, and what are the recommended replacements?","note":"Correct: named model IDs or endpoints with their dated shutdown and the replacement named for each. Wrong: a general note that OpenAI deprecates models, or a list of current models with no shutdown dates attached."},
-  {"id":"r2-rr-08","type":"recent_release","sharpness":"sharp","query":"Which ClickHouse release is the current long-term-support version, and how long is an LTS release supported before it stops getting fixes?","note":"Correct: names the current LTS version and states the support window with an end date. Wrong: names the newest stable release as if it were the LTS — that distinction is the whole question. This one may sit mid-transition between LTS lines."},
-  {"id":"r2-rr-09","type":"recent_release","sharpness":"open","query":"I am upgrading a data pipeline to pandas 3 — which changes alter behavior silently instead of raising an error, and how do I surface them before I upgrade?","note":"Correct: explains copy-on-write becoming the only mode and the new string dtype as the silent-behaviour risks, and gives a way to find them ahead of time. Wrong: a feature list for pandas 3 with no mention of which failures are silent."},
-  {"id":"r2-rr-10","type":"recent_release","sharpness":"open","query":"What does moving an existing crate to the newest Rust edition involve, and which changes does cargo fix --edition not handle for me?","note":"Correct: names the current edition, the cargo fix then bump-Cargo.toml sequence, and at least one class of change needing manual work. Wrong: describing what editions are in general, or migration notes for an older edition."},
-  {"id":"r2-rr-11","type":"recent_release","sharpness":"open","query":"We are moving to the newest Go release — which language or standard library changes could break working code, and which of them can be reverted with a GODEBUG setting?","note":"Correct: names concrete behaviour changes from the current release and the GODEBUG keys that restore the old behaviour. Wrong: a features-and-performance summary with no compatibility section, or explaining GODEBUG generically with no setting named."},
-  {"id":"r2-rr-12","type":"recent_release","sharpness":"open","query":"What has to change in a Spring Boot 3.x application to move it to the current major version?","note":"Correct: the Java baseline bump plus concrete migration items and the advice to go to the latest 3.5.x first. Wrong: Spring Boot 2-to-3 migration advice, which is the far more common older guide."},
-  {"id":"r2-rr-13","type":"recent_release","sharpness":"open","query":"What breaks in a LangChain Python application when upgrading to the current major version, and what is the official migration path?","note":"Correct: names the current major, the import or package restructuring, and points at the official migration guide's steps. Wrong: guidance for the pre-1.0 chains API presented as current, or a general LangChain tutorial."},
-  {"id":"r2-rr-14","type":"recent_release","sharpness":"open","query":"Our build is stuck on an older Gradle major — what was removed or deprecated in the current Gradle major, and what has to change in the build scripts?","note":"Correct: names the current major and specific removed or deprecated APIs with their replacements. Wrong: generic 'run with warnings enabled' advice with no removal named, or an upgrade guide for a superseded major."},
-  {"id":"r2-rr-15","type":"recent_release","sharpness":"open","query":"A page of ours stopped working after a Chrome update — which web platform features have recent Chrome stable releases deprecated or removed, and what replaces them?","note":"Correct: names an actual deprecation or removal from a recent Chrome milestone with the replacement or migration advice. Wrong: a list of new Chrome features, or a generic debugging guide with no deprecation named."},
-  {"id":"r2-rr-16","type":"recent_release","sharpness":"open","query":"Our servers run Ubuntu 24.04 LTS — when does its standard support end, and what is the supported upgrade path to the newest LTS release?","note":"Correct: the end of standard support for 24.04 plus the LTS-to-LTS upgrade route to the current LTS. Wrong: quoting the ten-year extended-maintenance figure as if it were standard support, which is the usual confusion here."},
-
-  {"id":"r2-nl-01","type":"numeric_live","sharpness":"sharp","query":"I'm updating a climate briefing slide: what was the monthly average CO2 concentration at Mauna Loa for the most recent month NOAA has published, and how much higher is that than the same month a year earlier?","note":"Correct: a ppm figure attached to a named recent month plus the year-earlier value or the increase. Wrong: the annual mean, or the May seasonal peak presented as the latest month."},
-  {"id":"r2-nl-02","type":"numeric_live","sharpness":"sharp","query":"How low is Lake Mead right now in feet above sea level, and how much headroom is left before it hits the 1,035-foot mark where Hoover Dam generation gets curtailed?","note":"Correct: a dated elevation reading plus the distance to 1,035 feet. Wrong: percent-full alone, or an old record low presented as today's level."},
-  {"id":"r2-nl-03","type":"numeric_live","sharpness":"sharp","query":"How many confirmed measles cases has the CDC counted in the US so far this year, and how does that compare with the full-year total for last year?","note":"Correct: the year-to-date confirmed count with an as-of date, plus the prior full-year total. Wrong: a single state's outbreak count, or a global figure given as the US number."},
-  {"id":"r2-nl-04","type":"numeric_live","sharpness":"sharp","query":"TSMC reports revenue every month. What did it report for the most recent month, and how much was that up or down from the same month a year earlier?","note":"Correct: a revenue figure tied to a named month plus the year-over-year percent change. Wrong: quarterly earnings revenue or full-year guidance quoted as the monthly figure."},
-  {"id":"r2-nl-05","type":"numeric_live","sharpness":"sharp","query":"Did US commercial crude oil inventories build or draw in the EIA's latest weekly petroleum report, by how many barrels, and where does that leave total stocks versus the five-year average?","note":"Correct: the weekly change in million barrels with direction, the total stock level, and the report week date. Wrong: Strategic Petroleum Reserve levels, or a private industry estimate presented as the EIA number."},
-  {"id":"r2-nl-06","type":"numeric_live","sharpness":"sharp","query":"Who leads Major League Baseball in home runs this season right now, and how many does he have?","note":"Correct: the current season leader or tied leaders named, with the total, for the season in progress. Wrong: last season's leader, career leaders, or a single-league leader presented as the MLB leader."},
-  {"id":"r2-nl-07","type":"numeric_live","sharpness":"sharp","query":"What is the total US public debt outstanding as of the most recent Treasury 'Debt to the Penny' update, and how much of that is debt held by the public rather than intragovernmental?","note":"Correct: the total with a date plus the held-by-public or intragovernmental split. Wrong: the annual deficit, or an unsourced debt-clock estimate with no as-of date."},
-  {"id":"r2-nl-08","type":"numeric_live","sharpness":"sharp","query":"How many travelers did TSA screen at US airports on the busiest day of the past week, and how does that compare with the same day a year ago?","note":"Correct: a dated daily screening count plus the year-ago figure for the matching day. Wrong: an annual total, or a holiday travel forecast quoted as actual screenings."},
-  {"id":"r2-nl-09","type":"numeric_live","sharpness":"open","query":"How much have US consumer prices risen over the past twelve months according to the latest CPI report, and which categories were pushing the number?","note":"Correct: the headline year-over-year percent for a named month, ideally with core, plus named contributing categories. Wrong: the month-over-month change quoted as the annual rate, or PCE inflation substituted for CPI."},
-  {"id":"r2-nl-10","type":"numeric_live","sharpness":"open","query":"How much battery storage capacity is now online on California's grid, and how much of the evening peak can that fleet actually cover?","note":"Correct: a megawatt total for the connected fleet with a recent as-of point, plus something on discharge duration or peak contribution. Wrong: a national storage total, or an interconnection-queue number presented as capacity already online."},
-  {"id":"r2-nl-11","type":"numeric_live","sharpness":"open","query":"How many Starlink satellites are currently in orbit, and how many of those are actually operational rather than launched-to-date?","note":"Correct: both counts, in-orbit and working, with a recent date. Wrong: the cumulative launched total given as the in-orbit count, or the authorized constellation size given as what is flying."},
-  {"id":"r2-nl-12","type":"numeric_live","sharpness":"open","query":"What does it cost to ship a 40-foot container from Shanghai to Rotterdam on the spot market this week, and which way have rates been moving?","note":"Correct: a per-40ft spot rate for that lane with the assessment week and the direction of recent movement. Wrong: a global composite index value with no lane attached, or annual contract rates quoted as spot."},
-  {"id":"r2-nl-13","type":"numeric_live","sharpness":"open","query":"What share of new cars registered in the EU so far this year were battery-electric, and how does that compare with the same period last year?","note":"Correct: a battery-electric market share percent for a clearly defined year-to-date period with a year-earlier comparison. Wrong: folding plug-in hybrids into the share without saying so, or quoting China or global share instead of the EU."},
-  {"id":"r2-nl-14","type":"numeric_live","sharpness":"open","query":"How is South Korea's birth rate trending this year? I want the most recent fertility rate figure and how many babies were born in the latest reported period.","note":"Correct: a recent total fertility rate reading plus a birth count for the period reported. Wrong: a past record low presented as current, or the crude birth rate per 1,000 people given as the fertility rate."},
-  {"id":"r2-nl-15","type":"numeric_live","sharpness":"open","query":"How many job openings did the latest JOLTS report show, and how many unemployed workers are there for each opening?","note":"Correct: the openings level for a named month plus the openings-per-unemployed ratio, or both underlying numbers. Wrong: payroll job gains from the monthly jobs report, or the quits rate offered in place of openings."},
-  {"id":"r2-nl-16","type":"numeric_live","sharpness":"open","query":"What share of Ireland's electricity do data centres consume now, and how does that compare with what households use?","note":"Correct: the share of metered electricity consumption for the latest reported year, with the residential comparison. Wrong: an older figure presented as current, or a forecast of future demand offered as measured consumption."}
+  {
+    "id": "r2-bn-01",
+    "type": "breaking_news",
+    "sharpness": "sharp",
+    "query": "Which Starship flight test flew most recently, and how did the booster and the upper stage each end the flight?",
+    "genre": "science",
+    "note": "Correct: the flight number, its date, and the fate of both stages. Wrong: an older flight test, or a page about the Starship programme generally with no flight outcome."
+  },
+  {
+    "id": "r2-bn-02",
+    "type": "breaking_news",
+    "sharpness": "sharp",
+    "query": "What monthly output change did the OPEC+ group of eight agree to at its most recent meeting, and which month does it apply to?",
+    "genre": "business",
+    "note": "Correct: a barrels-per-day figure tied to a named month and the meeting date. Wrong: a quota decision from an earlier month, or commentary on oil prices with no production number. Known hazard: outlets have described the same decision as a cut and as an increase."
+  },
+  {
+    "id": "r2-bn-03",
+    "type": "breaking_news",
+    "sharpness": "sharp",
+    "query": "How much data center revenue did Nvidia report in its most recent quarterly results, and how did that compare with the previous quarter?",
+    "genre": "business",
+    "note": "Correct: the data center segment figure for the named quarter plus the sequential or year-over-year change. Wrong: total company revenue only, or a figure from a quarter since superseded. The right answer flips each earnings date, so runs either side of one are not comparable on this row."
+  },
+  {
+    "id": "r2-bn-04",
+    "type": "breaking_news",
+    "sharpness": "sharp",
+    "query": "Who is Japan's prime minister right now, and when did they take office?",
+    "genre": "policy",
+    "note": "Correct: the sitting prime minister by name with the month they took office. Wrong: a predecessor, or a page about the office with no current holder named."
+  },
+  {
+    "id": "r2-bn-05",
+    "type": "breaking_news",
+    "sharpness": "sharp",
+    "query": "Who won the most recent Formula 1 Grand Prix, and at which circuit was it run?",
+    "genre": "sports",
+    "note": "Correct: the winning driver and the named circuit or Grand Prix, matching the last race actually held. Wrong: the championship leader instead of the race winner, or the next scheduled race rather than the last completed one."
+  },
+  {
+    "id": "r2-bn-06",
+    "type": "breaking_news",
+    "sharpness": "sharp",
+    "query": "Which company received the most recent fine under the EU's Digital Markets Act, and how large was the penalty?",
+    "genre": "policy",
+    "note": "Correct: the named company, the euro amount, and the decision date. Wrong: an older DMA or general antitrust fine against a different company, or a page describing the DMA's rules with no penalty figure."
+  },
+  {
+    "id": "r2-bn-07",
+    "type": "breaking_news",
+    "sharpness": "sharp",
+    "query": "Have the EU AI Act's obligations for high-risk AI systems been postponed, and what compliance date applies now?",
+    "genre": "policy",
+    "note": "Correct: says the high-risk deadlines were deferred and gives the new dates. Wrong: repeats the original August 2026 deadline as still binding, or answers only about the general-purpose AI obligations that did take effect. The stale answer is widely published, which is what makes this a good discriminator."
+  },
+  {
+    "id": "r2-bn-08",
+    "type": "breaking_news",
+    "sharpness": "sharp",
+    "query": "What is the largest transfer fee agreed in the current European football transfer window, and which player and clubs were involved?",
+    "genre": "sports",
+    "note": "Correct: the fee with currency, the player, and both clubs, from the window open or most recently closed. Wrong: an all-time record from a previous year, or a rumoured fee reported as agreed."
+  },
+  {
+    "id": "r2-bn-09",
+    "type": "breaking_news",
+    "sharpness": "open",
+    "query": "What caused the most recent major outage at AWS, Azure, or Google Cloud, and which services were affected?",
+    "genre": "software",
+    "note": "Correct: a specific dated incident with a named provider, a stated cause, and the affected services or regions. Wrong: a general article about cloud reliability, or an outage-tracker homepage with no incident described."
+  },
+  {
+    "id": "r2-bn-10",
+    "type": "breaking_news",
+    "sharpness": "open",
+    "query": "Which AI copyright lawsuits against model developers have produced a court ruling or a settlement in the past six months, and what was decided?",
+    "genre": "policy",
+    "note": "Correct: at least one named case with the holding or settlement terms and a date inside the window. Wrong: an explainer on whether AI training is fair use with no ruling cited, or a case tracker listing filings only."
+  },
+  {
+    "id": "r2-bn-11",
+    "type": "breaking_news",
+    "sharpness": "open",
+    "query": "Which passenger vehicles have been recalled in the past month over a fire or crash risk, and what is the defect in each case?",
+    "genre": "everyday",
+    "note": "Correct: named make, model and model years with the specific defect and ideally the unit count or campaign number. Wrong: the NHTSA lookup tool with no recall described, or a recall from a prior year."
+  },
+  {
+    "id": "r2-bn-12",
+    "type": "breaking_news",
+    "sharpness": "open",
+    "query": "Which foodborne illness outbreak is the CDC currently investigating, what food has been implicated, and how many people have been sickened?",
+    "genre": "science",
+    "note": "Correct: a named pathogen and implicated food with a case count and state count from a current investigation. Wrong: general food-safety advice, or a closed investigation from a previous year presented as active."
+  },
+  {
+    "id": "r2-bn-13",
+    "type": "breaking_news",
+    "sharpness": "open",
+    "query": "Which US states have enacted laws governing how AI companion chatbots may interact with minors, and what do those laws require operators to do?",
+    "genre": "policy",
+    "note": "Correct: named states with the substantive duties — self-harm protocols, disclosure that the bot is not human, limits on romantic content with minors, reporting. Wrong: describing a pending federal bill as if enacted, or listing states with no requirement stated."
+  },
+  {
+    "id": "r2-bn-14",
+    "type": "breaking_news",
+    "sharpness": "open",
+    "query": "Which new drugs has the FDA approved in the past month, and what condition does each treat?",
+    "genre": "science",
+    "note": "Correct: at least one brand and generic name with its approved indication and an approval date inside the window. Wrong: a calendar of decisions still expected, or an approval from earlier in the year."
+  },
+  {
+    "id": "r2-bn-15",
+    "type": "breaking_news",
+    "sharpness": "open",
+    "query": "Which US cities or counties have blocked or paused new data center projects recently, and what reasons did they give?",
+    "genre": "policy",
+    "note": "Correct: a named jurisdiction with the action taken, its date, and the stated concern — water, power, noise, tax abatements. Wrong: a national think-piece on data center backlash with no jurisdiction named, or a project that was approved."
+  },
+  {
+    "id": "r2-bn-16",
+    "type": "breaking_news",
+    "sharpness": "open",
+    "query": "Which large US employers currently have workers on strike or facing a strike deadline, and what are the unions demanding?",
+    "genre": "business",
+    "note": "Correct: a named employer and union with the status and at least one concrete demand such as staffing ratios, wage percentage, or job security. Wrong: historical strike coverage, or an aggregate strike-tracker chart with no employer named."
+  },
+  {
+    "id": "r2-ht-01",
+    "type": "how_to",
+    "sharpness": "sharp",
+    "query": "How do I create an HNSW index on a pgvector column in Postgres, and what are the default values of m and ef_construction?",
+    "genre": "software",
+    "note": "Correct: the CREATE INDEX ... USING hnsw form plus both defaults. Wrong: describing IVFFlat's lists parameter, or explaining HNSW as an algorithm with no pgvector defaults."
+  },
+  {
+    "id": "r2-ht-02",
+    "type": "how_to",
+    "sharpness": "sharp",
+    "query": "How do I pass a secret to a Docker build so it never ends up in an image layer, and where does the secret appear inside the RUN step?",
+    "genre": "software",
+    "note": "Correct: RUN --mount=type=secret,id=X with docker build --secret, and the default mount path under /run/secrets. Wrong: ARG/ENV build args, or multi-stage copying, both of which leave the value recoverable."
+  },
+  {
+    "id": "r2-ht-03",
+    "type": "how_to",
+    "sharpness": "sharp",
+    "query": "How do I give a Cloudflare Worker access to an R2 bucket, and what do I add to the Wrangler configuration file to bind it?",
+    "genre": "software",
+    "note": "Correct: the r2_buckets array with binding and bucket_name keys, plus reading the object off the env binding. Wrong: S3-compatible API credentials and an SDK client, which works but is not the binding asked for."
+  },
+  {
+    "id": "r2-ht-04",
+    "type": "how_to",
+    "sharpness": "sharp",
+    "query": "How do I run a TypeScript file directly with node and no build step, and which TypeScript syntax will still fail to run?",
+    "genre": "software",
+    "note": "Correct: type stripping runs .ts directly on current Node, and names the non-erasable syntax — enums, namespaces with runtime values, parameter properties, decorators. Wrong: recommending ts-node or tsx as the only option, or claiming Node cannot run TypeScript."
+  },
+  {
+    "id": "r2-ht-05",
+    "type": "how_to",
+    "sharpness": "sharp",
+    "query": "How do I pin a code-generation tool like sqlc to an exact version inside a Go module so every contributor runs the same build of it?",
+    "genre": "software",
+    "note": "Correct: go get -tool writing a tool directive into go.mod, then go tool to run it. Wrong: the old tools.go file with blank imports, or a bare go install with @latest, which pins nothing."
+  },
+  {
+    "id": "r2-ht-06",
+    "type": "how_to",
+    "sharpness": "sharp",
+    "query": "How do I make the OpenAI API return output that always matches my JSON schema, and what must the schema itself satisfy for strict mode to be accepted?",
+    "genre": "software",
+    "note": "Correct: the structured-outputs response format with a named json_schema and strict mode, plus the schema constraints. Wrong: JSON mode alone, or prompt-only 'reply in JSON' advice with no schema enforcement."
+  },
+  {
+    "id": "r2-ht-07",
+    "type": "how_to",
+    "sharpness": "sharp",
+    "query": "How do I make a GitHub Actions workflow cancel the run that is already in progress when I push another commit to the same pull request?",
+    "genre": "software",
+    "note": "Correct: a concurrency block with a group keyed on workflow plus ref or head_ref, and cancel-in-progress enabled. Wrong: a third-party cancel-workflow action."
+  },
+  {
+    "id": "r2-ht-08",
+    "type": "how_to",
+    "sharpness": "sharp",
+    "query": "How do I run a Polars query with the streaming engine so a dataset larger than memory doesn't blow up, and which argument to collect() turns it on?",
+    "genre": "software",
+    "note": "Correct: build a LazyFrame with scan_ rather than read_, and pass the streaming engine to collect(). Wrong: the removed streaming=True argument that older posts still show."
+  },
+  {
+    "id": "r2-ht-09",
+    "type": "how_to",
+    "sharpness": "open",
+    "query": "How should I run database schema migrations as part of a Kubernetes deploy when the application runs several replicas?",
+    "genre": "software",
+    "note": "Correct: a strategy that serializes the migration — a Job or pre-upgrade hook, or an init container holding an advisory lock — and says why naive per-pod init containers race. Wrong: 'add an init container that runs migrate' with no mention of concurrency between replicas."
+  },
+  {
+    "id": "r2-ht-10",
+    "type": "how_to",
+    "sharpness": "open",
+    "query": "How do I lay out a Python monorepo with uv workspaces so several services can share an internal library without publishing it to an index?",
+    "genre": "software",
+    "note": "Correct: a root pyproject.toml with a workspace members list, per-package pyproject files, one shared lockfile, members resolved as editable local sources. Wrong: path dependencies via pip install -e, or a src-layout explanation that never mentions workspaces."
+  },
+  {
+    "id": "r2-ht-11",
+    "type": "how_to",
+    "sharpness": "open",
+    "query": "How do I cut cold start latency for a Python AWS Lambda function sitting behind API Gateway?",
+    "genre": "software",
+    "note": "Correct: names concrete levers with tradeoffs — SnapStart, provisioned concurrency and its always-on cost, smaller packages, arm64, moving work into or out of init. Wrong: 'ping the function on a schedule' as the whole answer, or Java-only SnapStart advice."
+  },
+  {
+    "id": "r2-ht-12",
+    "type": "how_to",
+    "sharpness": "open",
+    "query": "How do I add tracing to an LLM application so I can see the prompt, token counts, and latency for each model call in my existing observability stack?",
+    "genre": "software",
+    "note": "Correct: OpenTelemetry's GenAI semantic conventions with the gen_ai span attributes, exported to any OTLP backend. Wrong: a vendor pitch for one observability product with no attribute names or instrumentation mechanics."
+  },
+  {
+    "id": "r2-ht-13",
+    "type": "how_to",
+    "sharpness": "open",
+    "query": "How should I package and publish a TypeScript library so that both ESM and CommonJS consumers get working types?",
+    "genre": "software",
+    "note": "Correct: an exports map with types listed first inside each condition, matching import and require entry points, the right module resolution setting, and a verification step. Wrong: only setting top-level main and types, or advice that stops at 'set type: module'."
+  },
+  {
+    "id": "r2-ht-14",
+    "type": "how_to",
+    "sharpness": "open",
+    "query": "How should I design error types in a Rust library so callers can match on specific failures, and which crates are worth depending on?",
+    "genre": "software",
+    "note": "Correct: a concrete enum implementing the standard Error trait, wrapping via from and source, and why anyhow or eyre belong in binaries because they erase the type callers need. Wrong: telling a library author to return anyhow::Result."
+  },
+  {
+    "id": "r2-ht-15",
+    "type": "how_to",
+    "sharpness": "open",
+    "query": "How do I stop Docker image builds from rebuilding every layer on each CI run?",
+    "genre": "software",
+    "note": "Correct: an external buildx cache backend with cache-to and cache-from, plus Dockerfile ordering and cache mounts for package managers. Wrong: inline cache alone presented as sufficient for multi-stage builds, or 'the daemon caches automatically', which is false on ephemeral runners."
+  },
+  {
+    "id": "r2-ht-16",
+    "type": "how_to",
+    "sharpness": "open",
+    "query": "How do I add a NOT NULL column to a large, busy Postgres table without blocking writes?",
+    "genre": "software",
+    "note": "Correct: add nullable, backfill in batches, then reach NOT NULL without a blocking full scan, with a note on lock levels and lock_timeout. Wrong: a single ALTER TABLE ADD COLUMN NOT NULL DEFAULT presented as safe with no discussion of locks or backfill."
+  },
+  {
+    "id": "r2-pl-01",
+    "type": "product_lookup",
+    "sharpness": "sharp",
+    "query": "What does a Costco Gold Star membership cost per year in the US, what does the Executive upgrade cost on top of that, and what is the cap on the Executive 2% reward?",
+    "genre": "everyday",
+    "note": "Correct: both annual fees in dollars plus the annual dollar cap on the reward. Wrong: the fees alone with no cap, or business or Canadian pricing quoted as US consumer pricing."
+  },
+  {
+    "id": "r2-pl-02",
+    "type": "product_lookup",
+    "sharpness": "sharp",
+    "query": "What do Netflix's three US plans cost per month right now, and which one is required for 4K streaming and four simultaneous screens?",
+    "genre": "everyday",
+    "note": "Correct: three monthly dollar figures with tier names, and the 4K four-stream tier identified. Wrong: pre-hike prices, or a tier list with resolutions but no dollar amounts."
+  },
+  {
+    "id": "r2-pl-03",
+    "type": "product_lookup",
+    "sharpness": "sharp",
+    "query": "What is the standard Medicare Part B monthly premium this year, what is the annual Part B deductible, and at what income does the higher IRMAA premium start?",
+    "genre": "everyday",
+    "note": "Correct: the standard premium, the annual deductible, and the first income threshold, all for the current year. Wrong: last year's figures, which change every January, or Part A and Part D numbers."
+  },
+  {
+    "id": "r2-pl-04",
+    "type": "product_lookup",
+    "sharpness": "sharp",
+    "query": "What does Stripe charge per successful card payment for a US online business, and what does it charge for an ACH direct debit including the fee cap?",
+    "genre": "business",
+    "note": "Correct: the percentage-plus-fixed card rate and the ACH percentage with its dollar cap. Wrong: in-person or international rates presented as the standard online rate, or ACH quoted without the cap, which is what makes a volume estimate wrong."
+  },
+  {
+    "id": "r2-pl-05",
+    "type": "product_lookup",
+    "sharpness": "sharp",
+    "query": "What does the Cloudflare Workers Paid plan cost per month, how many requests and how much CPU time does that include, and what do overages cost beyond the included amounts?",
+    "genre": "software",
+    "note": "Correct: the monthly base price, both included allowances with units, and both overage rates. Wrong: the free-tier daily limit quoted as the paid allowance, or wall-clock time described where Cloudflare bills CPU time."
+  },
+  {
+    "id": "r2-pl-06",
+    "type": "product_lookup",
+    "sharpness": "sharp",
+    "query": "What does a First-Class Forever stamp cost today, and what are the current USPS rates for a postcard and for each additional ounce on a letter?",
+    "genre": "everyday",
+    "note": "Correct: all three retail rates in cents, matching the schedule now in effect. Wrong: the previous schedule, or metered and commercial rates given where retail rates were asked."
+  },
+  {
+    "id": "r2-pl-07",
+    "type": "product_lookup",
+    "sharpness": "sharp",
+    "query": "What is the manufacturer's suggested retail price of a base front-wheel-drive Toyota RAV4 LE, what is the destination charge, and what does all-wheel drive add?",
+    "genre": "everyday",
+    "note": "Correct: base MSRP, the destination fee as a separate number, and the AWD upcharge. Wrong: a dealer listing or used-car figure, or an 'as low as' number that silently folds destination in."
+  },
+  {
+    "id": "r2-pl-08",
+    "type": "product_lookup",
+    "sharpness": "sharp",
+    "query": "What does Starlink Residential service cost per month in the US, what are the speed tiers, and what does the standard dish hardware kit cost up front?",
+    "genre": "everyday",
+    "note": "Correct: monthly price or prices tied to the named residential tiers plus the one-time hardware price. Wrong: Roam, Business or maritime pricing, or a hardware rental fee presented as the purchase price."
+  },
+  {
+    "id": "r2-pl-09",
+    "type": "product_lookup",
+    "sharpness": "open",
+    "query": "I need four lines of unlimited data for my family. What do the comparable unlimited plans from Verizon, AT&T, and T-Mobile cost per month for four lines, and how much hotspot data does each include?",
+    "genre": "everyday",
+    "note": "Correct: a named plan from at least one major carrier with the four-line monthly total and its hotspot allowance. Wrong: a single-line price presented as the family price, or promotional first-year pricing with no note that it expires."
+  },
+  {
+    "id": "r2-pl-10",
+    "type": "product_lookup",
+    "sharpness": "open",
+    "query": "Which streaming subscriptions do I need to watch every NFL regular-season game this season, and what does each one cost per month?",
+    "genre": "sports",
+    "note": "Correct: names at least three services carrying games this season with a monthly price for each. Wrong: last season's rights split, or a rights explainer with no prices."
+  },
+  {
+    "id": "r2-pl-11",
+    "type": "product_lookup",
+    "sharpness": "open",
+    "query": "What are the annual fees on the Amex Platinum, Chase Sapphire Reserve, and Capital One Venture X, and which statement credits does each one give you to offset the fee?",
+    "genre": "everyday",
+    "note": "Correct: at least two of the three cards with the current annual fee and named credits with dollar values. Wrong: superseded fee levels, or a benefits list with no fee attached."
+  },
+  {
+    "id": "r2-pl-12",
+    "type": "product_lookup",
+    "sharpness": "open",
+    "query": "For a small production Postgres database of about 50 GB with steady traffic, what would Neon, Supabase, and AWS RDS each cost per month, and how is each one billed?",
+    "genre": "software",
+    "note": "Correct: a named vendor with its billing unit — compute-hour, flat plan fee, instance-hour — and enough rates to build a monthly estimate. Wrong: a feature comparison with no rates, or free-tier limits quoted as production cost."
+  },
+  {
+    "id": "r2-pl-13",
+    "type": "product_lookup",
+    "sharpness": "open",
+    "query": "I fly a few times a month and want lounge access. What does an annual Delta Sky Club membership cost, what does a United Club membership cost, and what do single-visit day passes run?",
+    "genre": "everyday",
+    "note": "Correct: at least one airline's annual membership price with a day-pass or guest fee. Wrong: credit-card lounge benefits described in place of the paid membership price, or Priority Pass quoted for United Clubs, which it does not cover."
+  },
+  {
+    "id": "r2-pl-14",
+    "type": "product_lookup",
+    "sharpness": "open",
+    "query": "I am going to Japan for two weeks and want a travel eSIM. What do the main eSIM providers charge for roughly 10-20 GB over that period, and how much data does each plan actually include?",
+    "genre": "everyday",
+    "note": "Correct: at least two named providers with a price, a data amount, and a validity window covering two weeks. Wrong: a physical SIM or pocket-wifi rental, or a 'best eSIM' listicle with no prices."
+  },
+  {
+    "id": "r2-pl-15",
+    "type": "product_lookup",
+    "sharpness": "open",
+    "query": "What do Walmart+, Instacart+, and Amazon Prime cost per year, and what delivery minimum or fee does each still charge on a grocery order?",
+    "genre": "everyday",
+    "note": "Correct: at least two memberships with the annual price and the order minimum or remaining per-order fee. Wrong: the annual price alone with no minimum, or a free-trial price presented as the membership price."
+  },
+  {
+    "id": "r2-pl-16",
+    "type": "product_lookup",
+    "sharpness": "open",
+    "query": "What do the family plans from 1Password, Bitwarden, and Dashlane cost per year, and how many people does each one cover?",
+    "genre": "everyday",
+    "note": "Correct: at least two vendors with an annual or clearly monthly price and the number of included users. Wrong: individual-plan pricing labelled as family, or a security feature comparison with no prices or seat counts."
+  },
+  {
+    "id": "r2-lg-01",
+    "type": "local_geo",
+    "sharpness": "sharp",
+    "query": "How much is adult admission to Shinjuku Gyoen in Tokyo, and which day of the week is the garden closed?",
+    "genre": "everyday",
+    "note": "Correct: the adult entry fee in yen plus the regular closed day, ideally noting it shifts when a national holiday falls on it. Wrong: calling the garden free, which most Tokyo parks are, or giving hours without the closed day."
+  },
+  {
+    "id": "r2-lg-02",
+    "type": "local_geo",
+    "sharpness": "sharp",
+    "query": "What does it cost to drive a car into central London's congestion charge zone for a day, and what hours does the charge apply?",
+    "genre": "everyday",
+    "note": "Correct: the daily amount plus both charging windows, weekday and weekend. Wrong: a superseded rate, or weekday hours quoted as if they applied all week."
+  },
+  {
+    "id": "r2-lg-03",
+    "type": "local_geo",
+    "sharpness": "sharp",
+    "query": "What does a foreign adult pay for a Machu Picchu entrance ticket on the classic circuit, and does the ticket tie you to a specific entry time?",
+    "genre": "everyday",
+    "note": "Correct: a soles or dollar figure for the adult foreign classic-route ticket, plus that entry is by assigned time slot on a named circuit. Wrong: a tour-operator package price presented as the entrance fee, or a Peruvian-national rate quoted for a foreigner. Resellers disagree on the exact figure; the Ministry of Culture page is the arbiter."
+  },
+  {
+    "id": "r2-lg-04",
+    "type": "local_geo",
+    "sharpness": "sharp",
+    "query": "What is the adult daily fare cap on an Opal card in Sydney, and is the cap different on weekends?",
+    "genre": "everyday",
+    "note": "Correct: both figures, the Monday-to-Thursday cap and the lower Friday-to-Sunday and public holiday cap. Wrong: only the weekly cap, or quoting the airport station access fee as counting toward the cap, which it does not."
+  },
+  {
+    "id": "r2-lg-05",
+    "type": "local_geo",
+    "sharpness": "sharp",
+    "query": "What does an adult return ticket on the Table Mountain Aerial Cableway in Cape Town cost, and what are the first and last cable car times?",
+    "genre": "everyday",
+    "note": "Correct: the adult return fare in rand plus the season's first-up and last-down times. Wrong: a one-way fare labelled as return, or hours that ignore the seasonal schedule and the annual maintenance shutdown."
+  },
+  {
+    "id": "r2-lg-06",
+    "type": "local_geo",
+    "sharpness": "sharp",
+    "query": "How much is a single AB-zone ticket on Berlin's U-Bahn and S-Bahn, and how long is it valid for transfers?",
+    "genre": "everyday",
+    "note": "Correct: the euro price of the adult AB single ticket and its 120-minute one-direction validity. Wrong: the reduced fare quoted as the adult fare, an ABC price where AB was asked, or 'valid for one journey' with no time limit."
+  },
+  {
+    "id": "r2-lg-07",
+    "type": "local_geo",
+    "sharpness": "sharp",
+    "query": "What does a visitor who is not a US resident pay to enter Yosemite National Park in a private car, and how many days does that cover?",
+    "genre": "everyday",
+    "note": "Correct: both components, the per-vehicle pass and the per-person nonresident surcharge, each valid seven consecutive days. Wrong: the vehicle fee alone, which was the complete answer until recently and is the likeliest stale reply."
+  },
+  {
+    "id": "r2-lg-08",
+    "type": "local_geo",
+    "sharpness": "sharp",
+    "query": "What does a foreign visitor pay to enter the Taj Mahal, and which day of the week is it closed?",
+    "genre": "everyday",
+    "note": "Correct: the base foreign-tourist fee and the closed day; a strong answer also flags the extra charge for the mausoleum chamber and the online discount. Wrong: the Indian-national or SAARC rate given for a foreigner, or a claim that it opens daily."
+  },
+  {
+    "id": "r2-lg-09",
+    "type": "local_geo",
+    "sharpness": "open",
+    "query": "Which jjimjilbang in Seoul allow you to stay overnight, and what do they charge for an overnight stay?",
+    "genre": "everyday",
+    "note": "Correct: at least two named 24-hour bathhouses with an overnight price in won, ideally noting the late-night rate exceeds the daytime rate. Wrong: general jjimjilbang etiquette with no venue and no price, or a venue that has since closed."
+  },
+  {
+    "id": "r2-lg-10",
+    "type": "local_geo",
+    "sharpness": "open",
+    "query": "Which refuges on the Tour du Mont Blanc take online bookings, and what does a dormitory bed with half board cost per night?",
+    "genre": "everyday",
+    "note": "Correct: at least two named refuges with a per-person half-board dorm price and how to book. Wrong: a trek-cost article giving only a daily budget range with no refuge named, or camping prices where half board was asked."
+  },
+  {
+    "id": "r2-lg-11",
+    "type": "local_geo",
+    "sharpness": "open",
+    "query": "Which bus companies run overnight service from Buenos Aires to Mendoza, and what does a cama seat cost one way?",
+    "genre": "everyday",
+    "note": "Correct: at least two named operators with a cama-class one-way fare and a currency. Wrong: a fare quoted with no seat class, since semicama and cama differ materially, or a route summary with duration but no price."
+  },
+  {
+    "id": "r2-lg-12",
+    "type": "local_geo",
+    "sharpness": "open",
+    "query": "Which public swimming pools in Amsterdam have early-morning lane swimming sessions, and what does a single adult entry cost?",
+    "genre": "everyday",
+    "note": "Correct: at least two named municipal pools with their lane-swimming morning times and a single-entry euro price. Wrong: a pool listed with prices but no lane-swim schedule, or a private gym rather than a public pool."
+  },
+  {
+    "id": "r2-lg-13",
+    "type": "local_geo",
+    "sharpness": "open",
+    "query": "Which national parks and reserves within a few hours' drive of Nairobi can be visited self-drive, and what do a non-resident adult and a private vehicle pay to enter?",
+    "genre": "everyday",
+    "note": "Correct: at least two named parks with the non-resident adult fee and the separate vehicle fee, noting the two stack. Wrong: the resident or citizen rate quoted for a non-resident, or a per-person fee with no vehicle fee when both were asked."
+  },
+  {
+    "id": "r2-lg-14",
+    "type": "local_geo",
+    "sharpness": "open",
+    "query": "Which US national parks require a timed-entry or vehicle reservation for a summer 2026 visit, and how far in advance do those reservations open?",
+    "genre": "everyday",
+    "note": "Correct: at least two named parks with the dates and hours the requirement applies plus the booking release schedule. Wrong: naming a park that dropped its requirement for 2026, or describing the standard entrance fee as if it were a reservation."
+  },
+  {
+    "id": "r2-lg-15",
+    "type": "local_geo",
+    "sharpness": "open",
+    "query": "Which of New Zealand's Great Walks require booked hut tickets, and what does a hut night cost an international visitor in the 2026/27 season?",
+    "genre": "everyday",
+    "note": "Correct: at least two named Great Walks with a per-night hut fee at the international-visitor rate, which is higher than the resident rate. Wrong: the resident price given for an overseas visitor, or listing tracks with no fees at all."
+  },
+  {
+    "id": "r2-lg-16",
+    "type": "local_geo",
+    "sharpness": "open",
+    "query": "What are the options for travelling from Kuala Lumpur to Singapore by train, and what does each leg cost?",
+    "genre": "everyday",
+    "note": "Correct: explains it is two legs, an ETS service to JB Sentral and the shuttle across to Woodlands, with a fare for each and its currency. Wrong: implying a single through-train, which has not existed since 2011, or giving only the shuttle fare as the whole journey."
+  },
+  {
+    "id": "r2-rr-01",
+    "type": "recent_release",
+    "sharpness": "sharp",
+    "query": "I need to plan a PostgreSQL upgrade — which major versions are still receiving patch releases, and when does the oldest one still supported reach end of life?",
+    "genre": "software",
+    "note": "Correct: names the currently supported major versions and gives the end-of-life date for the oldest, ideally citing the five-year policy. Wrong: names only the newest release, or gives the five-year rule with no dated version list."
+  },
+  {
+    "id": "r2-rr-02",
+    "type": "recent_release",
+    "sharpness": "sharp",
+    "query": "MySQL 8.0 is past its end of life — which MySQL release is the current long-term-support version, and how long will it get support?",
+    "genre": "software",
+    "note": "Correct: names the current LTS line and its premier and extended support end dates. Wrong: recommends an Innovation release as if it were LTS, or gives 8.0's end-of-life date without naming what to move to. Oracle publishes no single clean LTS roadmap page, so partial answers will be common."
+  },
+  {
+    "id": "r2-rr-03",
+    "type": "recent_release",
+    "sharpness": "sharp",
+    "query": "We are still running JDK 17 in production — when does Oracle Premier Support for it end, and which JDK release is the newest long-term-support version to move to?",
+    "genre": "software",
+    "note": "Correct: the Premier Support end date for JDK 17 plus the current newest LTS. Wrong: quoting the end of free public updates instead of Premier Support without saying which is which, or naming the newest JDK release rather than the newest LTS."
+  },
+  {
+    "id": "r2-rr-04",
+    "type": "recent_release",
+    "sharpness": "sharp",
+    "query": "Our service targets .NET 8 — what is its end-of-support date, and which .NET release is the current long-term-support version we should move to?",
+    "genre": "software",
+    "note": "Correct: the end-of-support date for .NET 8 plus the current LTS. Wrong: quoting the general three-year LTS policy with no date, or pointing at a standard-term-support release as the LTS target."
+  },
+  {
+    "id": "r2-rr-05",
+    "type": "recent_release",
+    "sharpness": "sharp",
+    "query": "What target API level does an Android app update have to meet to stay publishable on Google Play this year, and what is the deadline date?",
+    "genre": "software",
+    "note": "Correct: the API level required for new apps and updates this cycle and the deadline date; the extension window is a bonus. Wrong: last year's API level, or explaining what targetSdkVersion means without the number and date."
+  },
+  {
+    "id": "r2-rr-06",
+    "type": "recent_release",
+    "sharpness": "sharp",
+    "query": "How long does Amazon EKS keep a Kubernetes minor version in standard support before it moves to extended support, and what does extended support cost per cluster-hour?",
+    "genre": "software",
+    "note": "Correct: the standard window, the extended window, and the extended-support hourly price per cluster. Wrong: the upstream Kubernetes support policy with no EKS specifics, or a per-node price where per-cluster was asked."
+  },
+  {
+    "id": "r2-rr-07",
+    "type": "recent_release",
+    "sharpness": "sharp",
+    "query": "Which OpenAI API models and endpoints have announced shutdown dates coming up, and what are the recommended replacements?",
+    "genre": "software",
+    "note": "Correct: named model IDs or endpoints with their dated shutdown and the replacement named for each. Wrong: a general note that OpenAI deprecates models, or a list of current models with no shutdown dates attached."
+  },
+  {
+    "id": "r2-rr-08",
+    "type": "recent_release",
+    "sharpness": "sharp",
+    "query": "Which ClickHouse release is the current long-term-support version, and how long is an LTS release supported before it stops getting fixes?",
+    "genre": "software",
+    "note": "Correct: names the current LTS version and states the support window with an end date. Wrong: names the newest stable release as if it were the LTS — that distinction is the whole question. This one may sit mid-transition between LTS lines."
+  },
+  {
+    "id": "r2-rr-09",
+    "type": "recent_release",
+    "sharpness": "open",
+    "query": "I am upgrading a data pipeline to pandas 3 — which changes alter behavior silently instead of raising an error, and how do I surface them before I upgrade?",
+    "genre": "software",
+    "note": "Correct: explains copy-on-write becoming the only mode and the new string dtype as the silent-behaviour risks, and gives a way to find them ahead of time. Wrong: a feature list for pandas 3 with no mention of which failures are silent."
+  },
+  {
+    "id": "r2-rr-10",
+    "type": "recent_release",
+    "sharpness": "open",
+    "query": "What does moving an existing crate to the newest Rust edition involve, and which changes does cargo fix --edition not handle for me?",
+    "genre": "software",
+    "note": "Correct: names the current edition, the cargo fix then bump-Cargo.toml sequence, and at least one class of change needing manual work. Wrong: describing what editions are in general, or migration notes for an older edition."
+  },
+  {
+    "id": "r2-rr-11",
+    "type": "recent_release",
+    "sharpness": "open",
+    "query": "We are moving to the newest Go release — which language or standard library changes could break working code, and which of them can be reverted with a GODEBUG setting?",
+    "genre": "software",
+    "note": "Correct: names concrete behaviour changes from the current release and the GODEBUG keys that restore the old behaviour. Wrong: a features-and-performance summary with no compatibility section, or explaining GODEBUG generically with no setting named."
+  },
+  {
+    "id": "r2-rr-12",
+    "type": "recent_release",
+    "sharpness": "open",
+    "query": "What has to change in a Spring Boot 3.x application to move it to the current major version?",
+    "genre": "software",
+    "note": "Correct: the Java baseline bump plus concrete migration items and the advice to go to the latest 3.5.x first. Wrong: Spring Boot 2-to-3 migration advice, which is the far more common older guide."
+  },
+  {
+    "id": "r2-rr-13",
+    "type": "recent_release",
+    "sharpness": "open",
+    "query": "What breaks in a LangChain Python application when upgrading to the current major version, and what is the official migration path?",
+    "genre": "software",
+    "note": "Correct: names the current major, the import or package restructuring, and points at the official migration guide's steps. Wrong: guidance for the pre-1.0 chains API presented as current, or a general LangChain tutorial."
+  },
+  {
+    "id": "r2-rr-14",
+    "type": "recent_release",
+    "sharpness": "open",
+    "query": "Our build is stuck on an older Gradle major — what was removed or deprecated in the current Gradle major, and what has to change in the build scripts?",
+    "genre": "software",
+    "note": "Correct: names the current major and specific removed or deprecated APIs with their replacements. Wrong: generic 'run with warnings enabled' advice with no removal named, or an upgrade guide for a superseded major."
+  },
+  {
+    "id": "r2-rr-15",
+    "type": "recent_release",
+    "sharpness": "open",
+    "query": "A page of ours stopped working after a Chrome update — which web platform features have recent Chrome stable releases deprecated or removed, and what replaces them?",
+    "genre": "software",
+    "note": "Correct: names an actual deprecation or removal from a recent Chrome milestone with the replacement or migration advice. Wrong: a list of new Chrome features, or a generic debugging guide with no deprecation named."
+  },
+  {
+    "id": "r2-rr-16",
+    "type": "recent_release",
+    "sharpness": "open",
+    "query": "Our servers run Ubuntu 24.04 LTS — when does its standard support end, and what is the supported upgrade path to the newest LTS release?",
+    "genre": "software",
+    "note": "Correct: the end of standard support for 24.04 plus the LTS-to-LTS upgrade route to the current LTS. Wrong: quoting the ten-year extended-maintenance figure as if it were standard support, which is the usual confusion here."
+  },
+  {
+    "id": "r2-nl-01",
+    "type": "numeric_live",
+    "sharpness": "sharp",
+    "query": "I'm updating a climate briefing slide: what was the monthly average CO2 concentration at Mauna Loa for the most recent month NOAA has published, and how much higher is that than the same month a year earlier?",
+    "genre": "science",
+    "note": "Correct: a ppm figure attached to a named recent month plus the year-earlier value or the increase. Wrong: the annual mean, or the May seasonal peak presented as the latest month."
+  },
+  {
+    "id": "r2-nl-02",
+    "type": "numeric_live",
+    "sharpness": "sharp",
+    "query": "How low is Lake Mead right now in feet above sea level, and how much headroom is left before it hits the 1,035-foot mark where Hoover Dam generation gets curtailed?",
+    "genre": "science",
+    "note": "Correct: a dated elevation reading plus the distance to 1,035 feet. Wrong: percent-full alone, or an old record low presented as today's level."
+  },
+  {
+    "id": "r2-nl-03",
+    "type": "numeric_live",
+    "sharpness": "sharp",
+    "query": "How many confirmed measles cases has the CDC counted in the US so far this year, and how does that compare with the full-year total for last year?",
+    "genre": "science",
+    "note": "Correct: the year-to-date confirmed count with an as-of date, plus the prior full-year total. Wrong: a single state's outbreak count, or a global figure given as the US number."
+  },
+  {
+    "id": "r2-nl-04",
+    "type": "numeric_live",
+    "sharpness": "sharp",
+    "query": "TSMC reports revenue every month. What did it report for the most recent month, and how much was that up or down from the same month a year earlier?",
+    "genre": "business",
+    "note": "Correct: a revenue figure tied to a named month plus the year-over-year percent change. Wrong: quarterly earnings revenue or full-year guidance quoted as the monthly figure."
+  },
+  {
+    "id": "r2-nl-05",
+    "type": "numeric_live",
+    "sharpness": "sharp",
+    "query": "Did US commercial crude oil inventories build or draw in the EIA's latest weekly petroleum report, by how many barrels, and where does that leave total stocks versus the five-year average?",
+    "genre": "business",
+    "note": "Correct: the weekly change in million barrels with direction, the total stock level, and the report week date. Wrong: Strategic Petroleum Reserve levels, or a private industry estimate presented as the EIA number."
+  },
+  {
+    "id": "r2-nl-06",
+    "type": "numeric_live",
+    "sharpness": "sharp",
+    "query": "Who leads Major League Baseball in home runs this season right now, and how many does he have?",
+    "genre": "sports",
+    "note": "Correct: the current season leader or tied leaders named, with the total, for the season in progress. Wrong: last season's leader, career leaders, or a single-league leader presented as the MLB leader."
+  },
+  {
+    "id": "r2-nl-07",
+    "type": "numeric_live",
+    "sharpness": "sharp",
+    "query": "What is the total US public debt outstanding as of the most recent Treasury 'Debt to the Penny' update, and how much of that is debt held by the public rather than intragovernmental?",
+    "genre": "business",
+    "note": "Correct: the total with a date plus the held-by-public or intragovernmental split. Wrong: the annual deficit, or an unsourced debt-clock estimate with no as-of date."
+  },
+  {
+    "id": "r2-nl-08",
+    "type": "numeric_live",
+    "sharpness": "sharp",
+    "query": "How many travelers did TSA screen at US airports on the busiest day of the past week, and how does that compare with the same day a year ago?",
+    "genre": "everyday",
+    "note": "Correct: a dated daily screening count plus the year-ago figure for the matching day. Wrong: an annual total, or a holiday travel forecast quoted as actual screenings."
+  },
+  {
+    "id": "r2-nl-09",
+    "type": "numeric_live",
+    "sharpness": "open",
+    "query": "How much have US consumer prices risen over the past twelve months according to the latest CPI report, and which categories were pushing the number?",
+    "genre": "business",
+    "note": "Correct: the headline year-over-year percent for a named month, ideally with core, plus named contributing categories. Wrong: the month-over-month change quoted as the annual rate, or PCE inflation substituted for CPI."
+  },
+  {
+    "id": "r2-nl-10",
+    "type": "numeric_live",
+    "sharpness": "open",
+    "query": "How much battery storage capacity is now online on California's grid, and how much of the evening peak can that fleet actually cover?",
+    "genre": "science",
+    "note": "Correct: a megawatt total for the connected fleet with a recent as-of point, plus something on discharge duration or peak contribution. Wrong: a national storage total, or an interconnection-queue number presented as capacity already online."
+  },
+  {
+    "id": "r2-nl-11",
+    "type": "numeric_live",
+    "sharpness": "open",
+    "query": "How many Starlink satellites are currently in orbit, and how many of those are actually operational rather than launched-to-date?",
+    "genre": "science",
+    "note": "Correct: both counts, in-orbit and working, with a recent date. Wrong: the cumulative launched total given as the in-orbit count, or the authorized constellation size given as what is flying."
+  },
+  {
+    "id": "r2-nl-12",
+    "type": "numeric_live",
+    "sharpness": "open",
+    "query": "What does it cost to ship a 40-foot container from Shanghai to Rotterdam on the spot market this week, and which way have rates been moving?",
+    "genre": "business",
+    "note": "Correct: a per-40ft spot rate for that lane with the assessment week and the direction of recent movement. Wrong: a global composite index value with no lane attached, or annual contract rates quoted as spot."
+  },
+  {
+    "id": "r2-nl-13",
+    "type": "numeric_live",
+    "sharpness": "open",
+    "query": "What share of new cars registered in the EU so far this year were battery-electric, and how does that compare with the same period last year?",
+    "genre": "business",
+    "note": "Correct: a battery-electric market share percent for a clearly defined year-to-date period with a year-earlier comparison. Wrong: folding plug-in hybrids into the share without saying so, or quoting China or global share instead of the EU."
+  },
+  {
+    "id": "r2-nl-14",
+    "type": "numeric_live",
+    "sharpness": "open",
+    "query": "How is South Korea's birth rate trending this year? I want the most recent fertility rate figure and how many babies were born in the latest reported period.",
+    "genre": "science",
+    "note": "Correct: a recent total fertility rate reading plus a birth count for the period reported. Wrong: a past record low presented as current, or the crude birth rate per 1,000 people given as the fertility rate."
+  },
+  {
+    "id": "r2-nl-15",
+    "type": "numeric_live",
+    "sharpness": "open",
+    "query": "How many job openings did the latest JOLTS report show, and how many unemployed workers are there for each opening?",
+    "genre": "business",
+    "note": "Correct: the openings level for a named month plus the openings-per-unemployed ratio, or both underlying numbers. Wrong: payroll job gains from the monthly jobs report, or the quits rate offered in place of openings."
+  },
+  {
+    "id": "r2-nl-16",
+    "type": "numeric_live",
+    "sharpness": "open",
+    "query": "What share of Ireland's electricity do data centres consume now, and how does that compare with what households use?",
+    "genre": "science",
+    "note": "Correct: the share of metered electricity consumption for the latest reported year, with the residential comparison. Wrong: an older figure presented as current, or a forecast of future demand offered as measured consumption."
+  }
 ]

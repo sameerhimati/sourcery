@@ -1,44 +1,422 @@
 [
   {
-    "id": "example-anchor-01",
+    "id": "bn-04-en",
     "kind": "anchor",
-    "query": "What is the maximum file size for a single upload to GitHub via the web browser?",
+    "query": "Who is Japan's prime minister right now, and when did they take office?",
     "page": {
-      "title": "About large files on GitHub - GitHub Docs",
-      "domain": "docs.github.com",
-      "url": "https://docs.github.com/en/repositories/working-with-files/managing-large-files/about-large-files-on-github",
-      "published": null,
-      "content": "GitHub limits the size of files allowed in repositories. If you attempt to add or update a file that is larger than 50 MiB, you will receive a warning from Git. GitHub blocks files larger than 100 MiB. If you add a file to a repository via a browser, the file can be no larger than 25 MiB. To track files beyond this limit, you must use Git Large File Storage (Git LFS)."
-    },
-    "expected_rung": 3,
-    "note": "EXAMPLE — replace before trusting any calibration. The page states the browser upload limit (25 MiB) in so many words: a direct answer, rung 3."
-  },
-  {
-    "id": "example-anchor-02",
-    "kind": "anchor",
-    "query": "What is the maximum file size for a single upload to GitHub via the web browser?",
-    "page": {
-      "title": "Git LFS tutorial: versioning large files",
-      "domain": "example-blog.dev",
-      "url": "https://example-blog.dev/git-lfs-tutorial",
-      "published": "2024-03-02",
-      "content": "Git LFS replaces large files such as datasets and video with lightweight text pointers inside Git, while storing the file contents on a remote server. In this tutorial we install the extension, track *.psd files, and push a repository containing large assets. We will not cover hosting-provider limits here; consult your host's documentation for those."
+      "title": "Prime Minister of Japan - Wikipedia",
+      "domain": "en.wikipedia.org",
+      "url": "https://en.wikipedia.org/wiki/Prime_Minister_of_Japan",
+      "published": "2026-08-06",
+      "content": "All eleven living former prime ministers, left to right, top to bottom: Shigeru Ishiba, Fumio Kishida, Yoshihide Suga, Yoshihiko Noda, Naoto Kan, Yukio Hatoyama, Tarō Asō, Yasuo Fukuda, Junichiro Koizumi, Yoshirō Mori and Morihiro Hosokawa · Until the mid-1930s, the prime minister of Japan was normally granted a hereditary peerage (kazoku) prior to leaving office if they ...\n\nAll eleven living former prime ministers, left to right, top to bottom: Shigeru Ishiba, Fumio Kishida, Yoshihide Suga, Yoshihiko Noda, Naoto Kan, Yukio Hatoyama, Tarō Asō, Yasuo Fukuda, Junichiro Koizumi, Yoshirō Mori and Morihiro Hosokawa · Until the mid-1930s, the prime minister of Japan was normally granted a hereditary peerage (kazoku) prior to leaving office if they had not already been ennobled.\n\nSince the inception of the cabinet system, the prime minister is known in Japanese as Naikaku Sōri-Daijin (内閣総理大臣) whenever they are referred to as the head of the Cabinet; however, this title is usually abbreviated to Sōri-Daijin (総理大臣). Other abbreviations include Sōri (総理), Shushō (首相), or Saishō (宰相). The official English rendering is \"Prime Minister\".\n\nEach house conducts a ballot under the run-off system, though the nominee of the House of Representatives prevails if the two houses disagree on the nomination. They are then formally appointed by the emperor. The prime minister must retain the confidence of the House of Representatives to remain in office.\n\nConventionally, since the prime minister must maintain the confidence of the Diet to stay in office, they are almost always the leader of the maj…"
     },
     "expected_rung": 1,
-    "note": "EXAMPLE — replace before trusting any calibration. On the topic of large files in Git, but it explicitly declines to state any upload limit: marginal, rung 1."
+    "note": "DRAFT NOTE — Sameer to rewrite in his own words. Explains the office and lists eleven living former prime ministers, but never names the sitting one or a date. Ishiba appearing under 'former' hints he is not current, which is not the same as answering. The case for 2 is that a reader learns something; the case for 1 is that they still cannot answer the question."
   },
   {
-    "id": "example-probe-01",
-    "kind": "probe",
-    "query": "What is the maximum file size for a single upload to GitHub via the web browser?",
+    "id": "ht-02-stackoverflow",
+    "kind": "anchor",
+    "query": "How do I pass a secret to a Docker build so it never ends up in an image layer, and where does the secret appear inside the RUN step?",
     "page": {
-      "title": "GitHub Maximum File Size Upload Limit Browser Web 2026 — Complete Guide",
-      "domain": "seo-content-farm.example",
-      "url": "https://seo-content-farm.example/github-maximum-file-size-upload-limit",
-      "published": "2026-01-15",
-      "content": "Are you searching for the GitHub maximum file size upload limit for the web browser? You've come to the right place! Many developers wonder about the maximum file size for a single upload to GitHub via the web browser. Understanding GitHub file size limits is important for developers who upload files. GitHub is a popular platform, and file size limits matter when you upload via the browser. In this complete guide we explore everything about GitHub maximum file size upload limits in the browser. First, let's discuss why file sizes matter. Large files can be large, and small files are smaller. Uploading is the process of transferring files. The browser is how you access GitHub on the web. Stay tuned for more insights about GitHub maximum file size upload limit browser web!"
+      "title": "Adding secret to docker build, from environment variable rather than a file",
+      "domain": "stackoverflow.com",
+      "url": "https://stackoverflow.com/questions/75668905/adding-secret-to-docker-build-from-environment-variable-rather-than-a-file",
+      "published": "2023-03-08",
+      "content": "# Adding secret to docker build, from environment variable rather than a file\n\n- Tags: docker, environment-variables, docker-secrets\n- Score: 18\n- Views: 37,092\n- Answers: 4\n- Asked by: ryayl (173 rep)\n- Asked on: Mar 8, 2023\n- Last active: Apr 7, 2025\n- License: CC BY-SA 4.0\n\n---\n\n## Question\n\nAssuming the latest Docker with BuildKit enabled, the [documentation](https://docs.docker.com/engine/reference/commandline/buildx_build/#secret) suggests that the `--secret` option has `file` and `env` types. I want to use the `env` type like this:\n\n```\nMYSECRET=thepassword\ndocker build --secret id=mysecret,env=MYSECRET -t myimage .\n```\n\nIn the dockerfile, the secret would be accessed like:\n\n```\nRUN --mount=type=secret,id=mysecret \\\n    PASSWORD=$(cat /run/secrets/mysecret) && \\\n    <run command taking password arg> ${PASSWORD}\n```\n\nThis approach fails with `cat: /run/secrets/mysecret: No such file or directory`\n\nA similar issue was asked [here](https://stackoverflow.com/questions/71771929/how-can-i-read-secret-args-passed-to-docker-build-as-environment-variables-to) but the extra steps writing the secrets into the .condarc file inside the docker image aren't important to me. According to that post, the basic operation of getting a local environment var passed into the docker build for the scope of a single RUN statement should \"work\", but it doesn't for me.\n\nThe build command above runs fine until it tries to access the file path that is supposed to be mapped to the secret. Trying temporarily to pass MYSECRET into the build as a --build-arg shows that the env var can be resolved.\n\nT…"
+    },
+    "expected_rung": 2,
+    "note": "DRAFT NOTE — Sameer to rewrite in his own words. The Stack Overflow question body contains the exactly correct pattern — RUN --mount=type=secret, docker build --secret, and the /run/secrets path. But it presents all of it as the thing that is failing. A reader can extract the right answer; the page does not assert it. That tension is why this one is worth your eye."
+  },
+  {
+    "id": "lg-16-rail",
+    "kind": "anchor",
+    "query": "What are the options for travelling from Kuala Lumpur to Singapore by train, and what does each leg cost?",
+    "page": {
+      "title": "Kuala Lumpur to Singapore Trains | High-Speed Train Tickets",
+      "domain": "rail.ninja",
+      "url": "https://rail.ninja/route/kuala-lumpur-to-singapore",
+      "published": null,
+      "content": "All high-speed trains running between the cities were designed to offer the passengers everything they might need for a pleasant journey, including several travel classes to choose from, fast travel times (the journey takes about 5 hours), and an extensive timetable with up to 3 daily departures. Fantastic onboard amenities are also at your service during the ride. The trains from Kuala Lumpur to Singapore boast light and spacious carriages, equipped with cushy seats, and offer plenty of legroom and generous luggage space.\n\nAll high-speed trains running between the cities were designed to offer the passengers everything they might need for a pleasant journey, including several travel classes to choose from, fast travel times (the journey takes about 5 hours), and an extensive timetable with up to 3 daily departures. Fantastic onboard amenities are also at your service during the ride. The trains from Kuala Lumpur to Singapore boast light and spacious carriages, equipped with cushy seats, and offer plenty of legroom and generous luggage space.\n\nIt is not a rail carrier, does not own or operate any trains, and does not represent an official website of any railway company. It is a commercial business that makes it easier for you to book train tickets online. ... Among the top choices for traveling from Kuala Lumpur to Singapore is taking a fast and modern train.\n\nAnother reason to opt for a train ride from Kuala Lumpur to Singapore is that the train stations are located close to the city centers and are conveniently accessible by public transport, making it very easy to get ar…"
+    },
+    "expected_rung": 1,
+    "note": "DRAFT NOTE — Sameer to rewrite in his own words. Describes a high-speed through-train from Kuala Lumpur to Singapore taking five hours with three daily departures. No such service exists — the through-train ended in 2011, which the question's own note flags as the trap. On topic and confidently wrong, with no fares. The case for 0 is that being misleading is worse than being useless."
+  },
+  {
+    "id": "pl-04-wise",
+    "kind": "anchor",
+    "query": "What does Stripe charge per successful card payment for a US online business, and what does it charge for an ACH direct debit including the fee cap?",
+    "page": {
+      "title": "Stripe fees: a complete guide to processing fees and other costs",
+      "domain": "wise.com",
+      "url": "https://wise.com/us/blog/stripe-fees",
+      "published": "2026-05-18",
+      "content": "That’s known as Stripe Terminal – simply put, it’s a system for in-store payments. For each successful card transaction in person, Stripe Terminal’s fee is 2.7% plus $0.05.\n\nAlso bear in mind that if Stripe has to automatically reconcile one of these payments to an outstanding invoice, there’ll be a larger charge of $7. Failed ACH Direct Debit payments cost $4. Disputed ACH Direct Debit payments are $15.³ · Stripe is primarily a digital operation designed for online purchases, but it also offers a product to any businesses that also have a physical point of sale. That’s known as Stripe Terminal – simply put, it’s a system for in-store payments. For each successful card transaction in person, Stripe Terminal’s fee is 2.7% plus $0.05.\n\nIt’s intended for larger businesses who might be able to negotiate lower rates for volume. Because Customized packages are, well, customized, this article will focus on the Integrated offering.² ... Stripe’s transaction fee for card or wallet payments is a percentage of the total transaction, plus a flat fee for each one. ... For ACH debit or credit payments, there’s a percentage based Stripe ACH fee, which never goes above a limit.\n\nIf a customer pays with an international card there’s an additional 1% charge to pay, and there’s another 1% if the transaction requires a currency conversion.² · An alternative option is to set up some other payment options that are particularly popular with shoppers around the world. For instance, SEPA Direct Debits are popular in the European Union, and you can set Stripe up with that and expect to be charged 0.…"
+    },
+    "expected_rung": 1,
+    "note": "DRAFT NOTE — Sameer to rewrite in his own words. Gives the in-person Terminal rate of 2.7% plus $0.05, which the acceptance test names as the wrong answer, and says the ACH fee 'never goes above a limit' without saying what the limit is. It circles both numbers asked for and states neither."
+  },
+  {
+    "id": "pl-12-aws",
+    "kind": "anchor",
+    "query": "For a small production Postgres database of about 50 GB with steady traffic, what would Neon, Supabase, and AWS RDS each cost per month, and how is each one billed?",
+    "page": {
+      "title": "Amazon RDS for PostgreSQL Pricing",
+      "domain": "aws.amazon.com",
+      "url": "https://aws.amazon.com/rds/postgresql/pricing/",
+      "published": null,
+      "content": "Amazon RDS for PostgreSQL Pricing Skip to main content\n\nAmazon RDS for PostgreSQL\n\nEngines\n\nMore\n\n# Amazon RDS for PostgreSQL pricing\n\nEasy to manage relational databases optimized for total cost of ownership\n\nGet started with RDS for PostgreSQL\n\nConnect with an RDS specialist\n\nAmazon RDS for PostgreSQL provides you with the flexibility to customize your databases for your needs including:\n\n- Option to pay as you go with no upfront fees or minimum commitments with On-Demand or Reserved Instances at a discounted rate. Pay only for what you use.\n- Selection of instance types optimized to fit different relational database use cases.\n\nNew AWS customers can get started with RDS for PostgreSQL for free as part of the AWS Free Tier, which includes includes 750 hours on a selection of Single-AZ instance databases, 20 GB of General Purpose SSD (gp2) storage, and 20 GB of storage for automated database backups each month for one year.\n\nYour RDS for PostgreSQL usage may be eligible for Database Savings Plans, a flexible pricing model that offers savings in exchange for a commitment to a specific amount of usage (measured in $/hour) over a 1-year term. You can learn more about eligible usage on the Database Savings Plans pricing page.\n\n## AWS Pricing Calculator for Amazon RDS for PostgreSQL\n\nCalculate your Amazon RDS for PostgreSQL and architecture cost in a single estimate based on Region, instance type, deployment option, and more. Create your custom estimate now »\n\n## Highly available deployment options\n\n### Multi-AZ deployment (one standby)\n\n---\n\nWhen you run your DB instance as a …"
+    },
+    "expected_rung": 1,
+    "note": "DRAFT NOTE — Sameer to rewrite in his own words. AWS's own RDS pricing page, but the slice is all free-tier and savings-plan framing with no actual instance rates, and nothing on Neon or Supabase. It names the billing model without giving enough to build an estimate from."
+  },
+  {
+    "id": "bn-04-en-2",
+    "kind": "anchor",
+    "query": "Who is Japan's prime minister right now, and when did they take office?",
+    "page": {
+      "title": "Shinzo Abe - Wikipedia",
+      "domain": "en.wikipedia.org",
+      "url": "https://en.wikipedia.org/wiki/Shinzo_Abe",
+      "published": "2026-08-15",
+      "content": "Abe later told reporters that during ... had been taken to improve relations. Abe tried to centralize security policy in the Prime Minister&#x27;s office by creating the National Security Council to better coordinate national security policy, and by ordering the first National Security Strategy in Japan&#x27;s ...\n\nAbe later told reporters that during the meeting he suggested establishing a hotline between Tokyo and Beijing to help resolve any maritime clashes and that the \"first step\" had been taken to improve relations. Abe tried to centralize security policy in the Prime Minister's office by creating the National Security Council to better coordinate national security policy, and by ordering the first National Security Strategy in Japan's history.\n\nThis was the first assassination of a former Japanese prime minister since 1936. A polarizing figure in Japan, Abe was praised by his supporters for strengthening Japan's security and international stature, while opponents criticized him for nationalistic policies and historical negationism, which they view as threatening Japanese pacifism and damaging relations with China and South Korea. The Abe family in 1956 (left to right): his mother Yōko, Shinzo at the age of two, his father Shintaro and his elder brother Hironobu\n\nAfter recovering, Abe staged a political comeback in 2012, when he was again elected LDP president and led it to a landslide victory in that year's election. He became the first former prime minister to return to office since Shigeru Yoshida in 1948. Abe attempted to counter Japan's economic stagnation with \"…"
+    },
+    "expected_rung": 1,
+    "note": "DRAFT NOTE — Sameer to rewrite in his own words. A biography of Shinzo Abe, assassinated in 2022. It is about a Japanese prime minister, which keeps it on topic, and it answers nothing about who holds the office now. Reasonable people put this at 0."
+  },
+  {
+    "id": "rr-01-postgresql",
+    "kind": "anchor",
+    "query": "I need to plan a PostgreSQL upgrade — which major versions are still receiving patch releases, and when does the oldest one still supported reach end of life?",
+    "page": {
+      "title": "PostgreSQL: Roadmap",
+      "domain": "postgresql.org",
+      "url": "https://www.postgresql.org/developer/roadmap/",
+      "published": "2026-08-13",
+      "content": "PostgreSQL: Roadmap\n\nAugust 13, 2026: PostgreSQL 18.6, 17.11, 16.15, 15.19, 14.24 and 19 Beta 3 Released!\n\n## Quick Links\n\n# Roadmap\n\nPostgreSQL is a noncommercial, all volunteer, free software project, and as such there is no formal list of feature requirements required for development. We enjoy allowing developers to explore the topics of their choosing, though we also ensure that all new features committed to PostgreSQL are thoroughly vetted by our community of contributors and committers.\n\n## Upcoming minor releases\n\nThe PostgreSQL project aims to make at least one minor release every quarter, on a predefined schedule. If it becomes necessary due to an important bugfix or security issue, more releases will be made between these dates, so this list should be considered a minimum. At each of these dates, a new minor release will be made for each supported version.\n\nThe target date for these releases are, unless otherwise stated, the second Thursday of February, May, August, and November. The current schedule for upcoming releases is:\n\n- November 12th, 2026\n- February 11th, 2027\n- May 13th, 2027\n- August 12th, 2027\n\n## Next major release\n\nThe next major release of PostgreSQL is planned to be the 19 release. This release is planned for September 2026.\n\nWhile there are no formal requirements for each PostgreSQL release, there are several places you can look to find out more information on upcoming features:\n\n- General development information- A wiki page about various aspects of the PostgreSQL development process\n- Information about the current CommitFest- An overview about …"
+    },
+    "expected_rung": 2,
+    "note": "DRAFT NOTE — Sameer to rewrite in his own words. The release banner names 18.6, 17.11, 16.15, 15.19 and 14.24, which is effectively the list of supported majors — a strong partial. No end-of-life date for the oldest, which is the second half of the question. The case for 3 is that the version list is the harder half."
+  },
+  {
+    "id": "rr-11-tip",
+    "kind": "anchor",
+    "query": "We are moving to the newest Go release — which language or standard library changes could break working code, and which of them can be reverted with a GODEBUG setting?",
+    "page": {
+      "title": "Go 1.18 Release Notes - The Go Programming Language",
+      "domain": "tip.golang.org",
+      "url": "https://tip.golang.org/doc/go1.18",
+      "published": null,
+      "content": "This can be temporarily reverted by setting the GODEBUG=x509sha1=1 environment variable. This option will be removed in a future release. As always, there are various minor changes and updates to the library, made with the Go 1 promise of compatibility in mind.\n\nThis can be temporarily reverted by setting the GODEBUG=x509sha1=1 environment variable. This option will be removed in a future release. As always, there are various minor changes and updates to the library, made with the Go 1 promise of compatibility in mind.\n\nWe want to stress that the Go 1 compatibility guarantee says “If it becomes necessary to address an inconsistency or incompleteness in the specification, resolving the issue could affect the meaning or legality of existing programs. We reserve the right to address such issues, including updating the implementations.” It also says “If a compiler or library has a bug that violates the specification, a program that depends on the buggy behavior may break if the bug is fixed. We reserve the right to fix such bugs.” In other words, it is possible that there will be code using generics that will work with the 1.18 release but break in later releases.\n\nWe will minimize any such breakage as much as possible, but we can’t guarantee that the breakage will be zero. The following is a list of the most visible changes. For a more comprehensive overview, see the proposal. For details see the language spec. The syntax for function and type declarations now accepts type parameters. Parameterized functions and types can be instantiated by following them with a list of type a…"
+    },
+    "expected_rung": 1,
+    "note": "DRAFT NOTE — Sameer to rewrite in his own words. Names a concrete GODEBUG key, x509sha1, which is exactly the shape of answer wanted — but these are the Go 1.18 release notes, many releases stale, and the question asks about the newest release. Right form, wrong version. The case for 2 is that the key is real and still instructive."
+  },
+  {
+    "id": "bn-09-demandsage",
+    "kind": "anchor",
+    "query": "What caused the most recent major outage at AWS, Azure, or Google Cloud, and which services were affected?",
+    "page": {
+      "title": "54 Internet Outage Statistics (2026) - Global Downtime, Impacts",
+      "domain": "demandsage.com",
+      "url": "https://www.demandsage.com/internet-outage-statistics/",
+      "published": "2025-12-26",
+      "content": "DNS resolution failure affecting DynamoDB API endpoints triggered the October 2025 AWS cascade.​ · DNS failover issue in monitoring tools, combined with Network Load Balancer health-check failures.​ · A race condition in the DNS management system occurred between the DNS Planner and DNS Enactor components.​ · An invalid automated update to Google’s API management system caused the June 2025 Google Cloud outage.\n\nPower failures caused 45% of total outages in 2025. 86% organisations adopted multi-cloud strategies for resilience. Mean Time To Restore (MTTR) averaged 80 minutes globally. AWS, Azure, and Google Cloud controlled 63% of the infrastructure market. Trending: Read our Cloudflare statistics to uncover more about its outage history and impact. On October 20, 2025, AWS experienced a major outage affecting its US-EAST-1 region, disrupting many downstream services worldwide.\n\nJune 2025 documented 1219 global outages, signalling stabilisation after peak deployment periods. ... AWS maintained market leadership with 30% global cloud infrastructure in Q2 2025. Comparatively, Microsoft Azure held 20%, and Google Cloud reached 13% market share. The “Big Three” cloud providers collectively controlled 63% of the global enterprise cloud infrastructure market in Q2 2025. August 2024 IAM authentication issue caused regional login failure lasting 50 minutes.\n\nWhatsApp, DoorDash, Disney+, the McDonald’s App, and many other major brands were also victims of the outage. Design platforms such as Canva, which serve about 220 million monthly active users, show how outages hit both creators…"
+    },
+    "expected_rung": 3,
+    "note": "DRAFT NOTE — Sameer to rewrite in his own words. Gives the causes in real detail — a DNS resolution failure hitting DynamoDB endpoints, a race condition between the DNS Planner and DNS Enactor, and a bad automated update behind the Google Cloud outage — with dates and the US-EAST-1 region. The case against 3 is freshness: these are 2025 incidents on a page published in December 2025, and the question asks for the most recent."
+  },
+  {
+    "id": "lg-16-wise",
+    "kind": "anchor",
+    "query": "What are the options for travelling from Kuala Lumpur to Singapore by train, and what does each leg cost?",
+    "page": {
+      "title": "How to take train from Johor Bahru (JB) to Singapore - Wise",
+      "domain": "wise.com",
+      "url": "https://wise.com/my/blog/train-from-jb-to-singapore",
+      "published": "2025-01-27",
+      "content": "How to take train from Johor Bahru (JB) to Singapore - Wise\n\nIf you’re thinking of taking the Malaysia to Singapore train you’re probably planning on hopping on the train from JB to Singapore, for a quick, affordable, and convenient journey over the border.\n\nThis guide looks at how to book and ride the JB Sentral to Woodlands train, including the Malaysia to Singapore train ticket price, so you can plan your trip. We’ll also touch on a great way to pay for public transport and more when you’re travelling in Singapore: Wise.\n\n- Can I take a train from Johor Bahru (JB) to Singapore?\n- Ticket price\n- Travel time\n\n- How to take the train from JB to Singapore?\n- When to buy a ticket?\n\n| Table of contents |\n| --- |\n\n## Can I take a train from Johor Bahru (JB) to Singapore?\n\nYes. You can take the JB Sentral to Woodlands train (Shuttle Tebrau) which then allows you to easily pick up the MRT or bus for onward travel into Singapore. On your return, simply reverse the process - get handy public transport to Woodlands and hop on the shuttle for the journey home.\n\nWhen you travel from Malaysia to Singapore you’ll need to provide your passport, which must have at least 30 days validity1. You’ll be asked to provide your passport information when you book your ticket. There are limits to the number of tickets you can book - get up to 4 at the counter in the station, or up to 6 online.\n\n### Malaysia to Singapore train ticket price\n\nThe costs for the journey from JB to Singapore by train can vary depending on your route and nationality. If you want to take advantage of the preferential price…"
+    },
+    "expected_rung": 2,
+    "note": "DRAFT NOTE — Sameer to rewrite in his own words. Correctly identifies the JB Sentral to Woodlands shuttle, which is the second of the two legs, and promises a ticket price it never shows in the slice. The question's note specifically flags treating the shuttle as the whole journey as a wrong answer, which is close to what this page does."
+  },
+  {
+    "id": "ht-16-opensource",
+    "kind": "anchor",
+    "query": "How do I add a NOT NULL column to a large, busy Postgres table without blocking writes?",
+    "page": {
+      "title": "3 tips to manage large Postgres databases | Opensource.com",
+      "domain": "opensource.com",
+      "url": "https://opensource.com/article/23/2/manage-large-postgres-databases",
+      "published": null,
+      "content": "This approach splits up index creation into two parts, one with a brief lock to create the index that starts tracking changes immediately but minimizes application blockage, followed by a full build-out of the index, after which queries can start using it. CREATE INDEX CONCURRENTLY ON customers (last_name) Adding a column is a common request during the life of a database, but with a huge table, it can be tricky, again, due to locking. Problem: When you add a new column with a default that calls a function, Postgres needs to rewrite the table.\n\nThis approach splits up index creation into two parts, one with a brief lock to create the index that starts tracking changes immediately but minimizes application blockage, followed by a full build-out of the index, after which queries can start using it. CREATE INDEX CONCURRENTLY ON customers (last_name) Adding a column is a common request during the life of a database, but with a huge table, it can be tricky, again, due to locking. Problem: When you add a new column with a default that calls a function, Postgres needs to rewrite the table.\n\nALTER TABLE favorite_bands ADD CONSTRAINT name_check CHECK (name = 'Led Zeppelin') NOT VALID ... David Christensen and I will be in Pasadena, CA, at SCaLE's Postgres Days, March 9-10. Lots of great folks from the Postgres community will be there too. Join us! ... Elizabeth writes about Postgres at Crunchy Data, organizes the Kansas City Postgres User Group, and volunteers for the US PostgreSQL Association.\n\nThe relational database PostgreSQL (also known as Postgres) has grown increasingly popula…"
+    },
+    "expected_rung": 2,
+    "note": "Covers CREATE INDEX CONCURRENTLY, the table rewrite a defaulted column causes, and NOT VALID constraints — real evidence toward the answer and the right lock concerns. It never gives the add-nullable, backfill, then-set-NOT-NULL sequence the question is actually about."
+  },
+  {
+    "id": "lg-06-berlin",
+    "kind": "anchor",
+    "query": "How much is a single AB-zone ticket on Berlin's U-Bahn and S-Bahn, and how long is it valid for transfers?",
+    "page": {
+      "title": "Tickets, Fares and Route Maps – Berlin.de",
+      "domain": "berlin.de",
+      "url": "https://www.berlin.de/en/public-transportation/1772016-2913840-tickets-fares-and-route-maps.en.html",
+      "published": "2026-01-16",
+      "content": "The fare zone ABC additionally includes Berlin&#x27;s surrounding area, BER Airport, and Potsdam Central Station. ... A single ticket is valid for one person and a two-hour journey through the city.\n\nTickets, BVG-tariff zones and route maps of public transportation in Berlin: S-Bahn, U-Bahn, tram und buses.\n\nWith a valid ticket, ticket holders have access to all public transport in Berlin, including the S-Bahn, subway, buses, trams and ferries. The fare depends on the tariff zone and the ticket's period of validity. Berlin is divided into two fare zones: AB and ABC. The fare zone AB includes the urban center of Berlin as well as the area up to the city limits. The fare zone ABC additionally includes Berlin's surrounding area, BER Airport, and Potsdam Central Station. ... A single ticket is valid for one person and a two-hour journey through the city.\n\nThose who get caught have to show a valid form of ID, otherwise the police will be called. It is generally permitted to take your bicycle or dog with you on public transport in Berlin. However, some special rules and conditions apply and an additional ticket may be necessary. E-scooters are prohibited on underground trains, trams and buses. Find out more information: ... Information about S-Bahn, U-Bahn, buses, and trams in Berlin: Tickets, fares, regulations, networks, schedules and more\n\nFare zone AB: €11.20 (regular), €7,40 (reduced) ... The small-group day ticket allows up to 5 people to use all public transportation services for 24 hours. One dog can also be taken along ... Tickets for public transport can be purchased at…"
+    },
+    "expected_rung": 2,
+    "note": "Berlin's own transit page gives the two-hour validity but no fare anywhere in the slice. Exactly half the question, from the most authoritative possible source."
+  },
+  {
+    "id": "rr-01-instaclustr",
+    "kind": "anchor",
+    "query": "I need to plan a PostgreSQL upgrade — which major versions are still receiving patch releases, and when does the oldest one still supported reach end of life?",
+    "page": {
+      "title": "Postgres Versions: Supported Releases, EOL Dates & Upgrades",
+      "domain": "instaclustr.com",
+      "url": "https://www.instaclustr.com/education/postgresql/postgres-versions-supported-releases-eol-dates-upgrades/",
+      "published": "2026-06-26",
+      "content": "The current landscape of actively supported major versions includes: Note: Older versions like 13 and below are officially end-of-life and no longer receive community security updates.\n\nPostgreSQL uses a Major.Minor versioning format. Major versions introduce new features, while minor versions provide security patches and bug fixes. The PostgreSQL community officially supports a major version for 5 years from its release date.\n\nMinor releases are scheduled at least once per quarter, usually in February, May, August, and November, with additional unscheduled releases possible when critical security or stability issues need faster attention. At the end of the five-year support period, a PostgreSQL major version reaches end-of-life, or EOL. Once a version is EOL, it no longer receives security patches, bug fixes, or maintenance updates. For this reason, organizations should begin upgrade planning well before the EOL date rather than waiting until support has already ended.\n\nInstall the target PostgreSQL version. Upgrade using pg_upgrade or a logical migration method. Test applications, extensions, and database functionality. Redirect production traffic to the upgraded instance. Monitor performance and validate backups after deployment. Organizations should begin planning major upgrades well before a version reaches end-of-life.\n\nMajor versions introduce new features, while minor versions provide security patches and bug fixes. The PostgreSQL community officially supports a major version for 5 years from its release date. ... PostgreSQL follows an annual release cycle. The curr…"
+    },
+    "expected_rung": 2,
+    "note": "Gives the five-year support policy and says 13 and below are end-of-life, which brackets the answer. The sentence that would have listed the supported versions is cut off mid-thought, and no end-of-life date appears."
+  },
+  {
+    "id": "bn-09-restofworld",
+    "kind": "anchor",
+    "query": "What caused the most recent major outage at AWS, Azure, or Google Cloud, and which services were affected?",
+    "page": {
+      "title": "Cloud outages 2025: how global businesses survived blackouts - Rest of World",
+      "domain": "restofworld.org",
+      "url": "https://restofworld.org/2026/cloud-outages-2025-global-business-impact/",
+      "published": "2026-01-05",
+      "content": "AWS saw one of the biggest and most widespread cloud outages of 2025 when its services went down for 15 hours in October. The outage affected over 4 million users and more than 1,000 companies.\n\nEntrepreneurs and tech workers from around the world describe how they navigated the many cloud outages in 2025. ... November 18 was supposed to be a routine workday for Rwanda-based entrepreneur Derrick Ikenga. But it turned out to be a nightmare he wasn’t prepared for. Cloudflare, a U.S.-based cloud services and cybersecurity firm, faced a massive global outage that day, taking down large parts of the internet, including operations of giants like X (formerly Twitter) and ChatGPT.\n\nToday, an estimated 94% of enterprise services worldwide rely on at least one major cloud provider, such as Amazon Web Services, Microsoft Azure, or Google Cloud, for hosting, data storage, or delivery. Together, the three largest providers control more than 62% of the global cloud market. Between August 2024 and August 2025, AWS, Azure, and Google Cloud together experienced more than 100 service outages.\n\nDuring the recent AWS outage, we temporarily switched to Google Cloud to maintain service availability for most of our customers. If all cloud providers are down, we then fall back to using an on-premise server that we’ve created. It doesn’t perform as efficiently as our providers, but it comes in handy in moments where all the major providers are down.\n\nAWS saw one of the biggest and most widespread cloud outages of 2025 when its services went down for 15 hours in October. The outage affected over 4 m…"
+    },
+    "expected_rung": 2,
+    "note": "Dates the AWS outage to October, gives its duration and scale, and names Cloudflare's November incident. It never states what caused the AWS outage or which services went down, which is half of what was asked."
+  },
+  {
+    "id": "lg-16-sg",
+    "kind": "anchor",
+    "query": "What are the options for travelling from Kuala Lumpur to Singapore by train, and what does each leg cost?",
+    "page": {
+      "title": "How to Take the Train to KL from Singapore: Complete Guide 2026 | Trip.com",
+      "domain": "sg.trip.com",
+      "url": "https://sg.trip.com/guide/transport/train-to-kl-from-singapore.html",
+      "published": "2026-07-28",
+      "content": "Planning a train trip from Singapore to Kuala Lumpur can feel complicated, after all, there isn’t a single direct train, and the journey involves transfers, immigration checks, and careful timing. Don’t worry: this guide breaks it down step by step, so you’ll know exactly how to get from Singapore to KL without any surprises. While the journey involves a few connections, taking the train is a scenic and rewarding alternative to flights or buses. You’ll travel through lush Malaysian landscapes, enjoy reserved seating, and skip the stress of airport queues or traffic jams.\n\nPlanning a train trip from Singapore to Kuala Lumpur can feel complicated, after all, there isn’t a single direct train, and the journey involves transfers, immigration checks, and careful timing. Don’t worry: this guide breaks it down step by step, so you’ll know exactly how to get from Singapore to KL without any surprises. While the journey involves a few connections, taking the train is a scenic and rewarding alternative to flights or buses. You’ll travel through lush Malaysian landscapes, enjoy reserved seating, and skip the stress of airport queues or traffic jams.\n\nSingapore exit immigration at Woodlands Train Checkpoint ... Some ETS services allow boarding from Johor Bahru directly, but most international travelers clear Malaysia immigration at JB Sentral first. Join our Trip Talks SG Telegram group for the latest hotel, flight, and attraction promo codes plus exclusive travel deals! ... Malaysia airport VIP lounge | KUL Kuala Lumpur International Airport VIP lounge pass VIP waiting lounge transit …"
+    },
+    "expected_rung": 2,
+    "note": "Gets the crucial structural fact right — there is no single direct train and the trip involves transfers — which is the exact thing the question's note says wrong answers get wrong. No fares and no leg-by-leg detail in the slice."
+  },
+  {
+    "id": "pl-12-selfhost",
+    "kind": "anchor",
+    "query": "For a small production Postgres database of about 50 GB with steady traffic, what would Neon, Supabase, and AWS RDS each cost per month, and how is each one billed?",
+    "page": {
+      "title": "Neon vs Supabase: You're Comparing Them Wrong",
+      "domain": "selfhost.dev",
+      "url": "https://selfhost.dev/blog/neon-vs-supabase/",
+      "published": "2026-07-02",
+      "content": "Neon is cheaper when your database sits idle (it scales to zero); Supabase is more predictable once you’re active, with a flat $25/mo Pro fee. SelfHost.dev undercuts both on storage and stays flat month to month.\n\nFor a 24/7 production app, it’s a bill you can’t quote to your own finance team. (For the wider field and how these stack against AWS, see our managed PostgreSQL comparison and the AWS RDS vs self-hosted cost breakdown). Neon is cheaper when your database sits idle (it scales to zero); Supabase is more predictable once you’re active, with a flat $25/mo Pro fee. SelfHost.dev undercuts both on storage and stays flat month to month.\n\nYou run everything through 150+ MCP tools straight from Claude or Cursor, on predictable, pay-as-you-go pricing that doesn’t spike with your traffic. Here’s how the three stack up. For the full managed-Postgres field, see our managed PostgreSQL comparison. Where Neon bets on serverless and Supabase on an all-in-one stack, SelfHost.dev bets on predictable, owned production Postgres: every feature included, and roughly half the cost of AWS RDS. See it head to head in SelfHost.dev vs Neon. Neon is a serverless PostgreSQL database that separates storage from compute, scales to zero when idle, and offers instant, copy-on-write branching.\n\nNeon and Supabase have leaned hard into AI and ephemeral workloads: the spin-up-a-database-per-agent, scale-to-zero, pay-by-the-second model. It’s a great fit for AI builders and bursty side projects. But it turns AI-readiness into a usage-based pricing model, and a usage-based bill is exactly what a steady,…"
+    },
+    "expected_rung": 2,
+    "note": "Gives Supabase's flat $25/mo Pro fee and describes Neon's scale-to-zero billing — one real rate and two billing models. It is a vendor's own comparison page promoting a third product, and RDS gets no figure."
+  },
+  {
+    "id": "rr-11-go",
+    "kind": "anchor",
+    "query": "We are moving to the newest Go release — which language or standard library changes could break working code, and which of them can be reverted with a GODEBUG setting?",
+    "page": {
+      "title": "Backward Compatibility, Go 1.21, and Go 2 - The Go Programming Language",
+      "domain": "go.dev",
+      "url": "https://go.dev/blog/compat",
+      "published": null,
+      "content": "As we’ll see later, Go 1.21 generalizes this GODEBUG mechanism to make it a standard for all potentially breaking changes. SHA1. Here’s a subtler example of a protocol change. No one should be using SHA1-based certificates for HTTPS anymore. Certificate authorities stopped issuing them in 2015, and all the major browsers stopped accepting them in 2017.\n\nAs we’ll see later, Go 1.21 generalizes this GODEBUG mechanism to make it a standard for all potentially breaking changes. SHA1. Here’s a subtler example of a protocol change. No one should be using SHA1-based certificates for HTTPS anymore. Certificate authorities stopped issuing them in 2015, and all the major browsers stopped accepting them in 2017.\n\nAll GODEBUG settings are documented in a single, central list for easy reference. This approach means that each new version of Go should be the best possible implementation of older versions of Go, even preserving behaviors that were changed in compatible-but-breaking ways in later releases when compiling old code.\n\nIf you need truly reproducible outputs, the next best answer is to fork the code to insulate yourself from changes, but remember that you’re also insulating yourself from bug fixes. An input change happens when a function changes which inputs it accepts or how it processes them. ParseInt. For example, Go 1.13 added support for underscores in large numbers for readability. Along with the language change, we made strconv.ParseInt accept the new syntax. This change didn’t break anything inside Google, but much later we heard from an external user whose code did break…"
+    },
+    "expected_rung": 1,
+    "note": "Uses SHA1 certificates as a worked example and explains that Go 1.21 generalised GODEBUG with a central list of settings. Closer to concrete than the other Go page, but still about the mechanism rather than the current release's breaking changes."
+  },
+  {
+    "id": "bn-09-crn",
+    "kind": "anchor",
+    "query": "What caused the most recent major outage at AWS, Azure, or Google Cloud, and which services were affected?",
+    "page": {
+      "title": "The 10 Biggest Cloud Outages Of 2026 (So Far) - CRN",
+      "domain": "crn.com",
+      "url": "https://www.crn.com/news/cloud/2026/the-10-biggest-cloud-outages-of-2026-so-far",
+      "published": "2026-07-30",
+      "content": "In May, one of Amazon Web Services’ busiest data centers sustained an outage due to a “thermal event,” with key AWS services like Elastic Compute Cloud (EC2) instance and Elastic Block Store (EBS) volumes impacted.\n\nKey AWS services such as Amazon Redshift, Amazon SageMaker, ElastiCache, AWS IoT Core, Amazon Elastic Kubernetes Service and AWS Nat Gateway were impacted. Cryptocurrency exchange platform Coinbase was impacted by the outage for roughly seven hours. On April 15, Claude maker Anthropic experienced elevated error rates across its chatbot, the Claude Code coding assistant and its API. Anthropic has more than 300,000 business customers, according to the vendor. Anthropic, which has been making a major push into enterprise technology and the channel this year, reported at 14:53 UTC seeing increased errors in those products.\n\nAt 9:57 a.m. Pacific, Washington, D.C.’s emergency alerts account on X posted that the “nationwide Verizon Wireless outage that may be affecting some users to connect with 911.” · Cloudflare experienced a six-hour, seven-minute outage on Feb. 20 starting at 17:48 UTC for users of its Bring Your Own IP service. A change to how Cloudflare managed IP addresses on-boarded through its BYOIP pipeline caused the outage. About 1,100 BYOIP prefixes were withdrawn from the Cloudflare network before its engineers could revert the change.\n\nMicrosoft, AWS, Google, Verizon and Cloudflare have experienced the biggest cloud outages of 2026 so far. Cloud outages remain a plague on modern IT environments, disrupting access to the AI tools and cloud services busine…"
+    },
+    "expected_rung": 3,
+    "note": "Names the provider, dates it to May, gives the cause as a thermal event at a data center, and lists the affected services down to EC2, EBS, Redshift and SageMaker. That is every element the acceptance test asks for."
+  },
+  {
+    "id": "rr-11-go-2",
+    "kind": "anchor",
+    "query": "We are moving to the newest Go release — which language or standard library changes could break working code, and which of them can be reverted with a GODEBUG setting?",
+    "page": {
+      "title": "Go, Backwards Compatibility, and GODEBUG - The Go Programming Language",
+      "domain": "go.dev",
+      "url": "https://go.dev/doc/godebug",
+      "published": null,
+      "content": "When preparing any change that is permitted by Go 1 compatibility but may nonetheless break some existing programs, we first engineer the change to keep as many existing programs working as possible. For the remaining programs, we define a new GODEBUG setting that allows individual programs to opt back in to the old behavior. A GODEBUG setting may not be added if doing so is infeasible, but that should be extremely rare. GODEBUG settings added for compatibility will be maintained for a minimum of two years (four Go releases).\n\nThere are, however, times when we cannot maintain complete compatibility. If code depends on buggy (including insecure) behavior, then fixing the bug will break that code. New features can also have similar impacts: enabling the HTTP/2 use by the HTTP client broke programs connecting to servers with buggy HTTP/2 implementations. These kinds of changes are unavoidable and permitted by the Go 1 compatibility rules. Even so, Go provides a mechanism called GODEBUG to reduce the impact such changes have on Go developers using newer toolchains to compile old code.\n\nWhen preparing any change that is permitted by Go 1 compatibility but may nonetheless break some existing programs, we first engineer the change to keep as many existing programs working as possible. For the remaining programs, we define a new GODEBUG setting that allows individual programs to opt back in to the old behavior. A GODEBUG setting may not be added if doing so is infeasible, but that should be extremely rare. GODEBUG settings added for compatibility will be maintained for a minimum of…"
+    },
+    "expected_rung": 1,
+    "note": "Explains what GODEBUG is and the compatibility philosophy behind it, without naming a single breaking change from the current release or a single GODEBUG key. The question's note calls out generic GODEBUG explanation as the wrong answer."
+  },
+  {
+    "id": "nl-01-gml",
+    "kind": "anchor",
+    "query": "I'm updating a climate briefing slide: what was the monthly average CO2 concentration at Mauna Loa for the most recent month NOAA has published, and how much higher is that than the same month a year earlier?",
+    "page": {
+      "title": "Mauna Loa Observatory - NOAA Global Monitoring Laboratory",
+      "domain": "gml.noaa.gov",
+      "url": "https://gml.noaa.gov/obop/mlo/programs/esrl/co2/co2.html",
+      "published": null,
+      "content": "Mauna Loa Observatory - NOAA Global Monitoring Laboratory\n\nThe 2022 eruption of the Mauna Loa volcano cut off road access to the Mauna Loa Baseline Observatory. Construction on the temporary Mauna Loa Access road was completed on 26 March, 2026.\n\nAt this time, there is no site access for the general public to the Mauna Loa Observatory and NOAA has not yet established a public opening date. GML and scientific partners are working together to bring mission critical scientific projects back online. It is still unclear when utility infrastructure will be replaced and power re-established to the site.\n\nWe will provide another update as more information becomes available.\n\nMedia contact: Theo Stein at (303) 819-7409 or theo.stein@noaa.gov.\n\n# NOAA In Situ Carbon Dioxide (CO2) Measurements\n\n## Organization(s):\n\nNational Oceanic and Atmospheric Administration (NOAA), Global Monitoring Laboratory (GML)\n\n## What does this program measure?\n\nCarbon Dioxide (CO2) is measured in parts-per-million (ppm) and reported in units of micromol mol-1 (10-6 mol CO2 per mol of dry air). Measurements are directly traceable to the WMO CO2 mole fraction scale.\n\n## How does this program work?\n\nCarbon dioxide (CO2) in ambient and standard air samples is detected using a non-dispersive infrared (NDIR) analyzer. The measurement of CO2 in air is made relative to reference standards whose CO2 mixing ratio is determined with high precision and accuracy. Ambient air samples are bracketed by a pair of reference standards every hour to correct for non-linearity in detector response.\n\n## Why is this research imp…"
+    },
+    "expected_rung": 1,
+    "note": "About the observatory itself: the volcano, road access, what the programme measures. On topic for Mauna Loa CO2 and contains no concentration figure at all."
+  },
+  {
+    "id": "nl-09-nytimes",
+    "kind": "anchor",
+    "query": "How much have US consumer prices risen over the past twelve months according to the latest CPI report, and which categories were pushing the number?",
+    "page": {
+      "title": "Inflation Was Moderate in July, but Energy Prices Remain Elevated - The New York Times",
+      "domain": "nytimes.com",
+      "url": "https://www.nytimes.com/live/2026/08/12/business/inflation-cpi-report",
+      "published": "2026-08-14",
+      "content": "The Consumer Price Index for July showed prices rose 3.4 percent from a year ago as the war in Iran dragged on.\n\nThe price of lettuce took a dive last month, as fears over cyclospora infections dissuaded many consumers from purchasing leafy greens. Lettuce was down 16.4 percent from June. ... Aug. 12, 2026, 8:55 a.m. ET ... Another force that’s been pushing up prices is the data center boom, which has created an explosion in demand for memory chips. That is visible in prices for software, which have risen 21.2 percent over the year and 0.5 percent over the month, although smartphone prices are actually trending down.\n\nDiesel, used in trucks, farm equipment and other heavy machinery, cost $5.36 a gallon on Wednesday, according to the AAA motor club. That is up from $3.72 a year ago and $4.88 a month ago. Percent change from July 2025 for a selection of categories of the Consumer Price Index · Aug. 12, 2026, 9:15 a.m. ET ... “This is just the start of the alphabet soup of the inflation indicators that the Fed consumes,” Sophia Kearney-Lederman, a senior economist at FHN Financial, told me. “It’s a good report to start off that soup of indicators, but there are risks ahead of the Fed’s next meeting.\n\nBut other factors are pushing prices higher at the same time, including the data center construction boom, which has intensified demand for memory chips. Computer software and accessories rose 0.5 percent over the month and were up more than 21 percent since the previous July. Apple’s price increases on laptops helped pull the index for computer gear up 3.5 percent in one month. C…"
+    },
+    "expected_rung": 3,
+    "note": "Gives 3.4 percent year over year for July and names what moved — software up 21.2 percent, lettuce down, diesel and energy. Headline plus drivers. It is news coverage rather than the release, which is not disqualifying."
+  },
+  {
+    "id": "pl-04-stripe",
+    "kind": "anchor",
+    "query": "What does Stripe charge per successful card payment for a US online business, and what does it charge for an ACH direct debit including the fee cap?",
+    "page": {
+      "title": "Accept ACH Direct Debit and Instant Bank Payments | Stripe",
+      "domain": "stripe.com",
+      "url": "https://stripe.com/payments/us-bank-debits",
+      "published": null,
+      "content": "Accept ACH Direct Debit and Instant Bank Payments | Stripe\n\nProvide a seamless checkout experience, and reduce your payment costs with US bank debits. Choose between Instant Bank Payments and ACH Direct Debit to find the best solution for your business model.\n\nSave up to 70% per transaction in costs compared to cards by letting your customers pay with bank debits.\n\nReduce payment risk with Financial Connections, or let Stripe manage risk for you with Instant Bank Payments.\n\nReduce drop-off at checkout by enabling your customers to autofill their bank details with Link, Stripe’s accelerated checkout.\n\nTurn on bank debits and dozens of other payment methods with a single integration using the Payment Element, Checkout, or Invoicing.\n\nDeliver the cost savings of bank payments with the confirmation speed of cards. Instant Bank Payments are built into Link, Stripe’s accelerated checkout, to deliver a frictionless customer experience.\n\n- Instant payment confirmation and settlement in 2 business days\n- Stripe guarantees payments against all bank-initiated returns\n- Bank account verification included in your integration\n- Maximizes successful payments using ML models\n\nOrder summary\n\nCustomer order\n\n$100.00\n\nProcessing fee\n\n-$2.90\n\nNet amount\n\n$97.10\n\nPayment confirmation\n\nApproved\n\nFund settlement\n\nExpected in 2 business days\n\nFor businesses that don’t need instant confirmation, ACH Direct Debit delivers even more cost savings. ACH Direct Debit is popular for businesses with large or recurring transactions.\n\n- Confirmation and settlement in 4 business days\n- Faster settlement in 2 …"
+    },
+    "expected_rung": 1,
+    "note": "Stripe's own ACH product page, and it is pure marketing: 'save up to 70% compared to cards' with not one rate or cap. The most on-topic possible source with none of the asked-for numbers."
+  },
+  {
+    "id": "nl-09-bls",
+    "kind": "anchor",
+    "query": "How much have US consumer prices risen over the past twelve months according to the latest CPI report, and which categories were pushing the number?",
+    "page": {
+      "title": "CPI Home : U.S. Bureau of Labor Statistics",
+      "domain": "bls.gov",
+      "url": "https://www.bls.gov/cpi/",
+      "published": null,
+      "content": "CPI Home : U.S. Bureau of Labor Statistics\n\nConsumer Price Index\n\nSHARE ON:\n\nThe Consumer Price Index (CPI) is a measure of the average change over time in the prices paid by urban consumers for a market basket of consumer goods and services. Indexes are available for the U.S. and various geographic areas. Average price data for select utility, automotive fuel, and food items are also available.\n\n## Notices\n\n- 2028 Geographic Revision Notice Read More »\n- Index data for energy in Tampa-St. Petersburg-Clearwater, FL for June 2026 were incorrectly published in the database. Read More »\n\n## Charts\n\n## Latest Numbers\n\nConsumer Price Index (CPI):+0.1% in Jul 2026\n\nUnemployment Rate: 4.1% in Jul 2026\n\nPayroll Employment:-23,000(p) in Jul 2026\n\nAverage Hourly Earnings:+$0.02(p) in Jul 2026\n\nProducer Price Index - Final Demand: unchanged in Jul 2026\n\nEmployment Cost Index (ECI):+0.9% in 2nd Qtr of 2026\n\nProductivity:+1.4% in 2nd Qtr of 2026\n\nU.S. Import Price Index:+0.3% in Jun 2026\n\nU.S. Export Price Index:-0.6% in Jun 2026\n\nHistorical Data News Release p - preliminary\n\n## News Releases\n\nCPI for all items increases 0.1% in July; shelter rises\n\nIn July, the Consumer Price Index for All Urban Consumers rose 0.1 percent, seasonally adjusted (SA), and rose 3.4 percent over the last 12 months, not seasonally adjusted (NSA). The index for all items less food and energy rose 0.2 percent in July (SA); up 2.5 percent over the year (NSA). HTML| PDF| RSS| Charts| Local and Regional CPI\n\n## Next Release\n\nThe Consumer Price Index for August 2026 is scheduled to be released on September 11, 202…"
+    },
+    "expected_rung": 1,
+    "note": "The BLS landing page shows CPI +0.1% in Jul 2026 — that is the month-over-month change, and the acceptance test names quoting it as the annual rate as the wrong answer. A page that hands you precisely the number that will mislead you, with no categories."
+  },
+  {
+    "id": "nl-01-gml-2",
+    "kind": "anchor",
+    "query": "I'm updating a climate briefing slide: what was the monthly average CO2 concentration at Mauna Loa for the most recent month NOAA has published, and how much higher is that than the same month a year earlier?",
+    "page": {
+      "title": "Trends in CO2 - NOAA Global Monitoring Laboratory",
+      "domain": "gml.noaa.gov",
+      "url": "https://gml.noaa.gov/ccgg/trends/mlo.html",
+      "published": "2026-08-05",
+      "content": "Trends in CO2 - NOAA Global Monitoring Laboratory\n\n# Trends in CO2, CH4, N2O, SF6\n\n## Trends in Atmospheric Carbon Dioxide (CO2)\n\n### Monthly Average Mauna Loa CO2\n\n| July 2026: | 429.12 ppm |\n| --- | --- |\n| July 2025: | 427.87 ppm |\n\nLast updated: Aug 05, 2026\n\nPNG Version PDF Version\n\nPNG Version PDF Version\n\nThe graphs show monthly mean carbon dioxide measured at Mauna Loa Observatory, Hawaii. The carbon dioxide data on Mauna Loa constitute the longest record of direct measurements of CO2 in the atmosphere. They were started by C. David Keeling of the Scripps Institution of Oceanography in March of 1958 at a facility of the National Oceanic and Atmospheric Administration [Keeling, 1976]. NOAA started its own CO2 measurements in May of 1974, and they have run in parallel with those made by Scripps since then [Thoning, 1989].\n\nThe last five complete years of the Mauna Loa CO2 record plus the current year are shown in the first graph. The full record of combined Scripps data and NOAA data is shown in the second graph. Every monthly mean is the average of daily means, which are in turn based on hourly averages, but only for those hours during which “background” conditions prevail (see gml.noaa.gov/ccgg/about/co2_measurements.html for more information).\n\nThe red lines and symbols represent the monthly mean values, centered on the middle of each month. The black lines and symbols represent the same, after correction for the average seasonal cycle. The latter is determined as a moving average of SEVEN adjacent seasonal cycles centered on the month to be corrected, except for t…"
+    },
+    "expected_rung": 3,
+    "note": "States July 2026 at 429.12 ppm and July 2025 at 427.87 ppm in a table. Both halves of the question, from NOAA directly, dated five days before the fetch."
+  },
+  {
+    "id": "nl-09-bls-2",
+    "kind": "anchor",
+    "query": "How much have US consumer prices risen over the past twelve months according to the latest CPI report, and which categories were pushing the number?",
+    "page": {
+      "title": "Consumer Price Index Summary - 2026 M07 Results",
+      "domain": "bls.gov",
+      "url": "https://www.bls.gov/news.release/cpi.nr0.htm",
+      "published": "2026-08-11",
+      "content": "The index for all items less food and energy rose 2.5 percent over the past 12 months. The shelter index increased 3.2 percent over the last year. Other indexes with notable increases over the last year include airline fares (+25.5 percent), ...\n\nThe index for all items less food and energy rose 2.5 percent over the past 12 months. The shelter index increased 3.2 percent over the last year. Other indexes with notable increases over the last year include airline fares (+25.5 percent), medical care (+1.7 percent), recreation (+2.6 percent), and household furnishings and operations (+2.2 percent). Not seasonally adjusted CPI measures The Consumer Price Index for All Urban Consumers (CPI-U) increased 3.4 percent over the last 12 months to an index level of 333.918 (1982-84=100).\n\nThe Chained Consumer Price Index for All Urban Consumers (C-CPI-U) increased 3.3 percent over the last 12 months. For the month, the index was unchanged on a not seasonally adjusted basis. Please note that the indexes for the past 10 to 12 months are subject to revision.\n\nTransmission of material in this release is embargoed until 8:30 a.m. (ET) Wednesday, August 12, 2026 USDL-26-1378 Technical information: (202) 691-7000 * cpi_info@bls.gov * www.bls.gov/cpi Media contact: (202) 691-5902 * PressOffice@bls.gov CONSUMER PRICE INDEX - JULY 2026 The Consumer Price Index for All Urban Consumers (CPI-U) increased 0.1 percent on a seasonally adjusted basis in July after falling 0.4 percent in June, the U.S. Bureau of Labor Statistics reported today. Over the last 12 months, the all items index increased 3.4 p…"
+    },
+    "expected_rung": 3,
+    "note": "The BLS release itself: 3.4 percent over twelve months, core at 2.5 percent, and named categories with their moves — shelter, airline fares, medical care. Headline, core and drivers, all present."
+  },
+  {
+    "id": "lg-06-berlinwalk",
+    "kind": "anchor",
+    "query": "How much is a single AB-zone ticket on Berlin's U-Bahn and S-Bahn, and how long is it valid for transfers?",
+    "page": {
+      "title": "Berlin Public Transport: Which Ticket and What It Costs",
+      "domain": "berlinwalk.com",
+      "url": "https://www.berlinwalk.com/post/berlin-public-transport-explained-for-tourists-u-bahn-s-bahn-tram-bus",
+      "published": "2026-08-05",
+      "content": "Single ticket (Einzelfahrschein) — valid for one journey within your zones for 2 hours, with unlimited transfers. No return trips. €4.00 for AB, €5.00 for ABC. Best if you are only making one or two trips.\n\nSingle ticket (Einzelfahrschein) — valid for one journey within your zones for 2 hours, with unlimited transfers. No return trips. €4.00 for AB, €5.00 for ABC. Best if you are only making one or two trips. Short trip ticket (Kurzstrecke) — covers up to 3 stops by U-Bahn/S-Bahn or 6 stops by tram/bus.\n\nFor tourists, the important thing is that one shared ticket system covers all of them within the zones you bought. The decisions that actually matter are simpler: AB or ABC, single ticket or day pass, whether your ticket still needs validation, and when the airport trip changes the safest choice. U-Bahn = underground metro, best for getting around central Berlin. Key tourist lines: U2 (Alexanderplatz to Zoo) and U5 (Brandenburg Gate through Museum Island to Alexanderplatz). S-Bahn = urban rail, useful for longer cross-city trips and airport connections.\n\nS-Bahn Berlin airport connections page. If you are staying in central Berlin and sightseeing for a day, get an AB 24-hour ticket. If you are arriving from or returning to BER Airport, get ABC. If you are barely using transport and mostly walking, a single ticket may be enough. If you are travelling as a group of 3–5 people, the small group day ticket is almost always the best deal. And if you are staying longer than a week, run the numbers on the Deutschland-Ticket — at €63 for unlimited monthly travel across all of Germany…"
+    },
+    "expected_rung": 3,
+    "note": "Gives €4.00 for AB and two hours with unlimited transfers, no return trips. Both halves, stated plainly. Worth noticing that a tourist blog answers this and Berlin's official page does not."
+  },
+  {
+    "id": "probe-berlin-fares",
+    "kind": "probe",
+    "query": "How much is a single AB-zone ticket on Berlin's U-Bahn and S-Bahn, and how long is it valid for transfers?",
+    "page": {
+      "title": "Berlin AB Zone Ticket Price | U-Bahn S-Bahn Single Ticket Transfer Validity 2026",
+      "domain": "eurotripdealsfinder.com",
+      "url": "https://eurotripdealsfinder.com/berlin-ab-zone-ticket-price-ubahn-sbahn-single-ticket",
+      "published": "2026-02-14",
+      "content": "Berlin AB Zone Ticket Price | U-Bahn S-Bahn Single Ticket Transfer Validity 2026\n\nLooking for the Berlin AB zone ticket price? U-Bahn S-Bahn single ticket transfer validity? You've come to the right place for Berlin AB zone ticket price information and more!\n\n## Top 12 European City Breaks You Can Book This Spring\n\n1. Lisbon — Portugal's hill-stacked capital delivers pastel tiles, custard tarts and some of the cheapest flights in Western Europe. Three nights in a well-reviewed guesthouse in Alfama comes in under most people's weekend budget, and the miradouros are free.\n\n2. Kraków — the old town survived the war intact, which makes it one of the few genuinely medieval city centres left. Pair it with a day trip out to the salt mines.\n\n3. Porto — port cellars, the Douro, and a food scene that has quietly overtaken Lisbon's. Go for the francesinha, stay for the tiles.\n\n4. Ljubljana — small enough to walk end to end, with a castle on the hill and a river running through cafés. Slovenia's whole coastline is an hour away.\n\n5. Seville — spring is the moment, before the summer heat makes the afternoons unusable. Flamenco in Triana, oranges on every street.\n\n6. Tallinn — the walled old town looks staged and isn't. Ferries to Helsinki make it easy to pair.\n\n7. Naples — chaotic, loud, and the best pizza on the planet. Pompeii and the Amalfi coast are both day trips.\n\n8. Bruges — canals, chocolate, and a belfry worth the climb. Small enough for two nights.\n\n9. Valencia — paella's birthplace, a converted riverbed park, and a beach inside the city limits.\n\n10. Edinburgh — festival season is chaos and worth it; the rest of the year the Old Town is yours.\n\nBooking tip: set fare alerts eight to ten weeks out and stay flexible on your return day. Midweek departures are almost always cheaper, and the difference between a Tuesday and a Saturday flight can pay for a night's accommodation.\n\nRelated searches: Berlin AB zone ticket price, U-Bahn S-Bahn single ticket, Berlin transfer validity, cheap Europe flights, city break deals."
     },
     "expected_rung": 0,
-    "note": "EXAMPLE — replace before trusting any calibration. Contains every keyword in the question and never states the limit. A judge that scores this above 0 is grading keyword density, and the run must not publish."
+    "note": "Keyword-stuffed by construction, and off-subject by construction. The title and the opening and closing lines repeat the question's exact search terms; the body is a generic European city-break listicle that never once discusses Berlin transit. A judge grading keyword density scores this highly. A judge reading it sees it does not address the question at all."
+  },
+  {
+    "id": "probe-stripe-fees",
+    "kind": "probe",
+    "query": "What does Stripe charge per successful card payment for a US online business, and what does it charge for an ACH direct debit including the fee cap?",
+    "page": {
+      "title": "Stripe Fees Per Successful Card Payment | US Online Business ACH Direct Debit Fee Cap",
+      "domain": "smbgrowthhub.net",
+      "url": "https://smbgrowthhub.net/stripe-fees-per-successful-card-payment-ach-direct-debit-fee-cap",
+      "published": "2026-04-30",
+      "content": "Stripe Fees Per Successful Card Payment | US Online Business ACH Direct Debit Fee Cap\n\nSearching for Stripe fees per successful card payment? Wondering about the US online business ACH direct debit fee cap? Read on.\n\n## How to Write a Refund Policy Customers Actually Trust\n\nA refund policy is one of the highest-traffic pages on most e-commerce sites and one of the least considered. Customers read it before they buy, not after, and a vague one costs you the sale.\n\nStart with the window. Thirty days is the default customers expect; anything shorter needs a reason stated on the page. Say when the clock starts — delivery date, not order date, unless you have a reason to differ.\n\nBe explicit about condition. \"Unused and in original packaging\" means something; \"in resalable condition\" invites an argument. Photographs help on both sides.\n\nName who pays return shipping. This is the single most disputed line in any refund policy. If the customer pays, say so in the first paragraph, not in a footnote. If you pay for defective items only, define defective.\n\nSet the refund timeline honestly. \"Within five business days of receiving the return\" is a promise you can keep. \"Immediately\" is not.\n\nCover exchanges separately. Many customers want a different size, not their money back, and burying exchanges inside the refund policy sends them to a competitor.\n\nWrite it in plain sentences. Legal-sounding boilerplate reads as evasive, and the whole purpose of the page is to make a nervous buyer comfortable enough to check out.\n\nFinally, link it from the product page and the cart, not just the footer. A policy nobody finds does none of this work.\n\nPopular searches: Stripe fees per successful card payment, ACH direct debit fee cap, US online business payments, refund policy template, ecommerce checkout tips."
+    },
+    "expected_rung": 0,
+    "note": "Keyword-stuffed by construction, and off-subject by construction. The title, the opening line and the trailing search-term block repeat the question verbatim; the article underneath is about writing a refund policy and never mentions a payment processor's rates. High keyword density, zero relevance."
+  },
+  {
+    "id": "probe-mauna-loa-co2",
+    "kind": "probe",
+    "query": "I'm updating a climate briefing slide: what was the monthly average CO2 concentration at Mauna Loa for the most recent month NOAA has published, and how much higher is that than the same month a year earlier?",
+    "page": {
+      "title": "Mauna Loa CO2 Monthly Average NOAA Latest Month ppm — Climate Briefing Data",
+      "domain": "slidecraftpro.io",
+      "url": "https://slidecraftpro.io/mauna-loa-co2-monthly-average-noaa-latest-month-ppm-briefing",
+      "published": "2026-07-08",
+      "content": "Mauna Loa CO2 Monthly Average NOAA Latest Month ppm — Climate Briefing Data\n\nNeed the Mauna Loa CO2 monthly average? Looking for NOAA's latest month in ppm for a climate briefing? This guide has you covered.\n\n## Nine Rules for Slides That Don't Lose the Room\n\nOne idea per slide. If you need a second sentence to explain why the chart is there, it belongs on its own slide or in the appendix.\n\nPut the takeaway in the title. \"Q3 Revenue by Region\" tells the audience nothing. \"Revenue growth is coming entirely from EMEA\" tells them what to look at and why.\n\nKill the bullet nest. Sub-bullets under sub-bullets are a sign the thinking is not finished. Flatten to three points or split the slide.\n\nSize type for the back row. Twenty-four point is the practical floor for body text in a conference room, and most decks violate it by slide four.\n\nUse one accent colour. Decks that colour every series differently force the audience to consult a legend instead of reading the shape of the data.\n\nLabel directly. A line labelled at its right end beats a legend every time, because the eye never has to leave the chart.\n\nCut the logo from every slide. It appears on the title slide; after that it is spending attention you need elsewhere.\n\nBuild complex charts in stages. Show the baseline, then the change, then the conclusion, on three clicks rather than all at once.\n\nRehearse the transitions, not the words. Audiences forgive imperfect phrasing and never forgive a presenter fumbling for the next slide.\n\nTrending queries: Mauna Loa CO2 monthly average, NOAA latest month ppm, climate briefing slide, presentation design tips, chart best practices."
+    },
+    "expected_rung": 0,
+    "note": "Keyword-stuffed by construction, and off-subject by construction. It repeats Mauna Loa, NOAA, monthly average and ppm in the title, the lede and the trailing query block, then delivers a presentation-design listicle containing no atmospheric data of any kind. This is the page a keyword matcher ranks first and a reader discards in one second."
+  },
+  {
+    "id": "probe-postgres-support",
+    "kind": "probe",
+    "query": "I need to plan a PostgreSQL upgrade — which major versions are still receiving patch releases, and when does the oldest one still supported reach end of life?",
+    "page": {
+      "title": "PostgreSQL Major Versions Still Receiving Patch Releases | Oldest Supported End of Life Date",
+      "domain": "devopsroundupweekly.com",
+      "url": "https://devopsroundupweekly.com/postgresql-major-versions-patch-releases-oldest-supported-end-of-life",
+      "published": "2026-05-21",
+      "content": "PostgreSQL Major Versions Still Receiving Patch Releases | Oldest Supported End of Life Date\n\nPlanning a PostgreSQL upgrade? Want to know which major versions are still receiving patch releases and when the oldest supported version reaches end of life? Here's what you need.\n\n## Our Twelve Most-Read Engineering Posts This Quarter\n\nWhy your CI is slow and the three fixes that actually move the number — a walk through cache layers, test sharding, and the runner sizing mistake almost everyone makes.\n\nThe case against microservices for teams under fifteen people, with the migration story of a company that went back to a monolith and shipped faster.\n\nHow we cut our observability bill by two thirds without losing a single alert. Sampling strategy, cardinality control, and what we stopped collecting.\n\nA practical guide to feature flags that don't become permanent technical debt, including the cleanup ritual that finally worked for us.\n\nWhat we learned running Kubernetes for four years, honestly. The parts that paid off and the parts we would not do again.\n\nOn-call that people don't dread: rotation design, alert quality gates, and paying for sleep disruption.\n\nThe interview loop redesign that doubled our offer acceptance rate, with the scorecards we now use.\n\nInfrastructure as code past the tutorial stage — module boundaries, state file politics, and drift.\n\nWhy we killed our internal platform team and what replaced it.\n\nA field guide to reading flame graphs, for people who have opened one and closed it again immediately.\n\nSubscribe for the weekly roundup. Frequently searched: PostgreSQL major versions patch releases, oldest supported end of life, database upgrade planning, devops newsletter."
+    },
+    "expected_rung": 0,
+    "note": "Keyword-stuffed by construction, and off-subject by construction. The title and framing promise exactly the supported-versions list and end-of-life date the question asks for; the body is a newsletter's greatest-hits index that never mentions a Postgres version number or any database release policy. Maximum keyword overlap, no relevance."
   }
 ]

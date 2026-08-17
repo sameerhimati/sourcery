@@ -53,7 +53,12 @@ export function registerCalibrate(program: Command): void {
             (r.n_null ? `; ${r.n_null} verdict(s) weren't a rung at all` : "") +
             `\n  ${verdict}\n`,
         );
-        for (const m of r.misses.slice(0, 5)) {
+        // Probe failures print first and in full. They are the only
+        // disqualifying result, and sorting by deviation used to bury a probe
+        // scored 1 beneath anchor misses that were off by two — so the verdict
+        // said DISQUALIFIED while the evidence for it was cut from the list.
+        const buried = new Set(r.probe_failures.map((m) => m.id));
+        for (const m of [...r.probe_failures, ...r.misses.filter((m) => !buried.has(m.id)).slice(0, 5)]) {
           process.stdout.write(
             `    ${m.id} (${m.kind}): expected ${m.expected}, got ${m.got ?? "none"}` +
               (m.rationale ? ` — ${m.rationale.slice(0, 80)}` : "") +

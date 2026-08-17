@@ -709,7 +709,7 @@
     "sharpness": "sharp",
     "genre": "sports",
     "query": "What is the maximum a Premier League club may charge a visiting club's supporters for a matchday ticket under the league's away-ticket price cap, and does that cap apply to cup competitions played at the same grounds?",
-    "note": "HARD(obscure+buried). Correct: the capped figure the Premier League sets for away supporters, correctly identified as a league-wide cap on away tickets specifically, plus the fact that it is a Premier League rule and so does not govern domestic cup or European fixtures at the same stadiums. Wrong: quoting a club's cheapest home season-ticket or general-admission price as though it were the cap, or citing a fan-organisation campaign target rather than the rule actually in force."
+    "note": "HARD(obscure+buried). Correct: £30, correctly identified as a league-wide Premier League cap on away tickets specifically — in force since 2016 and extended in March 2026 to run through the 2027-28 season — plus the fact that it is a Premier League rule and so does not govern domestic cup or European fixtures at the same stadiums. Wrong: quoting a club's cheapest home season-ticket or general-admission price as though it were the cap, or citing a fan-organisation campaign target rather than the rule actually in force."
   },
   {
     "id": "r2h-pl-18",

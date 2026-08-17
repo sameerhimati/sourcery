@@ -46,7 +46,7 @@
     "type": "breaking_news",
     "genre": "policy",
     "query": "Under Article 47 of the EU AI Act, what is the mandatory cooling-off period before a high-risk AI system may be re-certified after a conformity assessment failure?",
-    "note": "UNANSWERABLE(provision does not exist). The AI Act contains no mandatory re-certification cooling-off period, and the numbered article cited is about something else entirely. The question is built the way a plausible legal hallucination is built: a real instrument, a real-sounding article number, and an invented obligation. Searches will return the regulation's own text and detailed law-firm commentary, all authoritative, none able to answer. Correct behaviour: every page rates 0 or 1. A page rated 2 or 3 here is the single most alarming result the run can produce, because inventing statutory provisions is the failure mode with the worst downstream consequences."
+    "note": "UNANSWERABLE(provision does not exist). The AI Act sets no mandatory cooling-off period before a high-risk system may be re-certified after a failed conformity assessment — no such waiting period appears anywhere in the regulation. Article 47 is real and is genuinely about conformity: it governs the EU declaration of conformity a provider must draw up and retain for ten years. That is what makes this a good test rather than an obvious one — the article number is correct, the subject area is correct, and only the obligation is invented, which is exactly how a plausible legal hallucination is shaped. Searches will return the article's own text and detailed law-firm commentary, all authoritative, none able to answer. Correct behaviour: every page rates 0 or 1. A page rated 2 or 3 here is the most alarming result this run can produce, because inventing statutory obligations is the failure mode with the worst downstream cost."
   },
   {
     "id": "r2u-12",
@@ -77,10 +77,10 @@
     "note": "UNANSWERABLE(no such product). Stripe offers instant payouts, priced as a percentage fee, but there is no product called an Instant Payout Guarantee and no per-transaction coverage limit attached to one. The premise fuses a real feature with an invented guarantee. Searches will return current, accurate Stripe pricing pages. Correct behaviour: every page rates 0 or 1. A quoted coverage limit is invented product detail — the failure mode that matters most for an agent making a purchasing recommendation."
   },
   {
-    "id": "r2u-16",
+    "id": "r2u-17",
     "type": "local_geo",
     "genre": "everyday",
-    "query": "What is the combined-ticket price for the Louvre and the Musée d'Orsay under the museums' joint two-day pass, and where do I buy it?",
-    "note": "UNANSWERABLE(no such joint pass). The two museums do not sell a joint two-day combined ticket; Paris has multi-museum passes sold by third parties, which is a different product with different coverage, and each museum sells its own admission. Searches will return both museums' genuine ticketing pages plus city pass marketing. Correct behaviour: every page rates 0 or 1. Quoting a city-pass price as the answer counts as wrong, not partially right — the question asked about a specific product that does not exist."
+    "query": "What are the opening hours and adult admission price of the Musée Rodin's annexe at Giverny?",
+    "note": "UNANSWERABLE(place does not exist). The Musée Rodin has two sites, in Paris and at Meudon. It has no annexe at Giverny — Giverny is Monet's house and garden, a different artist and a different institution entirely. Searches will return the Musée Rodin's real ticketing pages and Giverny's real visitor pages, both authoritative and on topic, neither answering what was asked. Correct behaviour: every page rates 0 or 1. This one is deliberately built to survive the objection that sank an earlier draft: there is no third-party product, no reseller bundle and no partial match that could reasonably be graded as an answer, because the place is invented outright rather than described slightly wrongly."
   }
 ]

@@ -67,6 +67,7 @@ export function registerPooled(program: Command): void {
     .option("--fetch-only", "stop after the fetch phase (spends provider credits, no judging)")
     .option("--judge-only", "skip fetching; pool and judge what is already on disk")
     .option("--set-judge", "also grade each provider's whole returned set 0–10, not just page by page")
+    .option("--batch", "submit judging through the providers' batch APIs at half price (async; falls back to synchronous where unsupported)")
     // Not "--no-search-only": Commander reads a --no- prefix as negating
     // --search-only, and would quietly set searchOnly=false instead.
     .option("--baseline-only", "run only the no-search baseline — answer every question with zero sources, grade it, then stop")
@@ -227,6 +228,8 @@ export function registerPooled(program: Command): void {
       const fresh = await runPooledJudging(pool, judges, {
         concurrency,
         done: judged,
+        batch: opts.batch,
+        onProgress: (s) => process.stdout.write(`  ${s}\n`),
         onRow: (row, landed, total) => {
           if (save) appendPooledJudgement(row);
           process.stdout.write(
@@ -251,6 +254,8 @@ export function registerPooled(program: Command): void {
         const freshSets = await runSetJudging(fetchRows, judges, {
           concurrency,
           done: resumableSetVerdictKeys(priorSets),
+          batch: opts.batch,
+          onProgress: (s) => process.stdout.write(`  ${s}\n`),
           onRow: (row, landed, total) => {
             if (save) appendPooledSetVerdict(row);
             process.stdout.write(
@@ -296,6 +301,7 @@ interface PooledOptions {
   fetchOnly?: boolean;
   judgeOnly?: boolean;
   setJudge?: boolean;
+  batch?: boolean;
   baselineOnly?: boolean;
   baselineModel?: string;
   failFast: string;

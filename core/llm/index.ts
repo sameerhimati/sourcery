@@ -162,6 +162,12 @@ export function unfenceJson(text: string): string {
  */
 const rejectsTemperature = new Set<string>();
 
+/** Has this model already told us it rejects an explicit temperature? Read by
+ *  the batch path, which must know before it submits — see batch.ts. */
+export function modelRejectsTemperature(modelRef: string): boolean {
+  return rejectsTemperature.has(modelRef);
+}
+
 /** Does this 400 mean "you may not set temperature"? */
 export function isTemperatureRejection(message: string): boolean {
   return /temperature/i.test(message) && /deprecat|does not support|unsupported|only the default/i.test(message);

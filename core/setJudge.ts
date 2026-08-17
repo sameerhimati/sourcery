@@ -1,4 +1,4 @@
-import { complete } from "./llm";
+import { complete, type ChatMessage } from "./llm";
 import { RETRIEVAL_JUDGE_SYSTEM, RETRIEVAL_JUDGE_TEMP } from "./controls";
 import type { Source } from "./types";
 
@@ -62,6 +62,18 @@ export function renderSources(sources: Source[]): string {
   );
 }
 
+/** Built once, used by both the synchronous and the batch path, so the two
+ *  submit byte-identical work. See relevanceMessages for why that matters. */
+export function setJudgeMessages(query: string, sources: Source[]): ChatMessage[] {
+  return [
+    { role: "system", content: RETRIEVAL_JUDGE_SYSTEM },
+    {
+      role: "user",
+      content: `Query: ${query}\n\nFetched sources (title, domain — date, then extracted content):\n${renderSources(sources)}`,
+    },
+  ];
+}
+
 export async function setJudge(
   query: string,
   sources: Source[],
@@ -72,13 +84,7 @@ export async function setJudge(
       model,
       temperature: RETRIEVAL_JUDGE_TEMP,
       jsonMode: true,
-      messages: [
-        { role: "system", content: RETRIEVAL_JUDGE_SYSTEM },
-        {
-          role: "user",
-          content: `Query: ${query}\n\nFetched sources (title, domain — date, then extracted content):\n${renderSources(sources)}`,
-        },
-      ],
+      messages: setJudgeMessages(query, sources),
     })) || "{}";
   return parseSetVerdict(raw);
 }

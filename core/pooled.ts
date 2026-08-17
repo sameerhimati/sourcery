@@ -22,8 +22,10 @@ import { DEFAULT_CONFIG, ErrorStage, Provider, Source } from "./types";
 import { stage, stageOf } from "./stage";
 import { mapWithConcurrency } from "./extract";
 import { buildPool, pairKey, PooledPage, returnedUrls } from "./pool";
-import { relevanceJudge } from "./relevanceJudge";
-import { setJudge } from "./setJudge";
+import { parseRungVerdict, relevanceJudge, relevanceMessages } from "./relevanceJudge";
+import { parseSetVerdict, setJudge, setJudgeMessages } from "./setJudge";
+import { completeBatch } from "./llm/batch";
+import { RELEVANCE_JUDGE_TEMP, RETRIEVAL_JUDGE_TEMP } from "./controls";
 import {
   ci95,
   createNetworkBreaker,
@@ -213,6 +215,10 @@ export interface PooledJudgeOpts {
   onRow?: (row: PooledJudgementRow, done: number, total: number) => void;
   /** judgementKey()s already on disk (resume). */
   done?: ReadonlySet<string>;
+  /** Submit through the providers' batch APIs at half price. Falls back to the
+   *  synchronous path per provider — see completeBatch. */
+  batch?: boolean;
+  onProgress?: (status: string) => void;
 }
 
 export async function runPooledJudging(
@@ -229,6 +235,35 @@ export async function runPooledJudging(
     );
   const total = jobs.length;
   let landed = 0;
+
+  if (opts.batch) {
+    // The resume key IS the batch id for this request, which is the whole
+    // reason batching drops in without touching resume: results come back
+    // labelled with it, in any order, and map straight onto the same log.
+    const outcomes = await completeBatch(
+      jobs.map(({ page, judgeRef }) => ({
+        customId: judgementKey(page.queryId, page.url, judgeLabel(judgeRef)),
+        args: {
+          model: judgeRef,
+          temperature: RELEVANCE_JUDGE_TEMP,
+          jsonMode: true,
+          messages: relevanceMessages(page),
+        },
+      })),
+      { onProgress: opts.onProgress },
+    );
+    const byId = new Map(outcomes.map((o) => [o.customId, o]));
+    return jobs.map(({ page, judgeRef }) => {
+      const base = { queryId: page.queryId, url: page.url, judge: judgeLabel(judgeRef) };
+      const o = byId.get(judgementKey(page.queryId, page.url, judgeLabel(judgeRef)));
+      const row: PooledJudgementRow =
+        o?.text !== undefined
+          ? { ...base, ...parseRungVerdict(o.text || "{}") }
+          : { ...base, rung: null, rationale: "", error: o?.error ?? "no batch result" };
+      opts.onRow?.(row, ++landed, total);
+      return row;
+    });
+  }
 
   return mapWithConcurrency(jobs, concurrency, async ({ page, judgeRef }) => {
     const base = {
@@ -304,6 +339,8 @@ export interface PooledSetJudgeOpts {
   onRow?: (row: PooledSetVerdictRow, done: number, total: number) => void;
   /** setVerdictKey()s already on disk (resume). */
   done?: ReadonlySet<string>;
+  batch?: boolean;
+  onProgress?: (status: string) => void;
 }
 
 /** Rows worth judging: a failed fetch has no set to grade, and phase 3 already
@@ -327,6 +364,32 @@ export async function runSetJudging(
     );
   const total = jobs.length;
   let landed = 0;
+
+  if (opts.batch) {
+    const outcomes = await completeBatch(
+      jobs.map(({ row, judgeRef }) => ({
+        customId: setVerdictKey(row.queryId, row.provider, judgeLabel(judgeRef)),
+        args: {
+          model: judgeRef,
+          temperature: RETRIEVAL_JUDGE_TEMP,
+          jsonMode: true,
+          messages: setJudgeMessages(row.query, row.sources),
+        },
+      })),
+      { onProgress: opts.onProgress },
+    );
+    const byId = new Map(outcomes.map((o) => [o.customId, o]));
+    return jobs.map(({ row, judgeRef }) => {
+      const base = { queryId: row.queryId, provider: row.provider, judge: judgeLabel(judgeRef) };
+      const o = byId.get(setVerdictKey(row.queryId, row.provider, judgeLabel(judgeRef)));
+      const out: PooledSetVerdictRow =
+        o?.text !== undefined
+          ? { ...base, ...parseSetVerdict(o.text || "{}") }
+          : { ...base, score: null, rationale: "", error: o?.error ?? "no batch result" };
+      opts.onRow?.(out, ++landed, total);
+      return out;
+    });
+  }
 
   return mapWithConcurrency(jobs, concurrency, async ({ row, judgeRef }) => {
     const base = {

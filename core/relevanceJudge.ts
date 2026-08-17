@@ -1,4 +1,4 @@
-import { complete } from "./llm";
+import { complete, type ChatMessage } from "./llm";
 import { RELEVANCE_JUDGE_SYSTEM, RELEVANCE_JUDGE_TEMP } from "./controls";
 import type { PooledPage } from "./pool";
 
@@ -35,28 +35,36 @@ export function parseRungVerdict(raw: string): RungVerdict {
   }
 }
 
+/** The exact prompt this judge sends, built once and used by both paths.
+ *  Extracted so the batch API submits byte-identical work to the synchronous
+ *  call — if the two ever drifted, a run that mixed them would be comparing
+ *  verdicts from two different instruments. */
+export function relevanceMessages(page: PooledPage): ChatMessage[] {
+  const body = page.content.slice(0, EXCERPT_CHARS);
+  return [
+    { role: "system", content: RELEVANCE_JUDGE_SYSTEM },
+    {
+      role: "user",
+      content:
+        `Question: ${page.query}\n\n` +
+        `Page: ${page.title}\n` +
+        `Domain: ${page.domain}\n` +
+        `Published: ${page.published ?? "unknown date"}\n\n` +
+        `Content:\n${body || "(no content extracted)"}`,
+    },
+  ];
+}
+
 export async function relevanceJudge(
   page: PooledPage,
   model: string,
 ): Promise<RungVerdict> {
-  const body = page.content.slice(0, EXCERPT_CHARS);
   const raw =
     (await complete({
       model,
       temperature: RELEVANCE_JUDGE_TEMP,
       jsonMode: true,
-      messages: [
-        { role: "system", content: RELEVANCE_JUDGE_SYSTEM },
-        {
-          role: "user",
-          content:
-            `Question: ${page.query}\n\n` +
-            `Page: ${page.title}\n` +
-            `Domain: ${page.domain}\n` +
-            `Published: ${page.published ?? "unknown date"}\n\n` +
-            `Content:\n${body || "(no content extracted)"}`,
-        },
-      ],
+      messages: relevanceMessages(page),
     })) || "{}";
   return parseRungVerdict(raw);
 }

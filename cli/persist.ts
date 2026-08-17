@@ -1,7 +1,12 @@
 import { appendFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
 import type { CredibilityRow, CredibilitySummary } from "@core/credibility";
-import type { PooledFetchRow, PooledJudgementRow, PooledSummary } from "@core/pooled";
+import type {
+  PooledFetchRow,
+  PooledJudgementRow,
+  PooledSetVerdictRow,
+  PooledSummary,
+} from "@core/pooled";
 
 // The runs.jsonl contract lives in @core/records so every door onto the engine
 // shares one write path; re-exported here because this is still the CLI's, and
@@ -49,6 +54,10 @@ export function writeCredibilitySummary(
 export const POOLED_FETCHES_PATH = ".sourcery/pooled-fetches.jsonl";
 export const POOLED_JUDGEMENTS_PATH = ".sourcery/pooled-judgements.jsonl";
 export const POOLED_SUMMARY_PATH = ".sourcery/pooled-summary.json";
+/** Whole-set verdicts get their own log for the same reason: a set verdict is
+ *  keyed by (query, provider, judge) while a pair verdict is keyed by
+ *  (query, url, judge), and one log holding both resumes wrongly. */
+export const POOLED_SET_VERDICTS_PATH = ".sourcery/pooled-set-verdicts.jsonl";
 
 function appendLine(path: string, value: unknown): void {
   const dir = dirname(path);
@@ -83,6 +92,19 @@ export function readPooledJudgements(
   path = POOLED_JUDGEMENTS_PATH,
 ): PooledJudgementRow[] {
   return readLines<PooledJudgementRow>(path);
+}
+
+export function appendPooledSetVerdict(
+  row: PooledSetVerdictRow,
+  path = POOLED_SET_VERDICTS_PATH,
+): void {
+  appendLine(path, row);
+}
+
+export function readPooledSetVerdicts(
+  path = POOLED_SET_VERDICTS_PATH,
+): PooledSetVerdictRow[] {
+  return readLines<PooledSetVerdictRow>(path);
 }
 
 export function writePooledSummary(summary: PooledSummary, path = POOLED_SUMMARY_PATH): void {

@@ -23,6 +23,7 @@ import { stage, stageOf } from "./stage";
 import { mapWithConcurrency } from "./extract";
 import { buildPool, pairKey, PooledPage, returnedUrls } from "./pool";
 import { relevanceJudge } from "./relevanceJudge";
+import { setJudge } from "./setJudge";
 import {
   ci95,
   createNetworkBreaker,
@@ -264,6 +265,106 @@ export function dedupeJudgementRows(rows: PooledJudgementRow[]): PooledJudgement
   return [...latest.values()].filter((r) => !r.error);
 }
 
+// ─── phase 2b: judge each provider's returned set as a whole ───
+// The per-page judge above answers "is this page any good"; this one answers
+// "was this a good set to hand an agent", which a per-page mean only
+// approximates — it can't see that four excellent pages all say the same thing,
+// or that the one page carrying the answer sits at position eight.
+//
+// Cheaper than it looks: one call per (query × provider × judge) is roughly a
+// third of the pair count, because pooling means the pair judge pays for every
+// distinct page while this pays per returned set.
+//
+// Blinding is by construction again, though differently: a set belongs to
+// exactly one provider, so instead of detaching pages from providers we simply
+// never put a provider name in the prompt — see renderSources.
+
+export interface PooledSetVerdictRow {
+  queryId: string;
+  provider: Provider;
+  judge: string; // short label — judgeLabel(ref)
+  /** 0–10, or null when the judge answered with something that wasn't a score.
+   *  Null is counted and excluded, never folded into a real zero. */
+  score: number | null;
+  rationale: string;
+  /** The judge call itself threw (timeout, key, 429). Retried on resume. */
+  error?: string;
+}
+
+export function setVerdictKey(queryId: string, provider: Provider, judge: string): string {
+  return `${queryId}|${provider}|${judge}`;
+}
+
+export interface PooledSetJudgeOpts {
+  concurrency?: number;
+  onRow?: (row: PooledSetVerdictRow, done: number, total: number) => void;
+  /** setVerdictKey()s already on disk (resume). */
+  done?: ReadonlySet<string>;
+}
+
+/** Rows worth judging: a failed fetch has no set to grade, and phase 3 already
+ *  knows what a failure means (provider-fault is a miss, ours is excluded).
+ *  Deciding that twice, in two places, is how the two answers drift apart. */
+function judgeableRows(rows: PooledFetchRow[]): PooledFetchRow[] {
+  return rows.filter((r) => !r.error && r.sources.length > 0);
+}
+
+export async function runSetJudging(
+  rows: PooledFetchRow[],
+  judges: string[],
+  opts: PooledSetJudgeOpts = {},
+): Promise<PooledSetVerdictRow[]> {
+  const concurrency = opts.concurrency ?? DEFAULT_CONCURRENCY;
+  const jobs = judgeableRows(rows)
+    .flatMap((row) => judges.map((judgeRef) => ({ row, judgeRef })))
+    .filter(
+      ({ row, judgeRef }) =>
+        !opts.done?.has(setVerdictKey(row.queryId, row.provider, judgeLabel(judgeRef))),
+    );
+  const total = jobs.length;
+  let landed = 0;
+
+  return mapWithConcurrency(jobs, concurrency, async ({ row, judgeRef }) => {
+    const base = {
+      queryId: row.queryId,
+      provider: row.provider,
+      judge: judgeLabel(judgeRef),
+    };
+    let out: PooledSetVerdictRow;
+    try {
+      // stage("judge", …) so a judge timeout is never attributed to the
+      // provider whose sources it happened to be reading.
+      const verdict = await stage("judge", setJudge(row.query, row.sources, judgeRef));
+      out = { ...base, score: verdict.score, rationale: verdict.rationale };
+    } catch (e) {
+      out = {
+        ...base,
+        score: null,
+        rationale: "",
+        error: e instanceof Error ? e.message : String(e),
+      };
+    }
+    opts.onRow?.(out, ++landed, total);
+    return out;
+  });
+}
+
+/** Resume skips set verdicts that landed; errored ones get another attempt. */
+export function resumableSetVerdictKeys(rows: PooledSetVerdictRow[]): Set<string> {
+  const keys = new Set<string>();
+  for (const r of rows) {
+    if (r.error) continue;
+    keys.add(setVerdictKey(r.queryId, r.provider, r.judge));
+  }
+  return keys;
+}
+
+export function dedupeSetVerdictRows(rows: PooledSetVerdictRow[]): PooledSetVerdictRow[] {
+  const latest = new Map<string, PooledSetVerdictRow>();
+  for (const r of rows) latest.set(setVerdictKey(r.queryId, r.provider, r.judge), r);
+  return [...latest.values()].filter((r) => !r.error);
+}
+
 // ─── phase 3: score providers against the pooled verdicts ───
 
 export interface PooledProviderStat {
@@ -344,6 +445,22 @@ export interface VarianceShares {
   n_cells: number;
 }
 
+/** A provider's set-level result: the whole returned set graded 0–10, averaged
+ *  per query first so the confidence interval is over questions — the same unit
+ *  as every other interval this run publishes. Kept apart from
+ *  PooledProviderStat rather than folded into it, because the two numbers come
+ *  from different judges on different scales and averaging them together would
+ *  invent a measurement nobody made. */
+export interface PooledSetStat {
+  provider: Provider;
+  /** Queries this provider was measured on, misses included. The CI unit. */
+  n_queries: number;
+  mean_score: number;
+  mean_score_ci95: number;
+  n_misses: number; // provider-fault failures, scored 0 — a failure is a miss
+  n_excluded: number; // our-fault failures, and sets no judge could grade
+}
+
 export interface PooledSummary {
   generated_at: string;
   judges: string[];
@@ -355,6 +472,12 @@ export interface PooledSummary {
   n_judge_errors: number;
   n_unjudged_pairs: number;
   by_provider: PooledProviderStat[];
+  /** Empty unless the run judged whole sets (`--set-judge`). */
+  by_provider_set: PooledSetStat[];
+  n_set_verdicts: number;
+  /** Judges that answered with something that wasn't a score. Loud on purpose. */
+  n_set_null_scores: number;
+  n_set_judge_errors: number;
   by_type: PooledTypeStat[];
   /** Empty when no query in the set carried a sharpness tag — the built-in 48
    *  don't, so a run over them simply has no slice rather than a fake one. */
@@ -470,6 +593,63 @@ function providerStat(
     fetch_ms_p50: percentile(fetchMs, 0.5),
     fetch_ms_p95: percentile(fetchMs, 0.95),
     n_fetch_timed: fetchMs.length,
+  };
+}
+
+/**
+ * A provider's set-level score, by the same rules phase 3 uses for rungs: a
+ * provider-fault failure is a miss and scores 0, an our-fault failure is
+ * excluded and published, and a set no judge could grade is not a measurement.
+ * The rules are deliberately identical so the two headline numbers can't
+ * disagree for a reason that has nothing to do with retrieval.
+ */
+function setStat(
+  rows: PooledFetchRow[],
+  verdicts: PooledSetVerdictRow[],
+  provider: Provider,
+): PooledSetStat {
+  const byRow = new Map<string, number[]>();
+  for (const v of verdicts) {
+    if (v.score === null || v.provider !== provider) continue;
+    const key = setVerdictKey(v.queryId, v.provider, "");
+    (byRow.get(key) ?? byRow.set(key, []).get(key)!).push(v.score);
+  }
+
+  const attempted = rows.filter((r) => r.provider === provider);
+  const scores: number[] = [];
+  let misses = 0;
+  let excluded = 0;
+
+  for (const row of attempted) {
+    if (row.error) {
+      if (isProviderFailure(row.error, row.error_stage)) {
+        misses++;
+        scores.push(0);
+      } else {
+        excluded++;
+      }
+      continue;
+    }
+    if (!row.urls.length) {
+      misses++;
+      scores.push(0);
+      continue;
+    }
+    const graded = byRow.get(setVerdictKey(row.queryId, provider, ""));
+    if (!graded?.length) {
+      excluded++; // nothing gradeable came back — not a measurement
+      continue;
+    }
+    scores.push(mean(graded));
+  }
+
+  return {
+    provider,
+    n_queries: scores.length,
+    mean_score: Number(mean(scores).toFixed(3)),
+    mean_score_ci95: Number(ci95(scores).toFixed(3)),
+    n_misses: misses,
+    n_excluded: excluded,
   };
 }
 
@@ -595,11 +775,13 @@ function judgeVerdicts(judgements: PooledJudgementRow[]): Map<string, Map<string
 export function summarizePooled(
   rawFetches: PooledFetchRow[],
   rawJudgements: PooledJudgementRow[],
-  meta: { judges: string[]; now: number },
+  meta: { judges: string[]; now: number; setVerdicts?: PooledSetVerdictRow[] },
 ): PooledSummary {
   const fetches = dedupeFetchRows(rawFetches);
   const judgements = dedupeJudgementRows(rawJudgements);
   const judgeErrors = rawJudgements.filter((r) => r.error).length;
+  const rawSetVerdicts = meta.setVerdicts ?? [];
+  const setVerdicts = dedupeSetVerdictRows(rawSetVerdicts);
 
   const verdicts = panelMeans(judgements);
   const allPairs = new Set(judgements.map((j) => pairKey(j.queryId, j.url)));
@@ -677,6 +859,12 @@ export function summarizePooled(
     n_judge_errors: judgeErrors,
     n_unjudged_pairs: [...allPairs].filter((k) => !verdicts.has(k)).length,
     by_provider: providers.map((p) => providerStat(fetches, verdicts, relevantByQuery, p)),
+    by_provider_set: setVerdicts.length
+      ? providers.map((p) => setStat(fetches, setVerdicts, p))
+      : [],
+    n_set_verdicts: setVerdicts.length,
+    n_set_null_scores: setVerdicts.filter((v) => v.score === null).length,
+    n_set_judge_errors: rawSetVerdicts.filter((v) => v.error).length,
     by_type: byType,
     by_sharpness: bySharpness,
     agreement,

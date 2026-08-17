@@ -5,10 +5,13 @@ import {
   poolFromFetchRows,
   resumableFetchKeys,
   resumableJudgementKeys,
+  resumableSetVerdictKeys,
   runPooledFetch,
   runPooledJudging,
+  runSetJudging,
   summarizePooled,
   type PooledFetchRow,
+  type PooledSetVerdictRow,
 } from "@core/pooled";
 import { pairKey } from "@core/pool";
 import { selectQueries } from "@core/batch";
@@ -22,11 +25,14 @@ import { loadEnv, requireKeys } from "../env";
 import {
   appendPooledFetch,
   appendPooledJudgement,
+  appendPooledSetVerdict,
   readPooledFetches,
   readPooledJudgements,
+  readPooledSetVerdicts,
   writePooledSummary,
   POOLED_FETCHES_PATH,
   POOLED_JUDGEMENTS_PATH,
+  POOLED_SET_VERDICTS_PATH,
   POOLED_SUMMARY_PATH,
 } from "../persist";
 import { renderPooled } from "../format";
@@ -49,6 +55,7 @@ export function registerPooled(program: Command): void {
     .option("--resume", "skip fetches/judgements already in .sourcery/pooled-*.jsonl")
     .option("--fetch-only", "stop after the fetch phase (spends provider credits, no judging)")
     .option("--judge-only", "skip fetching; pool and judge what is already on disk")
+    .option("--set-judge", "also grade each provider's whole returned set 0–10, not just page by page")
     .option("--fail-fast <n>", "abort if a provider's first n fetches all fail (0 = off)", "8")
     .option("--no-save", "do not write .sourcery/pooled-*")
     .option("--no-cache", "always fetch live; ignore fetches cached in the last 24h")
@@ -188,13 +195,43 @@ export function registerPooled(program: Command): void {
         poolKeys.has(pairKey(j.queryId, j.url)),
       );
 
+      // ── phase 2b: grade each returned set as a whole ──
+      let setVerdicts: PooledSetVerdictRow[] = [];
+      if (opts.setJudge) {
+        const priorSets = opts.resume || opts.judgeOnly ? readPooledSetVerdicts() : [];
+        const freshSets = await runSetJudging(fetchRows, judges, {
+          concurrency,
+          done: resumableSetVerdictKeys(priorSets),
+          onRow: (row, landed, total) => {
+            if (save) appendPooledSetVerdict(row);
+            process.stdout.write(
+              `[set ${String(landed).padStart(String(total).length)}/${total}] ` +
+                `${row.judge} ${row.queryId} ${row.provider} ` +
+                `${row.error ? `ERROR ${row.error.slice(0, 40)}` : `score ${row.score ?? "none"}`}\n`,
+            );
+          },
+        });
+        // Only this matrix's rows, for the same reason the pair judgements are
+        // filtered: the log may hold verdicts from another question set.
+        const rowKeys = new Set(fetchRows.map((r) => fetchKey(r.queryId, r.provider)));
+        setVerdicts = [...priorSets, ...freshSets].filter((v) =>
+          rowKeys.has(fetchKey(v.queryId, v.provider)),
+        );
+      }
+
       // ── phase 3: score ──
-      const summary = summarizePooled(fetchRows, judgements, { judges, now: Date.now() });
+      const summary = summarizePooled(fetchRows, judgements, {
+        judges,
+        now: Date.now(),
+        setVerdicts,
+      });
       process.stdout.write("\n" + renderPooled(summary) + "\n");
       if (save) {
         writePooledSummary(summary);
         process.stdout.write(
-          `\nsaved → ${POOLED_FETCHES_PATH} + ${POOLED_JUDGEMENTS_PATH} + ${POOLED_SUMMARY_PATH}\n`,
+          `\nsaved → ${POOLED_FETCHES_PATH} + ${POOLED_JUDGEMENTS_PATH}` +
+            (opts.setJudge ? ` + ${POOLED_SET_VERDICTS_PATH}` : "") +
+            ` + ${POOLED_SUMMARY_PATH}\n`,
         );
       }
     });
@@ -209,6 +246,7 @@ interface PooledOptions {
   resume?: boolean;
   fetchOnly?: boolean;
   judgeOnly?: boolean;
+  setJudge?: boolean;
   failFast: string;
   save?: boolean;
   cache?: boolean;

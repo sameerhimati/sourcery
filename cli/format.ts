@@ -301,6 +301,28 @@ export function renderPooled(s: PooledSummary): string {
     return `  ${pad(d.judge, 12)}  ${parts}` + (d.n_null ? `  none:${d.n_null}` : "") + `  (of ${total})`;
   });
 
+  // Only when the run graded whole sets. Printed as its own block rather than
+  // another column, because it is a different judge on a different scale —
+  // putting 0–10 beside 0–3 in one table invites reading them as one number.
+  const setBlock = s.by_provider_set.length
+    ? [
+        "",
+        "Each provider's whole returned set, graded 0–10 — the question a per-page",
+        "mean can only approximate: was this a good set to hand an agent?",
+        ...s.by_provider_set.map(
+          (p) =>
+            `  ${pad(label(p.provider), 12)}  ${meanCi(p.mean_score, p.mean_score_ci95)}` +
+            `  (n=${p.n_queries}, misses ${p.n_misses}, excl ${p.n_excluded})`,
+        ),
+        ...(s.n_set_null_scores
+          ? [`  ⚠ ${s.n_set_null_scores} set verdict(s) were not a valid score — counted, never scored as 0.`]
+          : []),
+        ...(s.n_set_judge_errors
+          ? [`  ⚠ ${s.n_set_judge_errors} set-judge call(s) errored — resume retries them.`]
+          : []),
+      ]
+    : [];
+
   const v = s.variance_shares;
   const mapNotRanking =
     v.n_cells > 0 && v.provider < 0.05 && v.provider_by_query > v.provider * 2
@@ -333,6 +355,7 @@ export function renderPooled(s: PooledSummary): string {
     header,
     ...body,
     ...latency,
+    ...setBlock,
     "",
     "Judge agreement (read the three together — each alone can mislead):",
     ...agree,

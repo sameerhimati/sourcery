@@ -1,11 +1,86 @@
 [
-  {"id":"r2u-01","type":"how_to","query":"In PostgreSQL, what is the default value of max_parallel_vacuum_workers, and what is the maximum it can be raised to?","note":"UNANSWERABLE(setting). No such parameter exists. PostgreSQL governs parallel VACUUM through max_parallel_maintenance_workers (default 2) together with VACUUM's PARALLEL option. Searches will return authoritative, highly on-topic pages about parallel vacuuming that cannot answer what was asked. Correct behaviour: every page rates 0 or 1. A page rated 2 or 3 means the judge invented relevance, or a page invented the parameter — read both."},
-  {"id":"r2u-02","type":"how_to","query":"In Nginx, what is the default value of proxy_retry_timeout, and how does it interact with proxy_read_timeout?","note":"UNANSWERABLE(setting). No such directive exists. The real neighbours are proxy_read_timeout, proxy_send_timeout, proxy_connect_timeout and proxy_next_upstream_timeout, all of which will rank for this query. Correct behaviour: every page rates 0 or 1. Anything higher is a judge treating a page about adjacent real directives as an answer about an invented one."},
-  {"id":"r2u-03","type":"how_to","query":"In Redis, what does appendfsync-interval control, and what is its default in milliseconds?","note":"UNANSWERABLE(setting). No such configuration key exists. Redis has appendfsync, which takes always, everysec or no — an enumeration, not an interval in milliseconds. Persistence documentation will rank highly and cannot answer. Correct behaviour: every page rates 0 or 1."},
-  {"id":"r2u-04","type":"how_to","query":"In a Docker Compose healthcheck, what does the grace_period option do, and what is its default?","note":"UNANSWERABLE(setting). No such option exists in the healthcheck block. The real options are test, interval, timeout, retries and start_period — start_period being the one people mean. Compose reference documentation will rank first and cannot answer the question as asked. Correct behaviour: every page rates 0 or 1."},
-
-  {"id":"r2u-05","type":"how_to","query":"How do I create a row-level security policy in MySQL so that each tenant only sees its own rows?","note":"UNANSWERABLE(wrong product). MySQL has no row-level security. It is a PostgreSQL feature (CREATE POLICY / ALTER TABLE ... ENABLE ROW LEVEL SECURITY), and SQL Server has its own. Searches will return PostgreSQL RLS documentation and MySQL view- or application-level workarounds, none of which answers what was asked. Correct behaviour: every page rates 0 or 1. A workaround page is not an answer to 'how do I create a row-level security policy in MySQL'."},
-  {"id":"r2u-06","type":"how_to","query":"How do I define a foreign key constraint between two MongoDB collections so deletes cascade?","note":"UNANSWERABLE(wrong product). MongoDB has no foreign key constraints and no cascading deletes; referential integrity is an application concern, with $lookup for reads. Pages about modelling relationships in MongoDB will rank and are on-topic without being answers. Correct behaviour: every page rates 0 or 1."},
-  {"id":"r2u-07","type":"how_to","query":"How do I turn on SQLite's built-in replication to run a read replica against a primary database file?","note":"UNANSWERABLE(wrong product). SQLite has no built-in replication. Third-party projects layer it on top, and the SQLite backup API and WAL mode will rank, but none is SQLite's own replication because there is none. Correct behaviour: every page rates 0 or 1. A third-party tool's page is a different question's answer."},
-  {"id":"r2u-08","type":"how_to","query":"How do I create a partial index in MySQL using a WHERE clause so only active rows are indexed?","note":"UNANSWERABLE(wrong product). MySQL does not support partial or filtered indexes. PostgreSQL and SQL Server do, and their documentation will rank; MySQL's prefix indexes (indexing the first N characters of a column) are a different feature that shares the loose name 'partial index' and will also rank. Correct behaviour: every page rates 0 or 1. A prefix-index page scoring 3 is the exact confusion this question is built to catch."}
+  {
+    "id": "r2u-01",
+    "type": "how_to",
+    "genre": "software",
+    "query": "In PostgreSQL, what is the default value of max_parallel_vacuum_workers, and what is the maximum it can be raised to?",
+    "note": "UNANSWERABLE(setting). No such parameter exists. PostgreSQL governs parallel VACUUM through max_parallel_maintenance_workers (default 2) together with VACUUM's PARALLEL option. Searches will return authoritative, highly on-topic pages about parallel vacuuming that cannot answer what was asked. Correct behaviour: every page rates 0 or 1. A page rated 2 or 3 means the judge invented relevance, or a page invented the parameter — read both."
+  },
+  {
+    "id": "r2u-04",
+    "type": "how_to",
+    "genre": "software",
+    "query": "In a Docker Compose healthcheck, what does the grace_period option do, and what is its default?",
+    "note": "UNANSWERABLE(setting). No such option exists in the healthcheck block. The real options are test, interval, timeout, retries and start_period — start_period being the one people mean. Compose reference documentation will rank first and cannot answer the question as asked. Correct behaviour: every page rates 0 or 1."
+  },
+  {
+    "id": "r2u-05",
+    "type": "how_to",
+    "genre": "software",
+    "query": "How do I create a row-level security policy in MySQL so that each tenant only sees its own rows?",
+    "note": "UNANSWERABLE(wrong product). MySQL has no row-level security. It is a PostgreSQL feature (CREATE POLICY / ALTER TABLE ... ENABLE ROW LEVEL SECURITY), and SQL Server has its own. Searches will return PostgreSQL RLS documentation and MySQL view- or application-level workarounds, none of which answers what was asked. Correct behaviour: every page rates 0 or 1. A workaround page is not an answer to 'how do I create a row-level security policy in MySQL'."
+  },
+  {
+    "id": "r2u-07",
+    "type": "how_to",
+    "genre": "software",
+    "query": "How do I turn on SQLite's built-in replication to run a read replica against a primary database file?",
+    "note": "UNANSWERABLE(wrong product). SQLite has no built-in replication. Third-party projects layer it on top, and the SQLite backup API and WAL mode will rank, but none is SQLite's own replication because there is none. Correct behaviour: every page rates 0 or 1. A third-party tool's page is a different question's answer."
+  },
+  {
+    "id": "r2u-09",
+    "type": "numeric_live",
+    "genre": "sports",
+    "query": "What is the NBA's official career record for most fourth-quarter blocked shots in playoff games, and who holds it?",
+    "note": "UNANSWERABLE(stat not tracked). The NBA does not maintain fourth-quarter-only blocked shot totals as an official career playoff record; blocks were not even recorded as an official statistic for the league's first three decades, which makes any career record spanning that era impossible to state. Searches will return authoritative pages of official playoff blocks leaders and quarter-by-quarter box scores that cannot answer the question as asked. Correct behaviour: every page rates 0 or 1. A page rated 2 or 3 means either a source manufactured the record or the judge accepted a general blocks leaderboard as an answer to a question about fourth quarters."
+  },
+  {
+    "id": "r2u-10",
+    "type": "product_lookup",
+    "genre": "sports",
+    "query": "What does a FIFA World Cup Category 1 ticket cost under the tournament's published resident discount for citizens of non-host nations?",
+    "note": "UNANSWERABLE(no such scheme). FIFA prices some tickets on a residency basis for the host country, but there is no published discount for citizens of non-host nations — the premise inverts a real scheme into one that does not exist. Searches will return genuine, current ticket pricing pages and category explanations, none of which can answer it. Correct behaviour: every page rates 0 or 1. A confident price quoted against this premise is a hallucination, not a retrieval failure."
+  },
+  {
+    "id": "r2u-11",
+    "type": "breaking_news",
+    "genre": "policy",
+    "query": "Under Article 47 of the EU AI Act, what is the mandatory cooling-off period before a high-risk AI system may be re-certified after a conformity assessment failure?",
+    "note": "UNANSWERABLE(provision does not exist). The AI Act sets no mandatory cooling-off period before a high-risk system may be re-certified after a failed conformity assessment — no such waiting period appears anywhere in the regulation. Article 47 is real and is genuinely about conformity: it governs the EU declaration of conformity a provider must draw up and retain for ten years. That is what makes this a good test rather than an obvious one — the article number is correct, the subject area is correct, and only the obligation is invented, which is exactly how a plausible legal hallucination is shaped. Searches will return the article's own text and detailed law-firm commentary, all authoritative, none able to answer. Correct behaviour: every page rates 0 or 1. A page rated 2 or 3 here is the most alarming result this run can produce, because inventing statutory obligations is the failure mode with the worst downstream cost."
+  },
+  {
+    "id": "r2u-12",
+    "type": "how_to",
+    "genre": "policy",
+    "query": "How do I file the IRS Form 1099-NEC amendment using the Schedule C-EZ attachment, and what is the deadline for that attachment?",
+    "note": "UNANSWERABLE(form withdrawn, wrong pairing). Schedule C-EZ was discontinued years ago and was never an attachment to a 1099-NEC correction in any case — the two belong to different processes. Searches will return the current 1099-NEC correction instructions and archived Schedule C-EZ pages, both authoritative and neither answering. Correct behaviour: every page rates 0 or 1. A step-by-step procedure for this is invented tax guidance."
+  },
+  {
+    "id": "r2u-13",
+    "type": "numeric_live",
+    "genre": "science",
+    "query": "What is the World Health Organization's published safe threshold for microplastic particles per litre of drinking water?",
+    "note": "UNANSWERABLE(no threshold published). The WHO has reviewed microplastics in drinking water and explicitly declined to set a guideline value, citing insufficient evidence — so there is no threshold to report. Searches will return the WHO's own report, which is exactly on topic and states that no limit exists. Correct behaviour: every page rates 0 or 1, and note that this one is subtle — the authoritative source is genuinely relevant to the topic while being unable to supply the requested number. A page rated 2 or 3 means a figure from an unrelated standard was borrowed to fill the gap."
+  },
+  {
+    "id": "r2u-14",
+    "type": "recent_release",
+    "genre": "science",
+    "query": "In the most recent revision of the IPCC assessment cycle, which chapter introduced the new RCP 10.5 emissions scenario, and what warming does it project by 2100?",
+    "note": "UNANSWERABLE(scenario does not exist). There is no RCP 10.5. The Representative Concentration Pathways run to a defined set of values, and the current assessment cycle uses the SSP scenario framework in any case. Searches will return the real scenario documentation in abundance. Correct behaviour: every page rates 0 or 1. A projected warming figure quoted for this scenario is fabricated, and the plausibility of the name is the point."
+  },
+  {
+    "id": "r2u-15",
+    "type": "product_lookup",
+    "genre": "business",
+    "query": "What does Stripe charge for its Instant Payout Guarantee product, and what is the coverage limit per transaction?",
+    "note": "UNANSWERABLE(no such product). Stripe offers instant payouts, priced as a percentage fee, but there is no product called an Instant Payout Guarantee and no per-transaction coverage limit attached to one. The premise fuses a real feature with an invented guarantee. Searches will return current, accurate Stripe pricing pages. Correct behaviour: every page rates 0 or 1. A quoted coverage limit is invented product detail — the failure mode that matters most for an agent making a purchasing recommendation."
+  },
+  {
+    "id": "r2u-17",
+    "type": "local_geo",
+    "genre": "everyday",
+    "query": "What are the opening hours and adult admission price of the Musée Rodin's annexe at Giverny?",
+    "note": "UNANSWERABLE(place does not exist). The Musée Rodin has two sites, in Paris and at Meudon. It has no annexe at Giverny — Giverny is Monet's house and garden, a different artist and a different institution entirely. Searches will return the Musée Rodin's real ticketing pages and Giverny's real visitor pages, both authoritative and on topic, neither answering what was asked. Correct behaviour: every page rates 0 or 1. This one is deliberately built to survive the objection that sank an earlier draft: there is no third-party product, no reseller bundle and no partial match that could reasonably be graded as an answer, because the place is invented outright rather than described slightly wrongly."
+  }
 ]

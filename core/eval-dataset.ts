@@ -35,12 +35,37 @@ export type QueryType =
  */
 export type Sharpness = "sharp" | "open";
 
+/**
+ * What the question is *about*, as opposed to what shape it takes.
+ *
+ * `QueryType` above is the shape of the task — look something up, follow a
+ * how-to, find a live number. Genre is the subject it happens to be about, and
+ * the two are independent: "what did this library change in its last release"
+ * and "what did this club change in its last transfer window" are the same
+ * shape and different worlds.
+ *
+ * It exists because the question set leans toward developer infrastructure, and
+ * an untagged lean can only be apologised for in a limitations section. Tagged,
+ * it becomes the more useful question: does the ranking hold outside software?
+ * If a provider leads on software questions and trails on sports ones, that is
+ * the strongest evidence there is for publishing a map of specialities rather
+ * than a league table.
+ */
+export type Genre =
+  | "software" // dev tools, infrastructure, APIs, library releases
+  | "business" // pricing, companies, markets, finance
+  | "science" // research, medicine, climate, energy
+  | "sports" // results, records, transfers, fixtures
+  | "policy" // regulation, government, courts
+  | "everyday"; // travel, local, consumer goods, culture
+
 export interface EvalQuery {
   id: string;
   type: QueryType;
   query: string;
   note?: string; // author-only, NOT sent to the judge
   sharpness?: Sharpness; // author-only, NOT sent to the judge
+  genre?: Genre; // author-only, NOT sent to the judge
 }
 
 export const EVAL_DATASET: EvalQuery[] = [

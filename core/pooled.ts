@@ -16,16 +16,20 @@
 // different files, nothing here touches the paths the published run 1 numbers
 // came from.
 
-import type { EvalQuery, QueryType, Sharpness } from "./eval-dataset";
+import type { EvalQuery, Genre, QueryType, Sharpness } from "./eval-dataset";
 import { fetchSources } from "./adapters";
 import { DEFAULT_CONFIG, ErrorStage, Provider, Source } from "./types";
 import { stage, stageOf } from "./stage";
 import { mapWithConcurrency } from "./extract";
 import { buildPool, pairKey, PooledPage, returnedUrls } from "./pool";
-import { relevanceJudge } from "./relevanceJudge";
+import { parseRungVerdict, relevanceJudge, relevanceMessages } from "./relevanceJudge";
+import { parseSetVerdict, setJudge, setJudgeMessages } from "./setJudge";
+import { completeBatch } from "./llm/batch";
+import { RELEVANCE_JUDGE_TEMP, RETRIEVAL_JUDGE_TEMP } from "./controls";
 import {
   ci95,
   createNetworkBreaker,
+  isAccountFailure,
   isProviderFailure,
   isTransportFailure,
   judgeLabel,
@@ -50,6 +54,9 @@ export interface PooledFetchRow {
    *  run log records it — a slice by sharpness computed after the fact would
    *  otherwise need the query file to still exist, unedited, months later. */
   sharpness?: Sharpness;
+  /** Carried for the same reason as sharpness: a slice by subject computed
+   *  after the fact would need the query file to still exist, unedited. */
+  genre?: Genre;
   provider: Provider;
   num_sources: number;
   num_extracted: number;
@@ -118,6 +125,7 @@ export async function runPooledFetch(
       query: q.query,
       provider,
       ...(q.sharpness ? { sharpness: q.sharpness } : {}),
+      ...(q.genre ? { genre: q.genre } : {}),
     };
     const emit = (row: PooledFetchRow): PooledFetchRow => {
       opts.onRow?.(row, ++landed, total);
@@ -156,12 +164,27 @@ export async function runPooledFetch(
   });
 }
 
-/** What resume may skip: everything on disk except transport failures — those
- *  measured this machine's connection, not the provider, and get retried. */
+/**
+ * What resume may skip: everything on disk that is actually evidence.
+ *
+ * Two kinds of failure are not evidence and must be tried again:
+ *
+ * - **transport** — measured this machine's connection, not the provider.
+ * - **account** — measured the wallet. A 402 or "out of credits" at question
+ *   150 says nothing whatever about the provider, and it is fixed by topping up
+ *   and running again.
+ *
+ * Skipping account failures is the more dangerous of the two to get wrong,
+ * because it fails quietly in the direction of a wrong published number: the
+ * metered provider gets scored on the questions it reached, the rest land in
+ * `n_excluded`, and nothing in the output says the comparison was uneven. Only
+ * Firecrawl meters, so only Firecrawl could be silently under-measured — which
+ * is precisely the arm a reader would look at hardest.
+ */
 export function resumableFetchKeys(rows: PooledFetchRow[]): Set<string> {
   const keys = new Set<string>();
   for (const r of rows) {
-    if (isTransportFailure(r.error)) continue;
+    if (isTransportFailure(r.error) || isAccountFailure(r.error)) continue;
     keys.add(fetchKey(r.queryId, r.provider));
   }
   return keys;
@@ -208,6 +231,10 @@ export interface PooledJudgeOpts {
   onRow?: (row: PooledJudgementRow, done: number, total: number) => void;
   /** judgementKey()s already on disk (resume). */
   done?: ReadonlySet<string>;
+  /** Submit through the providers' batch APIs at half price. Falls back to the
+   *  synchronous path per provider — see completeBatch. */
+  batch?: boolean;
+  onProgress?: (status: string) => void;
 }
 
 export async function runPooledJudging(
@@ -224,6 +251,35 @@ export async function runPooledJudging(
     );
   const total = jobs.length;
   let landed = 0;
+
+  if (opts.batch) {
+    // The resume key IS the batch id for this request, which is the whole
+    // reason batching drops in without touching resume: results come back
+    // labelled with it, in any order, and map straight onto the same log.
+    const outcomes = await completeBatch(
+      jobs.map(({ page, judgeRef }) => ({
+        customId: judgementKey(page.queryId, page.url, judgeLabel(judgeRef)),
+        args: {
+          model: judgeRef,
+          temperature: RELEVANCE_JUDGE_TEMP,
+          jsonMode: true,
+          messages: relevanceMessages(page),
+        },
+      })),
+      { onProgress: opts.onProgress },
+    );
+    const byId = new Map(outcomes.map((o) => [o.customId, o]));
+    return jobs.map(({ page, judgeRef }) => {
+      const base = { queryId: page.queryId, url: page.url, judge: judgeLabel(judgeRef) };
+      const o = byId.get(judgementKey(page.queryId, page.url, judgeLabel(judgeRef)));
+      const row: PooledJudgementRow =
+        o?.text !== undefined
+          ? { ...base, ...parseRungVerdict(o.text || "{}") }
+          : { ...base, rung: null, rationale: "", error: o?.error ?? "no batch result" };
+      opts.onRow?.(row, ++landed, total);
+      return row;
+    });
+  }
 
   return mapWithConcurrency(jobs, concurrency, async ({ page, judgeRef }) => {
     const base = {
@@ -264,6 +320,134 @@ export function dedupeJudgementRows(rows: PooledJudgementRow[]): PooledJudgement
   return [...latest.values()].filter((r) => !r.error);
 }
 
+// ─── phase 2b: judge each provider's returned set as a whole ───
+// The per-page judge above answers "is this page any good"; this one answers
+// "was this a good set to hand an agent", which a per-page mean only
+// approximates — it can't see that four excellent pages all say the same thing,
+// or that the one page carrying the answer sits at position eight.
+//
+// Cheaper than it looks: one call per (query × provider × judge) is roughly a
+// third of the pair count, because pooling means the pair judge pays for every
+// distinct page while this pays per returned set.
+//
+// Blinding is by construction again, though differently: a set belongs to
+// exactly one provider, so instead of detaching pages from providers we simply
+// never put a provider name in the prompt — see renderSources.
+
+export interface PooledSetVerdictRow {
+  queryId: string;
+  provider: Provider;
+  judge: string; // short label — judgeLabel(ref)
+  /** 0–10, or null when the judge answered with something that wasn't a score.
+   *  Null is counted and excluded, never folded into a real zero. */
+  score: number | null;
+  rationale: string;
+  /** The judge call itself threw (timeout, key, 429). Retried on resume. */
+  error?: string;
+}
+
+export function setVerdictKey(queryId: string, provider: Provider, judge: string): string {
+  return `${queryId}|${provider}|${judge}`;
+}
+
+export interface PooledSetJudgeOpts {
+  concurrency?: number;
+  onRow?: (row: PooledSetVerdictRow, done: number, total: number) => void;
+  /** setVerdictKey()s already on disk (resume). */
+  done?: ReadonlySet<string>;
+  batch?: boolean;
+  onProgress?: (status: string) => void;
+}
+
+/** Rows worth judging: a failed fetch has no set to grade, and phase 3 already
+ *  knows what a failure means (provider-fault is a miss, ours is excluded).
+ *  Deciding that twice, in two places, is how the two answers drift apart. */
+function judgeableRows(rows: PooledFetchRow[]): PooledFetchRow[] {
+  return rows.filter((r) => !r.error && r.sources.length > 0);
+}
+
+export async function runSetJudging(
+  rows: PooledFetchRow[],
+  judges: string[],
+  opts: PooledSetJudgeOpts = {},
+): Promise<PooledSetVerdictRow[]> {
+  const concurrency = opts.concurrency ?? DEFAULT_CONCURRENCY;
+  const jobs = judgeableRows(rows)
+    .flatMap((row) => judges.map((judgeRef) => ({ row, judgeRef })))
+    .filter(
+      ({ row, judgeRef }) =>
+        !opts.done?.has(setVerdictKey(row.queryId, row.provider, judgeLabel(judgeRef))),
+    );
+  const total = jobs.length;
+  let landed = 0;
+
+  if (opts.batch) {
+    const outcomes = await completeBatch(
+      jobs.map(({ row, judgeRef }) => ({
+        customId: setVerdictKey(row.queryId, row.provider, judgeLabel(judgeRef)),
+        args: {
+          model: judgeRef,
+          temperature: RETRIEVAL_JUDGE_TEMP,
+          jsonMode: true,
+          messages: setJudgeMessages(row.query, row.sources),
+        },
+      })),
+      { onProgress: opts.onProgress },
+    );
+    const byId = new Map(outcomes.map((o) => [o.customId, o]));
+    return jobs.map(({ row, judgeRef }) => {
+      const base = { queryId: row.queryId, provider: row.provider, judge: judgeLabel(judgeRef) };
+      const o = byId.get(setVerdictKey(row.queryId, row.provider, judgeLabel(judgeRef)));
+      const out: PooledSetVerdictRow =
+        o?.text !== undefined
+          ? { ...base, ...parseSetVerdict(o.text || "{}") }
+          : { ...base, score: null, rationale: "", error: o?.error ?? "no batch result" };
+      opts.onRow?.(out, ++landed, total);
+      return out;
+    });
+  }
+
+  return mapWithConcurrency(jobs, concurrency, async ({ row, judgeRef }) => {
+    const base = {
+      queryId: row.queryId,
+      provider: row.provider,
+      judge: judgeLabel(judgeRef),
+    };
+    let out: PooledSetVerdictRow;
+    try {
+      // stage("judge", …) so a judge timeout is never attributed to the
+      // provider whose sources it happened to be reading.
+      const verdict = await stage("judge", setJudge(row.query, row.sources, judgeRef));
+      out = { ...base, score: verdict.score, rationale: verdict.rationale };
+    } catch (e) {
+      out = {
+        ...base,
+        score: null,
+        rationale: "",
+        error: e instanceof Error ? e.message : String(e),
+      };
+    }
+    opts.onRow?.(out, ++landed, total);
+    return out;
+  });
+}
+
+/** Resume skips set verdicts that landed; errored ones get another attempt. */
+export function resumableSetVerdictKeys(rows: PooledSetVerdictRow[]): Set<string> {
+  const keys = new Set<string>();
+  for (const r of rows) {
+    if (r.error) continue;
+    keys.add(setVerdictKey(r.queryId, r.provider, r.judge));
+  }
+  return keys;
+}
+
+export function dedupeSetVerdictRows(rows: PooledSetVerdictRow[]): PooledSetVerdictRow[] {
+  const latest = new Map<string, PooledSetVerdictRow>();
+  for (const r of rows) latest.set(setVerdictKey(r.queryId, r.provider, r.judge), r);
+  return [...latest.values()].filter((r) => !r.error);
+}
+
 // ─── phase 3: score providers against the pooled verdicts ───
 
 export interface PooledProviderStat {
@@ -298,6 +482,14 @@ export interface PooledTypeStat extends PooledProviderStat {
 
 export interface PooledSharpnessStat extends PooledProviderStat {
   sharpness: Sharpness;
+}
+
+/** The provider comparison recomputed within one subject. The question this
+ *  answers is the one a reader actually has: does the ranking hold outside
+ *  software? A provider that leads on software and trails on sport is the case
+ *  for publishing a map of specialities instead of a league table. */
+export interface PooledGenreStat extends PooledProviderStat {
+  genre: Genre;
 }
 
 /** The same pairwise agreement, computed over only the sharp questions or only
@@ -344,6 +536,22 @@ export interface VarianceShares {
   n_cells: number;
 }
 
+/** A provider's set-level result: the whole returned set graded 0–10, averaged
+ *  per query first so the confidence interval is over questions — the same unit
+ *  as every other interval this run publishes. Kept apart from
+ *  PooledProviderStat rather than folded into it, because the two numbers come
+ *  from different judges on different scales and averaging them together would
+ *  invent a measurement nobody made. */
+export interface PooledSetStat {
+  provider: Provider;
+  /** Queries this provider was measured on, misses included. The CI unit. */
+  n_queries: number;
+  mean_score: number;
+  mean_score_ci95: number;
+  n_misses: number; // provider-fault failures, scored 0 — a failure is a miss
+  n_excluded: number; // our-fault failures, and sets no judge could grade
+}
+
 export interface PooledSummary {
   generated_at: string;
   judges: string[];
@@ -355,10 +563,18 @@ export interface PooledSummary {
   n_judge_errors: number;
   n_unjudged_pairs: number;
   by_provider: PooledProviderStat[];
+  /** Empty unless the run judged whole sets (`--set-judge`). */
+  by_provider_set: PooledSetStat[];
+  n_set_verdicts: number;
+  /** Judges that answered with something that wasn't a score. Loud on purpose. */
+  n_set_null_scores: number;
+  n_set_judge_errors: number;
   by_type: PooledTypeStat[];
   /** Empty when no query in the set carried a sharpness tag — the built-in 48
    *  don't, so a run over them simply has no slice rather than a fake one. */
   by_sharpness: PooledSharpnessStat[];
+  /** Empty when no question in the set carried a genre tag. */
+  by_genre: PooledGenreStat[];
   agreement: PooledAgreementStat[];
   agreement_by_sharpness: PooledSharpnessAgreementStat[];
   rung_distribution: RungDistribution[];
@@ -470,6 +686,63 @@ function providerStat(
     fetch_ms_p50: percentile(fetchMs, 0.5),
     fetch_ms_p95: percentile(fetchMs, 0.95),
     n_fetch_timed: fetchMs.length,
+  };
+}
+
+/**
+ * A provider's set-level score, by the same rules phase 3 uses for rungs: a
+ * provider-fault failure is a miss and scores 0, an our-fault failure is
+ * excluded and published, and a set no judge could grade is not a measurement.
+ * The rules are deliberately identical so the two headline numbers can't
+ * disagree for a reason that has nothing to do with retrieval.
+ */
+function setStat(
+  rows: PooledFetchRow[],
+  verdicts: PooledSetVerdictRow[],
+  provider: Provider,
+): PooledSetStat {
+  const byRow = new Map<string, number[]>();
+  for (const v of verdicts) {
+    if (v.score === null || v.provider !== provider) continue;
+    const key = setVerdictKey(v.queryId, v.provider, "");
+    (byRow.get(key) ?? byRow.set(key, []).get(key)!).push(v.score);
+  }
+
+  const attempted = rows.filter((r) => r.provider === provider);
+  const scores: number[] = [];
+  let misses = 0;
+  let excluded = 0;
+
+  for (const row of attempted) {
+    if (row.error) {
+      if (isProviderFailure(row.error, row.error_stage)) {
+        misses++;
+        scores.push(0);
+      } else {
+        excluded++;
+      }
+      continue;
+    }
+    if (!row.urls.length) {
+      misses++;
+      scores.push(0);
+      continue;
+    }
+    const graded = byRow.get(setVerdictKey(row.queryId, provider, ""));
+    if (!graded?.length) {
+      excluded++; // nothing gradeable came back — not a measurement
+      continue;
+    }
+    scores.push(mean(graded));
+  }
+
+  return {
+    provider,
+    n_queries: scores.length,
+    mean_score: Number(mean(scores).toFixed(3)),
+    mean_score_ci95: Number(ci95(scores).toFixed(3)),
+    n_misses: misses,
+    n_excluded: excluded,
   };
 }
 
@@ -595,11 +868,13 @@ function judgeVerdicts(judgements: PooledJudgementRow[]): Map<string, Map<string
 export function summarizePooled(
   rawFetches: PooledFetchRow[],
   rawJudgements: PooledJudgementRow[],
-  meta: { judges: string[]; now: number },
+  meta: { judges: string[]; now: number; setVerdicts?: PooledSetVerdictRow[] },
 ): PooledSummary {
   const fetches = dedupeFetchRows(rawFetches);
   const judgements = dedupeJudgementRows(rawJudgements);
   const judgeErrors = rawJudgements.filter((r) => r.error).length;
+  const rawSetVerdicts = meta.setVerdicts ?? [];
+  const setVerdicts = dedupeSetVerdictRows(rawSetVerdicts);
 
   const verdicts = panelMeans(judgements);
   const allPairs = new Set(judgements.map((j) => pairKey(j.queryId, j.url)));
@@ -634,6 +909,20 @@ export function summarizePooled(
     const sub = fetches.filter((r) => r.sharpness === sharpness);
     for (const provider of providers) {
       bySharpness.push({ ...providerStat(sub, verdicts, relevantByQuery, provider), sharpness });
+    }
+  }
+
+  // Genre slices, on the same rule as sharpness: a set with no tags produces
+  // no slices at all rather than one bucket labelled "undefined".
+  const genreOf = new Map<string, Genre>();
+  for (const r of fetches) if (r.genre) genreOf.set(r.queryId, r.genre);
+  const genres = [...new Set(genreOf.values())];
+
+  const byGenre: PooledGenreStat[] = [];
+  for (const genre of genres) {
+    const sub = fetches.filter((r) => r.genre === genre);
+    for (const provider of providers) {
+      byGenre.push({ ...providerStat(sub, verdicts, relevantByQuery, provider), genre });
     }
   }
 
@@ -677,8 +966,15 @@ export function summarizePooled(
     n_judge_errors: judgeErrors,
     n_unjudged_pairs: [...allPairs].filter((k) => !verdicts.has(k)).length,
     by_provider: providers.map((p) => providerStat(fetches, verdicts, relevantByQuery, p)),
+    by_provider_set: setVerdicts.length
+      ? providers.map((p) => setStat(fetches, setVerdicts, p))
+      : [],
+    n_set_verdicts: setVerdicts.length,
+    n_set_null_scores: setVerdicts.filter((v) => v.score === null).length,
+    n_set_judge_errors: rawSetVerdicts.filter((v) => v.error).length,
     by_type: byType,
     by_sharpness: bySharpness,
+    by_genre: byGenre,
     agreement,
     agreement_by_sharpness: agreementBySharpness,
     rung_distribution: rungDistributions(judgements),

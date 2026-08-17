@@ -5,12 +5,21 @@ import {
   poolFromFetchRows,
   resumableFetchKeys,
   resumableJudgementKeys,
+  resumableSetVerdictKeys,
   runPooledFetch,
   runPooledJudging,
+  runSetJudging,
   summarizePooled,
   type PooledFetchRow,
+  type PooledSetVerdictRow,
 } from "@core/pooled";
+import {
+  resumableNoSearchKeys,
+  runNoSearchBaseline,
+  summarizeNoSearch,
+} from "@core/noSearch";
 import { pairKey } from "@core/pool";
+import { judgeLabel } from "@core/credibility";
 import { selectQueries } from "@core/batch";
 import { getAdapter, defaultProviders } from "@core/adapters";
 import { requiredEnvKeys } from "@core/llm";
@@ -20,16 +29,24 @@ import { DEFAULT_CONFIG, type Provider } from "@core/types";
 import { confirm } from "../prompt";
 import { loadEnv, requireKeys } from "../env";
 import {
+  appendNoSearchRow,
   appendPooledFetch,
   appendPooledJudgement,
+  appendPooledSetVerdict,
+  readNoSearchRows,
   readPooledFetches,
   readPooledJudgements,
+  readPooledSetVerdicts,
+  writeNoSearchSummary,
   writePooledSummary,
+  NO_SEARCH_PATH,
+  NO_SEARCH_SUMMARY_PATH,
   POOLED_FETCHES_PATH,
   POOLED_JUDGEMENTS_PATH,
+  POOLED_SET_VERDICTS_PATH,
   POOLED_SUMMARY_PATH,
 } from "../persist";
-import { renderPooled } from "../format";
+import { renderNoSearch, renderPooled } from "../format";
 import { loadQuerySet } from "../query-file";
 
 // Run 2: the pooled run — the instrument docs/preregistration-v3.md commits to.
@@ -49,6 +66,12 @@ export function registerPooled(program: Command): void {
     .option("--resume", "skip fetches/judgements already in .sourcery/pooled-*.jsonl")
     .option("--fetch-only", "stop after the fetch phase (spends provider credits, no judging)")
     .option("--judge-only", "skip fetching; pool and judge what is already on disk")
+    .option("--set-judge", "also grade each provider's whole returned set 0–10, not just page by page")
+    .option("--batch", "submit judging through the providers' batch APIs at half price (async; falls back to synchronous where unsupported)")
+    // Not "--no-search-only": Commander reads a --no- prefix as negating
+    // --search-only, and would quietly set searchOnly=false instead.
+    .option("--baseline-only", "run only the no-search baseline — answer every question with zero sources, grade it, then stop")
+    .option("--baseline-model <ref>", "the model that answers with no sources (default: the run's answer model)")
     .option("--fail-fast <n>", "abort if a provider's first n fetches all fail (0 = off)", "8")
     .option("--no-save", "do not write .sourcery/pooled-*")
     .option("--no-cache", "always fetch live; ignore fetches cached in the last 24h")
@@ -92,6 +115,40 @@ export function registerPooled(program: Command): void {
       for (const p of named) getAdapter(p);
       const providers = named.length ? named : defaultProviders();
       const save = opts.save !== false;
+
+      // ── the no-search baseline ──
+      // Runs before anything is fetched and stops there: it needs no provider
+      // key and no credits, so it is the one phase that can run while the rest
+      // of the matrix is still blocked. Its output is a property of the
+      // questions, reusable by any run over the same set.
+      if (opts.baselineOnly) {
+        const baselineModel = opts.baselineModel;
+        const priorRows = opts.resume ? readNoSearchRows() : [];
+        const fresh = await runNoSearchBaseline(queries, judges, {
+          concurrency,
+          ...(baselineModel ? { model: baselineModel } : {}),
+          done: resumableNoSearchKeys(priorRows),
+          onRow: (row, landed, total) => {
+            if (save) appendNoSearchRow(row);
+            process.stdout.write(
+              `[baseline ${String(landed).padStart(String(total).length)}/${total}] ` +
+                `${row.grader} ${row.queryId} ` +
+                `${row.error ? `ERROR ${row.error.slice(0, 40)}` : (row.verdict ?? "no verdict")}\n`,
+            );
+          },
+        });
+        const rows = [...priorRows, ...fresh].filter((r) => queries.some((q) => q.id === r.queryId));
+        const summary = summarizeNoSearch(rows, {
+          model: baselineModel ?? rows[0]?.model ?? "",
+          graders: judges.map(judgeLabel),
+        });
+        process.stdout.write("\n" + renderNoSearch(summary) + "\n");
+        if (save) {
+          writeNoSearchSummary(summary);
+          process.stdout.write(`\nsaved → ${NO_SEARCH_PATH} + ${NO_SEARCH_SUMMARY_PATH}\n`);
+        }
+        return;
+      }
 
       const queryIds = new Set(queries.map((q) => q.id));
       const inMatrix = (r: PooledFetchRow): boolean =>
@@ -171,6 +228,8 @@ export function registerPooled(program: Command): void {
       const fresh = await runPooledJudging(pool, judges, {
         concurrency,
         done: judged,
+        batch: opts.batch,
+        onProgress: (s) => process.stdout.write(`  ${s}\n`),
         onRow: (row, landed, total) => {
           if (save) appendPooledJudgement(row);
           process.stdout.write(
@@ -188,13 +247,45 @@ export function registerPooled(program: Command): void {
         poolKeys.has(pairKey(j.queryId, j.url)),
       );
 
+      // ── phase 2b: grade each returned set as a whole ──
+      let setVerdicts: PooledSetVerdictRow[] = [];
+      if (opts.setJudge) {
+        const priorSets = opts.resume || opts.judgeOnly ? readPooledSetVerdicts() : [];
+        const freshSets = await runSetJudging(fetchRows, judges, {
+          concurrency,
+          done: resumableSetVerdictKeys(priorSets),
+          batch: opts.batch,
+          onProgress: (s) => process.stdout.write(`  ${s}\n`),
+          onRow: (row, landed, total) => {
+            if (save) appendPooledSetVerdict(row);
+            process.stdout.write(
+              `[set ${String(landed).padStart(String(total).length)}/${total}] ` +
+                `${row.judge} ${row.queryId} ${row.provider} ` +
+                `${row.error ? `ERROR ${row.error.slice(0, 40)}` : `score ${row.score ?? "none"}`}\n`,
+            );
+          },
+        });
+        // Only this matrix's rows, for the same reason the pair judgements are
+        // filtered: the log may hold verdicts from another question set.
+        const rowKeys = new Set(fetchRows.map((r) => fetchKey(r.queryId, r.provider)));
+        setVerdicts = [...priorSets, ...freshSets].filter((v) =>
+          rowKeys.has(fetchKey(v.queryId, v.provider)),
+        );
+      }
+
       // ── phase 3: score ──
-      const summary = summarizePooled(fetchRows, judgements, { judges, now: Date.now() });
+      const summary = summarizePooled(fetchRows, judgements, {
+        judges,
+        now: Date.now(),
+        setVerdicts,
+      });
       process.stdout.write("\n" + renderPooled(summary) + "\n");
       if (save) {
         writePooledSummary(summary);
         process.stdout.write(
-          `\nsaved → ${POOLED_FETCHES_PATH} + ${POOLED_JUDGEMENTS_PATH} + ${POOLED_SUMMARY_PATH}\n`,
+          `\nsaved → ${POOLED_FETCHES_PATH} + ${POOLED_JUDGEMENTS_PATH}` +
+            (opts.setJudge ? ` + ${POOLED_SET_VERDICTS_PATH}` : "") +
+            ` + ${POOLED_SUMMARY_PATH}\n`,
         );
       }
     });
@@ -209,6 +300,10 @@ interface PooledOptions {
   resume?: boolean;
   fetchOnly?: boolean;
   judgeOnly?: boolean;
+  setJudge?: boolean;
+  batch?: boolean;
+  baselineOnly?: boolean;
+  baselineModel?: string;
   failFast: string;
   save?: boolean;
   cache?: boolean;

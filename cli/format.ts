@@ -2,6 +2,7 @@ import type { Arm, Run } from "@core/types";
 import type { BatchOutput } from "@core/batch";
 import type { CredibilitySummary } from "@core/credibility";
 import type { PooledSummary } from "@core/pooled";
+import type { NoSearchSummary } from "@core/noSearch";
 import { ADAPTERS } from "@core/adapters";
 import { providerMeta } from "@core/viz";
 import { SEED_NOISE } from "@core/controls";
@@ -301,6 +302,50 @@ export function renderPooled(s: PooledSummary): string {
     return `  ${pad(d.judge, 12)}  ${parts}` + (d.n_null ? `  none:${d.n_null}` : "") + `  (of ${total})`;
   });
 
+  // Only when the run graded whole sets. Printed as its own block rather than
+  // another column, because it is a different judge on a different scale —
+  // putting 0–10 beside 0–3 in one table invites reading them as one number.
+  const setBlock = s.by_provider_set.length
+    ? [
+        "",
+        "Each provider's whole returned set, graded 0–10 — the question a per-page",
+        "mean can only approximate: was this a good set to hand an agent?",
+        ...s.by_provider_set.map(
+          (p) =>
+            `  ${pad(label(p.provider), 12)}  ${meanCi(p.mean_score, p.mean_score_ci95)}` +
+            `  (n=${p.n_queries}, misses ${p.n_misses}, excl ${p.n_excluded})`,
+        ),
+        ...(s.n_set_null_scores
+          ? [`  ⚠ ${s.n_set_null_scores} set verdict(s) were not a valid score — counted, never scored as 0.`]
+          : []),
+        ...(s.n_set_judge_errors
+          ? [`  ⚠ ${s.n_set_judge_errors} set-judge call(s) errored — resume retries them.`]
+          : []),
+      ]
+    : [];
+
+  // The comparison recomputed inside each subject. Printed whenever the
+  // question set carried genre tags, because "does this ranking hold outside
+  // software?" is the question a reader has and a single overall table can't
+  // answer it.
+  const genreBlock = s.by_genre.length
+    ? [
+        "",
+        "The same comparison within each subject — a provider that leads on one",
+        "and trails on another has a speciality, not general ability:",
+        ...[...new Set(s.by_genre.map((g) => g.genre))].flatMap((genre) => [
+          `  ${genre}:`,
+          ...s.by_genre
+            .filter((g) => g.genre === genre)
+            .map(
+              (g) =>
+                `    ${pad(label(g.provider), 12)}  mean rung ${meanCi(g.mean_rung, g.mean_rung_ci95)}` +
+                `  (n=${g.n_queries})`,
+            ),
+        ]),
+      ]
+    : [];
+
   const v = s.variance_shares;
   const mapNotRanking =
     v.n_cells > 0 && v.provider < 0.05 && v.provider_by_query > v.provider * 2
@@ -333,6 +378,8 @@ export function renderPooled(s: PooledSummary): string {
     header,
     ...body,
     ...latency,
+    ...setBlock,
+    ...genreBlock,
     "",
     "Judge agreement (read the three together — each alone can mislead):",
     ...agree,
@@ -346,5 +393,56 @@ export function renderPooled(s: PooledSummary): string {
       `provider×question ${pct(v.provider_by_query)} · judge ${pct(v.judge)} · ` +
       `residual ${pct(v.residual)}`,
     ...mapNotRanking,
+  ].join("\n");
+}
+
+/**
+ * The no-search baseline, in the terms it will be argued in: which questions
+ * the model could already answer with nothing retrieved at all.
+ *
+ * Those questions are not broken — they are questions where retrieval was never
+ * the bottleneck, so no provider can distinguish itself on them. Reporting the
+ * provider comparison with and without them is the honest shape.
+ */
+export function renderNoSearch(s: NoSearchSummary): string {
+  const pctOf = (n: number) =>
+    s.n_questions ? `${((n / s.n_questions) * 100).toFixed(0)}%` : "—";
+  const line = (verdict: string, meaning: string) =>
+    `  ${pad(verdict, 8)} ${pad(String(s.counts[verdict] ?? 0), 4)} ${pad(pctOf(s.counts[verdict] ?? 0), 5)} ${meaning}`;
+
+  const known = s.already_known.length
+    ? [
+        "",
+        `The ${s.already_known.length} question(s) the model already knew:`,
+        "  " + s.already_known.join(", "),
+        "  Retrieval cannot discriminate between providers here — the answer was",
+        "  never going to come from the pages. Report the comparison both with",
+        "  and without them.",
+      ]
+    : ["", "No question was answerable from training alone. Every question needs retrieval."];
+
+  const wrong = s.confidently_wrong.length
+    ? [
+        "",
+        `The ${s.confidently_wrong.length} question(s) answered confidently and wrongly:`,
+        "  " + s.confidently_wrong.join(", "),
+        "  On the unanswerable questions this is the honesty check firing as designed.",
+      ]
+    : [];
+
+  return [
+    `No-search baseline — ${s.n_questions} question(s) answered with zero sources by ` +
+      `${s.model || "the run's answer model"}, graded by ${s.graders.join(" / ")}`,
+    (s.n_ungraded
+      ? `⚠ ${s.n_ungraded} grade(s) were not a usable verdict — counted, never read as "unknown".\n`
+      : "") +
+      (s.n_errors ? `⚠ ${s.n_errors} call(s) errored — resume retries them.\n` : ""),
+    "  VERDICT     N     %  meaning",
+    line("knew", "answered correctly with no sources at all"),
+    line("partial", "part of it, with a required piece missing"),
+    line("wrong", "answered confidently, and got it wrong"),
+    line("unknown", "said it did not know — the honest answer"),
+    ...known,
+    ...wrong,
   ].join("\n");
 }

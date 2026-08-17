@@ -95,6 +95,42 @@ ${RELEVANCE_RUNGS.map((r) => `${r.rung} = ${r.name}: ${r.meaning}`).join("\n")}
 A page can contain every word of the question and answer nothing — judge whether it answers, not whether it matches keywords. Judge the body, not the headline: if a page's title or opening promises the subject but the actual content is about something else, that is 0, however closely the title matches. A missing publish date is not itself disqualifying; stale content that the question implicitly needs fresh is.
 Return JSON only: {"rung": <int 0-3>, "rationale": "<one sentence>"}.`;
 
+// ─── Run 2: the no-search baseline ───
+// Additive again, and not a provider arm — nothing is retrieved here at all.
+// This is the control that finds which questions the model could already answer
+// from training alone. On those questions no search provider can distinguish
+// itself, because the answer was never going to come from the pages; leaving
+// them in compresses exactly the gap the hard set was built to open up.
+//
+// `plain` is NOT this. Plain is a cheap-search floor — a keyless SERP plus a
+// bare fetch — which is a provider with a small budget. This is zero sources.
+
+export const NO_SEARCH_TEMP = 0;
+
+export const NO_SEARCH_SYSTEM = `Answer the user's question from your own knowledge. You have no sources and no web access.
+Saying you do not know is a correct and useful answer. Do not guess to fill the space, and do not describe how you would look it up — either answer, or say plainly that you do not know.
+If you know part of it, give the part you know and say which part you are unsure of.`;
+
+export const NO_SEARCH_GRADER_TEMP = 0;
+
+/** The four verdicts. `wrong` is separate from `unknown` on purpose: a model
+ *  that says "I don't know" and a model that confidently invents an answer have
+ *  told us opposite things about the question, and the eight unanswerable
+ *  questions exist specifically to tell those two apart. */
+export const NO_SEARCH_VERDICTS = [
+  { verdict: "knew", meaning: "the answer is substantially correct and complete" },
+  { verdict: "partial", meaning: "part of the answer is correct, but a required piece is missing or hedged" },
+  { verdict: "wrong", meaning: "an answer was given with apparent confidence and it is incorrect" },
+  { verdict: "unknown", meaning: "the model said it did not know, or gave nothing checkable" },
+] as const;
+
+export const NO_SEARCH_GRADER_SYSTEM = `You grade an answer that was written with NO sources and no web access, against a reference describing what a right answer contains.
+Verdicts:
+${NO_SEARCH_VERDICTS.map((v) => `${v.verdict} = ${v.meaning}`).join("\n")}
+Grade only against the reference. If the reference says the question cannot be answered — that no such thing exists — then saying so, or saying "I do not know", is "unknown", and confidently supplying the non-existent answer is "wrong".
+An answer that is correct but less detailed than the reference is still "knew" if nothing required is missing. Do not reward fluency: unverifiable specifics presented confidently are "wrong", not "partial".
+Return JSON only: {"verdict": "<one of: ${NO_SEARCH_VERDICTS.map((v) => v.verdict).join(", ")}>", "rationale": "<one sentence>"}.`;
+
 // Pipeline facts shown in the Controls tab. Mirror the defaults in types.ts
 // (DEFAULT_CONFIG) and extract.ts — kept here as display copy for the tab.
 export interface ControlItem {

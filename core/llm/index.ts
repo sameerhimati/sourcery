@@ -142,6 +142,38 @@ export function unfenceJson(text: string): string {
 }
 
 /**
+ * Models that reject an explicit `temperature`, learned at runtime.
+ *
+ * The newest generation on both labs dropped the knob: Claude Sonnet 5 and Opus
+ * 5 answer "`temperature` is deprecated for this model", and GPT-5.5, the
+ * GPT-5.6 family and o4-mini answer "does not support 0 … only the default (1)".
+ * Both are 400s, so a judge that used to work now fails outright.
+ *
+ * Learned rather than listed on purpose. A hardcoded list of model names goes
+ * stale the week after it is written, and the failure mode of a stale list is a
+ * dead run. The API already tells us — this remembers what it said, so the cost
+ * is one wasted call per model per process rather than a maintenance burden.
+ *
+ * This is not a loosening of the controls. Temperature 0 was only ever a means
+ * to reproducible verdicts, and the models that reject it were measured on
+ * 2026-08-17 to return identical rungs across five repetitions, including on a
+ * deliberately borderline page. The control the run states is "each judge in its
+ * most deterministic available configuration", which this implements.
+ */
+const rejectsTemperature = new Set<string>();
+
+/** Has this model already told us it rejects an explicit temperature? Read by
+ *  the batch path, which must know before it submits — see batch.ts. */
+export function modelRejectsTemperature(modelRef: string): boolean {
+  return rejectsTemperature.has(modelRef);
+}
+
+/** Does this 400 mean "you may not set temperature"? */
+export function isTemperatureRejection(message: string): boolean {
+  return /temperature/i.test(message) && /deprecat|does not support|unsupported|only the default/i.test(message);
+}
+
+/**
  * Single LLM entry point for the engine. Resolves the provider from the model
  * ref, fails with a friendly message (not a stack trace) when its key is
  * missing, and returns the completion text. Callers that want JSON parse the
@@ -166,17 +198,32 @@ export async function complete({
   }
   const client = getClient(spec.baseURL, apiKey);
   const sendResponseFormat = jsonMode && (spec.jsonMode ?? "object") === "object";
-  let res;
-  try {
-    res = await client.chat.completions.create({
+  const send = (withTemperature: boolean) =>
+    client.chat.completions.create({
       model: modelId,
-      ...(temperature !== undefined ? { temperature } : {}),
+      ...(withTemperature && temperature !== undefined ? { temperature } : {}),
       ...(sendResponseFormat ? { response_format: { type: "json_object" as const } } : {}),
       messages,
     });
+
+  let res;
+  try {
+    res = await send(!rejectsTemperature.has(model));
   } catch (e) {
     const raw = e instanceof Error ? e.message : String(e);
-    throw new Error(explainLlmError(raw, provider, spec.envKey));
+    // One retry, only for the one error that a retry can fix, and only once per
+    // model per process — after which the set above skips straight through.
+    if (temperature !== undefined && !rejectsTemperature.has(model) && isTemperatureRejection(raw)) {
+      rejectsTemperature.add(model);
+      try {
+        res = await send(false);
+      } catch (e2) {
+        const raw2 = e2 instanceof Error ? e2.message : String(e2);
+        throw new Error(explainLlmError(raw2, provider, spec.envKey));
+      }
+    } else {
+      throw new Error(explainLlmError(raw, provider, spec.envKey));
+    }
   }
   const text = res.choices[0]?.message?.content?.trim() ?? "";
   return jsonMode ? unfenceJson(text) : text;

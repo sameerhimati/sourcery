@@ -255,3 +255,33 @@ describe("the run-2 question set", () => {
     expect(load().filter((q) => !q.id.startsWith("r2-"))).toHaveLength(0);
   });
 });
+
+describe("the genre tag", () => {
+  const one = (extra: string) =>
+    `[{"id":"q-01","type":"how_to","query":"Q?"${extra}}]`;
+
+  it("keeps a valid genre", () => {
+    expect(parseQuerySet(one(',"genre":"sports"'))[0].genre).toBe("sports");
+  });
+
+  it("leaves it out when it wasn't given", () => {
+    expect(parseQuerySet(one(""))[0].genre).toBeUndefined();
+  });
+
+  it("REFUSES a misspelt genre instead of silently dropping it", () => {
+    // The whole reason genre needed a code change: parseQuerySet rebuilds each
+    // entry from a whitelist, so an unknown key vanishes without a word. A typo
+    // here would cost a whole run's worth of the slice it was added for.
+    expect(() => parseQuerySet(one(',"genre":"sport"'))).toThrow(QuerySetError);
+    expect(() => parseQuerySet(one(',"genre":"sport"'))).toThrow(/software, business/);
+  });
+
+  it("refuses a genre that isn't a string", () => {
+    expect(() => parseQuerySet(one(',"genre":3'))).toThrow(QuerySetError);
+  });
+
+  it("carries genre and sharpness together — they are independent", () => {
+    const q = parseQuerySet(one(',"genre":"policy","sharpness":"open"'))[0];
+    expect(q).toMatchObject({ genre: "policy", sharpness: "open" });
+  });
+});

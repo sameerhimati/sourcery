@@ -14,13 +14,16 @@ having to read the code to find out.
 
 | I'm looking for | It's here |
 |---|---|
-| **The questions** we ship | `core/eval-dataset.ts` (the 48) · `datasets/real-tasks.json` (the 24) · `datasets/run2-questions.json` (the 96 run 2 measures) |
+| **The questions** we ship | `core/eval-dataset.ts` (the 48) · `datasets/real-tasks.json` (the 24) · run 2's 200: `datasets/run2-questions.json` (96) + `datasets/run2-hard.json` (96, harder on purpose) + `datasets/run2-unanswerable.json` (8 that nothing can answer, never scored) |
 | **Loading your own questions** | `core/query-set.ts` parses the file, `cli/query-file.ts` reads it off disk |
 | **The code that calls each search API** | `core/adapters/` — one file per provider |
 | **The code that calls the LLM** | `core/llm/` — one shared door for every model call |
 | **Writing the answer** | `core/answer.ts` |
 | **Grading the fetched pages** (the main score) | `core/retrievalJudge.ts` |
 | **Grading the written answer** (the second score) | `core/judge.ts` |
+| **Grading one page at a time** (run 2) | `core/relevanceJudge.ts` — a rung 0–3 per question-and-page pair |
+| **Grading a whole returned set** (run 2) | `core/setJudge.ts` — 0–10 over everything one provider returned |
+| **What the model already knew** | `core/noSearch.ts` — answers every question with zero sources, so questions retrieval couldn't have helped with can be told apart from the rest |
 | **The settings held identical across providers** | `core/controls.ts` |
 | **Running one question through one provider** | `core/orchestrator.ts` |
 | **Running the whole matrix** | `core/batch.ts` (quick) · `core/credibility.ts` (the real one) |

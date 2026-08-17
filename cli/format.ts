@@ -324,6 +324,28 @@ export function renderPooled(s: PooledSummary): string {
       ]
     : [];
 
+  // The comparison recomputed inside each subject. Printed whenever the
+  // question set carried genre tags, because "does this ranking hold outside
+  // software?" is the question a reader has and a single overall table can't
+  // answer it.
+  const genreBlock = s.by_genre.length
+    ? [
+        "",
+        "The same comparison within each subject — a provider that leads on one",
+        "and trails on another has a speciality, not general ability:",
+        ...[...new Set(s.by_genre.map((g) => g.genre))].flatMap((genre) => [
+          `  ${genre}:`,
+          ...s.by_genre
+            .filter((g) => g.genre === genre)
+            .map(
+              (g) =>
+                `    ${pad(label(g.provider), 12)}  mean rung ${meanCi(g.mean_rung, g.mean_rung_ci95)}` +
+                `  (n=${g.n_queries})`,
+            ),
+        ]),
+      ]
+    : [];
+
   const v = s.variance_shares;
   const mapNotRanking =
     v.n_cells > 0 && v.provider < 0.05 && v.provider_by_query > v.provider * 2
@@ -357,6 +379,7 @@ export function renderPooled(s: PooledSummary): string {
     ...body,
     ...latency,
     ...setBlock,
+    ...genreBlock,
     "",
     "Judge agreement (read the three together — each alone can mislead):",
     ...agree,

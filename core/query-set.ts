@@ -1,5 +1,5 @@
 import { TYPE_LABELS } from "./batch";
-import type { EvalQuery, QueryType, Sharpness } from "./eval-dataset";
+import type { EvalQuery, Genre, QueryType, Sharpness } from "./eval-dataset";
 
 // Your own queries, which is the entire pitch.
 //
@@ -15,6 +15,26 @@ import type { EvalQuery, QueryType, Sharpness } from "./eval-dataset";
 export const QUERY_TYPES = Object.keys(TYPE_LABELS) as QueryType[];
 
 export const SHARPNESS_VALUES: Sharpness[] = ["sharp", "open"];
+
+export const GENRE_VALUES: Genre[] = [
+  "software",
+  "business",
+  "science",
+  "sports",
+  "policy",
+  "everyday",
+];
+
+/** What each genre covers, for the error message and the docs. Kept beside the
+ *  list so a seventh genre can't be added without saying what it means. */
+export const GENRE_LABELS: Record<Genre, string> = {
+  software: "dev tools, infrastructure, APIs, library releases",
+  business: "pricing, companies, markets, finance",
+  science: "research, medicine, climate, energy",
+  sports: "results, records, transfers, fixtures",
+  policy: "regulation, government, courts",
+  everyday: "travel, local, consumer goods, culture",
+};
 
 /** A parse that failed in a way the user can act on. */
 export class QuerySetError extends Error {}
@@ -99,12 +119,27 @@ export function parseQuerySet(text: string, source = "query set"): EvalQuery[] {
       );
     }
 
+    // Same rule as sharpness, and for the same reason: a misspelt genre would
+    // otherwise vanish here and cost a whole run's worth of the slice it was
+    // added for, with nothing in the output saying why.
+    const genre = o.genre;
+    if (genre !== undefined && (typeof genre !== "string" || !GENRE_VALUES.includes(genre as Genre))) {
+      fail(
+        source,
+        where,
+        `has genre ${JSON.stringify(genre)}`,
+        `Use one of: ${GENRE_VALUES.join(", ")}, or leave it out. ` +
+          `Genre is what the question is about; type is what shape it takes.`,
+      );
+    }
+
     return {
       id,
       type: type as QueryType,
       query,
       ...(typeof o.note === "string" ? { note: o.note } : {}),
       ...(sharp !== undefined ? { sharpness: sharp as Sharpness } : {}),
+      ...(genre !== undefined ? { genre: genre as Genre } : {}),
     };
   });
 }

@@ -16,7 +16,7 @@
 // different files, nothing here touches the paths the published run 1 numbers
 // came from.
 
-import type { EvalQuery, QueryType, Sharpness } from "./eval-dataset";
+import type { EvalQuery, Genre, QueryType, Sharpness } from "./eval-dataset";
 import { fetchSources } from "./adapters";
 import { DEFAULT_CONFIG, ErrorStage, Provider, Source } from "./types";
 import { stage, stageOf } from "./stage";
@@ -51,6 +51,9 @@ export interface PooledFetchRow {
    *  run log records it — a slice by sharpness computed after the fact would
    *  otherwise need the query file to still exist, unedited, months later. */
   sharpness?: Sharpness;
+  /** Carried for the same reason as sharpness: a slice by subject computed
+   *  after the fact would need the query file to still exist, unedited. */
+  genre?: Genre;
   provider: Provider;
   num_sources: number;
   num_extracted: number;
@@ -119,6 +122,7 @@ export async function runPooledFetch(
       query: q.query,
       provider,
       ...(q.sharpness ? { sharpness: q.sharpness } : {}),
+      ...(q.genre ? { genre: q.genre } : {}),
     };
     const emit = (row: PooledFetchRow): PooledFetchRow => {
       opts.onRow?.(row, ++landed, total);
@@ -401,6 +405,14 @@ export interface PooledSharpnessStat extends PooledProviderStat {
   sharpness: Sharpness;
 }
 
+/** The provider comparison recomputed within one subject. The question this
+ *  answers is the one a reader actually has: does the ranking hold outside
+ *  software? A provider that leads on software and trails on sport is the case
+ *  for publishing a map of specialities instead of a league table. */
+export interface PooledGenreStat extends PooledProviderStat {
+  genre: Genre;
+}
+
 /** The same pairwise agreement, computed over only the sharp questions or only
  *  the open ones. The reason the sharpness tag exists: judges are expected to
  *  agree less when several pages could each legitimately be the right answer,
@@ -482,6 +494,8 @@ export interface PooledSummary {
   /** Empty when no query in the set carried a sharpness tag — the built-in 48
    *  don't, so a run over them simply has no slice rather than a fake one. */
   by_sharpness: PooledSharpnessStat[];
+  /** Empty when no question in the set carried a genre tag. */
+  by_genre: PooledGenreStat[];
   agreement: PooledAgreementStat[];
   agreement_by_sharpness: PooledSharpnessAgreementStat[];
   rung_distribution: RungDistribution[];
@@ -819,6 +833,20 @@ export function summarizePooled(
     }
   }
 
+  // Genre slices, on the same rule as sharpness: a set with no tags produces
+  // no slices at all rather than one bucket labelled "undefined".
+  const genreOf = new Map<string, Genre>();
+  for (const r of fetches) if (r.genre) genreOf.set(r.queryId, r.genre);
+  const genres = [...new Set(genreOf.values())];
+
+  const byGenre: PooledGenreStat[] = [];
+  for (const genre of genres) {
+    const sub = fetches.filter((r) => r.genre === genre);
+    for (const provider of providers) {
+      byGenre.push({ ...providerStat(sub, verdicts, relevantByQuery, provider), genre });
+    }
+  }
+
   const labels = meta.judges.map(judgeLabel);
   const agreement: PooledAgreementStat[] = [];
   const agreementBySharpness: PooledSharpnessAgreementStat[] = [];
@@ -867,6 +895,7 @@ export function summarizePooled(
     n_set_judge_errors: rawSetVerdicts.filter((v) => v.error).length,
     by_type: byType,
     by_sharpness: bySharpness,
+    by_genre: byGenre,
     agreement,
     agreement_by_sharpness: agreementBySharpness,
     rung_distribution: rungDistributions(judgements),

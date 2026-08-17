@@ -250,3 +250,44 @@ describe("summarizePooled — misses and exclusions land in the stats", () => {
     expect(broke.n_excluded).toBe(1);
   });
 });
+
+describe("the genre slice", () => {
+  const verdictsFor = (): PooledJudgementRow[] => [
+    judgement({ queryId: "q1", url: "https://a.com/1", rung: 3 }),
+    judgement({ queryId: "q2", url: "https://b.com/1", rung: 0 }),
+  ];
+
+  it("recomputes the comparison inside each subject", () => {
+    const s = summarizePooled(
+      [
+        fetchRow({ queryId: "q1", genre: "software", urls: ["https://a.com/1"] }),
+        fetchRow({ queryId: "q2", genre: "sports", urls: ["https://b.com/1"] }),
+      ],
+      verdictsFor(),
+      { judges: ["j1"], now: 0 },
+    );
+    const bySoftware = s.by_genre.find((g) => g.genre === "software");
+    const bySports = s.by_genre.find((g) => g.genre === "sports");
+    expect(bySoftware?.mean_rung).toBe(3);
+    expect(bySports?.mean_rung).toBe(0);
+  });
+
+  it("a set with no genre tags produces no slices rather than one empty bucket", () => {
+    const s = summarizePooled(
+      [fetchRow({ queryId: "q1", urls: ["https://a.com/1"] })],
+      verdictsFor(),
+      { judges: ["j1"], now: 0 },
+    );
+    expect(s.by_genre).toEqual([]);
+  });
+
+  it("genre rides on the fetch row, so the slice survives the query file changing", () => {
+    // Same guarantee sharpness has: the run log is self-contained.
+    const s = summarizePooled(
+      [fetchRow({ queryId: "q1", genre: "policy", urls: ["https://a.com/1"] })],
+      verdictsFor(),
+      { judges: ["j1"], now: 0 },
+    );
+    expect(s.by_genre.map((g) => g.genre)).toEqual(["policy"]);
+  });
+});

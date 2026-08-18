@@ -53,3 +53,7 @@ design/
 # Local config written by `sourcery init` — holds YOUR model choices, not the repo's
 sourcery.config.mjs
 sourcery.config.js
+
+# Generated results explorer — rebuilt from .sourcery by scripts/build-explorer*.mjs
+docs/explorer/data.json
+docs/explorer/index.html

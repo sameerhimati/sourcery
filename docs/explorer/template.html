@@ -1,0 +1,908 @@
+<title>Sourcery Run 2</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Instrument+Sans:wght@400;500;600;700&family=Instrument+Serif&display=swap">
+
+<style>
+  /* Light is the base set. Every colour used anywhere is defined here, so the
+     un-stamped "system" state always resolves to a complete palette. */
+  :root {
+    --ground: #f4f6f8;
+    --surface: #ffffff;
+    --surface-2: #eef1f5;
+    --ink: #131722;
+    --ink-2: #39424f;
+    --muted: #5c6675;
+    --faint: #8b95a4;
+    --line: #dde2e9;
+    --line-2: #c9d0da;
+
+    --accent: #9a6c1f;
+    --accent-2: #b5822e;
+    --accent-wash: #f7f0e1;
+
+    --rung-0: #c2c7d0;
+    --rung-1: #93a9c6;
+    --rung-2: #4e7cb5;
+    --rung-3: #1f4e87;
+    --rung-null: #e4e7ec;
+    --rung-ink: #ffffff;
+
+    --bad: #a32b21;
+    --bad-wash: #fbeceb;
+    --warn: #8a6116;
+    --warn-wash: #fbf3e2;
+    --ok: #1f6b47;
+    --ok-wash: #e9f4ee;
+
+    --shadow: 0 1px 2px rgba(19,23,34,.06), 0 8px 24px -12px rgba(19,23,34,.14);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #0e1116;
+      --surface: #161b22;
+      --surface-2: #1d232c;
+      --ink: #e8ecf2;
+      --ink-2: #c4ccd6;
+      --muted: #96a1b0;
+      --faint: #6c7684;
+      --line: #262d37;
+      --line-2: #38414d;
+
+      --accent: #d9a441;
+      --accent-2: #e8bc6a;
+      --accent-wash: #2a2213;
+
+      --rung-0: #454d59;
+      --rung-1: #5d7a9c;
+      --rung-2: #4a80c0;
+      --rung-3: #7fb0e8;
+      --rung-null: #232932;
+      --rung-ink: #0e1116;
+
+      --bad: #e8837a;
+      --bad-wash: #2c1917;
+      --warn: #d9a441;
+      --warn-wash: #2a2213;
+      --ok: #63b58d;
+      --ok-wash: #14251d;
+
+      --shadow: 0 1px 2px rgba(0,0,0,.4), 0 8px 24px -12px rgba(0,0,0,.6);
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --ground: #0e1116;
+    --surface: #161b22;
+    --surface-2: #1d232c;
+    --ink: #e8ecf2;
+    --ink-2: #c4ccd6;
+    --muted: #96a1b0;
+    --faint: #6c7684;
+    --line: #262d37;
+    --line-2: #38414d;
+
+    --accent: #d9a441;
+    --accent-2: #e8bc6a;
+    --accent-wash: #2a2213;
+
+    --rung-0: #454d59;
+    --rung-1: #5d7a9c;
+    --rung-2: #4a80c0;
+    --rung-3: #7fb0e8;
+    --rung-null: #232932;
+    --rung-ink: #0e1116;
+
+    --bad: #e8837a;
+    --bad-wash: #2c1917;
+    --warn: #d9a441;
+    --warn-wash: #2a2213;
+    --ok: #63b58d;
+    --ok-wash: #14251d;
+
+    --shadow: 0 1px 2px rgba(0,0,0,.4), 0 8px 24px -12px rgba(0,0,0,.6);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: "Instrument Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    font-size: 15px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .mono, .num {
+    font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-variant-numeric: tabular-nums;
+  }
+
+  a { color: var(--accent); }
+  a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible, summary:focus-visible {
+    outline: 2px solid var(--accent-2);
+    outline-offset: 2px;
+    border-radius: 3px;
+  }
+
+  .wrap { max-width: 1440px; margin: 0 auto; padding: 0 24px 96px; }
+
+  /* ── masthead ─────────────────────────────────────────────────── */
+  header.masthead {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 24px;
+    padding: 40px 0 20px;
+    border-bottom: 1px solid var(--line);
+  }
+  .masthead h1 {
+    font-family: "Instrument Serif", Georgia, serif;
+    font-weight: 400;
+    font-size: clamp(34px, 4.6vw, 52px);
+    line-height: 1.02;
+    margin: 0;
+    letter-spacing: -.012em;
+    text-wrap: balance;
+  }
+  .masthead .sub {
+    margin: 10px 0 0;
+    max-width: 62ch;
+    color: var(--muted);
+    font-size: 15px;
+  }
+  .runmeta {
+    display: grid;
+    grid-template-columns: repeat(2, auto);
+    gap: 4px 28px;
+    font-size: 12.5px;
+    color: var(--muted);
+  }
+  .runmeta dt { color: var(--faint); text-transform: uppercase; letter-spacing: .07em; font-size: 10.5px; }
+  .runmeta dd { margin: 0 0 6px; }
+
+  /* ── method note ──────────────────────────────────────────────── */
+  .method {
+    margin: 22px 0 0;
+    padding: 18px 20px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--accent-2);
+    border-radius: 4px;
+    box-shadow: var(--shadow);
+  }
+  .method h2 {
+    margin: 0 0 10px;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: .1em;
+    color: var(--accent);
+  }
+  .method ul { margin: 0; padding-left: 18px; display: grid; gap: 7px; }
+  .method li { color: var(--ink-2); font-size: 13.5px; max-width: 88ch; }
+
+  /* ── tabs ─────────────────────────────────────────────────────── */
+  nav.tabs { display: flex; gap: 4px; margin: 26px 0 20px; border-bottom: 1px solid var(--line); }
+  nav.tabs button {
+    appearance: none;
+    background: none;
+    border: 0;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    padding: 9px 14px;
+    font: inherit;
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--muted);
+    cursor: pointer;
+  }
+  nav.tabs button[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--accent-2); }
+  nav.tabs button:hover { color: var(--ink); }
+
+  .panel[hidden] { display: none; }
+
+  /* ── tables ───────────────────────────────────────────────────── */
+  .tablewrap { overflow-x: auto; background: var(--surface); border: 1px solid var(--line); border-radius: 4px; box-shadow: var(--shadow); }
+  table { border-collapse: collapse; width: 100%; font-size: 13.5px; }
+  th, td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+  thead th {
+    position: sticky; top: 0; z-index: 1;
+    background: var(--surface-2);
+    font-size: 10.5px; text-transform: uppercase; letter-spacing: .07em;
+    color: var(--muted); font-weight: 600;
+    border-bottom: 1px solid var(--line-2);
+  }
+  tbody tr:last-child td { border-bottom: 0; }
+  tbody tr:hover { background: var(--surface-2); }
+  td.n, th.n { text-align: right; font-family: "IBM Plex Mono", ui-monospace, monospace; font-variant-numeric: tabular-nums; }
+  .provname { font-weight: 600; }
+  th.tight, td.tight { padding-right: 8px; }
+  th.barcol, td.barcol { width: 124px; padding-left: 0; }
+  .srhide { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+  /* ── rungs ────────────────────────────────────────────────────── */
+  .rung {
+    display: inline-flex; align-items: center; justify-content: center;
+    min-width: 22px; height: 20px; padding: 0 5px;
+    border-radius: 3px;
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 11.5px; font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    color: var(--rung-ink);
+  }
+  .rung.r0 { background: var(--rung-0); }
+  .rung.r1 { background: var(--rung-1); }
+  .rung.r2 { background: var(--rung-2); }
+  .rung.r3 { background: var(--rung-3); }
+  .rung.rnull { background: var(--rung-null); color: var(--faint); }
+
+  /* A bar is easier to compare down a column than a number is. */
+  .bar { display: inline-block; vertical-align: middle; width: 108px; height: 7px; border-radius: 4px; background: var(--surface-2); overflow: hidden; border: 1px solid var(--line); }
+  .bar span { display: block; height: 100%; background: var(--rung-2); }
+
+  /* ── chips ────────────────────────────────────────────────────── */
+  .chip {
+    display: inline-block;
+    padding: 2px 7px;
+    border-radius: 3px;
+    font-size: 10.5px;
+    font-weight: 600;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    border: 1px solid transparent;
+  }
+  .chip.bad  { background: var(--bad-wash);  color: var(--bad);  border-color: var(--bad); }
+  .chip.warn { background: var(--warn-wash); color: var(--warn); border-color: var(--warn); }
+  .chip.ok   { background: var(--ok-wash);   color: var(--ok);   border-color: var(--ok); }
+  .chip.mute { background: var(--surface-2); color: var(--muted); border-color: var(--line-2); }
+
+  .unmeasured { color: var(--faint); font-style: italic; font-size: 12.5px; }
+
+  /* ── explorer layout ──────────────────────────────────────────── */
+  .explorer { display: grid; grid-template-columns: 340px minmax(0, 1fr); gap: 20px; align-items: start; }
+  @media (max-width: 900px) { .explorer { grid-template-columns: 1fr; } }
+
+  .rail { position: sticky; top: 12px; background: var(--surface); border: 1px solid var(--line); border-radius: 4px; box-shadow: var(--shadow); overflow: hidden; }
+  .rail .controls { padding: 14px; display: grid; gap: 10px; border-bottom: 1px solid var(--line); }
+  .rail input[type="search"], .rail select {
+    width: 100%; padding: 8px 10px;
+    font: inherit; font-size: 13px;
+    color: var(--ink);
+    background: var(--ground);
+    border: 1px solid var(--line-2);
+    border-radius: 3px;
+  }
+  .rail label { font-size: 10.5px; text-transform: uppercase; letter-spacing: .07em; color: var(--faint); font-weight: 600; }
+  .rail .count { padding: 8px 14px; font-size: 12px; color: var(--muted); background: var(--surface-2); border-bottom: 1px solid var(--line); }
+  .qlist { max-height: 62vh; overflow-y: auto; }
+  .qitem {
+    display: block; width: 100%; text-align: left;
+    padding: 10px 14px;
+    background: none; border: 0; border-bottom: 1px solid var(--line);
+    font: inherit; color: var(--ink); cursor: pointer;
+  }
+  .qitem:hover { background: var(--surface-2); }
+  .qitem[aria-current="true"] { background: var(--accent-wash); box-shadow: inset 3px 0 0 var(--accent-2); }
+  .qitem .qid { font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: 10.5px; color: var(--faint); }
+  .qitem .qtext { display: block; font-size: 13px; line-height: 1.35; margin-top: 2px; color: var(--ink-2); }
+
+  /* ── question detail ──────────────────────────────────────────── */
+  .detail { background: var(--surface); border: 1px solid var(--line); border-radius: 4px; box-shadow: var(--shadow); padding: 22px 24px 8px; }
+  .detail .qhead { border-bottom: 1px solid var(--line); padding-bottom: 16px; }
+  .detail h2 { margin: 6px 0 0; font-size: 21px; line-height: 1.28; font-weight: 600; text-wrap: balance; max-width: 70ch; }
+  .taglist { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+
+  .baseline { margin: 16px 0 0; padding: 12px 14px; border-radius: 4px; font-size: 13px; border: 1px solid var(--line); background: var(--surface-2); color: var(--ink-2); }
+  .baseline.knew { background: var(--warn-wash); border-color: var(--warn); color: var(--warn); }
+  .baseline strong { font-weight: 600; }
+
+  details.prov { border-bottom: 1px solid var(--line); }
+  details.prov > summary {
+    display: grid;
+    grid-template-columns: 18px 130px 1fr auto;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 4px;
+    cursor: pointer;
+    list-style: none;
+  }
+  details.prov > summary::-webkit-details-marker { display: none; }
+  .caret { color: var(--faint); transition: transform .12s ease; font-size: 11px; }
+  details.prov[open] .caret { transform: rotate(90deg); }
+  @media (prefers-reduced-motion: reduce) { .caret { transition: none; } }
+  .summarystats { display: flex; align-items: center; gap: 16px; font-size: 12.5px; color: var(--muted); flex-wrap: wrap; }
+
+  .pages { padding: 4px 0 18px 30px; display: grid; gap: 2px; }
+  details.page { border: 1px solid var(--line); border-radius: 3px; background: var(--ground); }
+  details.page > summary {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 12px;
+    align-items: center;
+    padding: 8px 12px;
+    cursor: pointer;
+    list-style: none;
+  }
+  details.page > summary::-webkit-details-marker { display: none; }
+  .pagetitle { font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .pagedomain { font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: 11px; color: var(--faint); }
+  .rungset { display: flex; gap: 3px; }
+
+  .rationales { padding: 4px 12px 14px 12px; display: grid; gap: 8px; border-top: 1px solid var(--line); }
+  .rationale { display: grid; grid-template-columns: 26px 130px 1fr; gap: 10px; align-items: start; font-size: 12.5px; }
+  .rationale .jname { font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: 11px; color: var(--muted); }
+  .rationale .jtext { color: var(--ink-2); max-width: 84ch; }
+  .pagemeta { padding: 8px 12px 0; font-size: 11.5px; color: var(--faint); }
+  .pagemeta a { word-break: break-all; }
+
+  .split { color: var(--bad); font-weight: 600; }
+
+  .empty { padding: 60px 24px; text-align: center; color: var(--muted); }
+
+  footer.note { margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--line); color: var(--faint); font-size: 12.5px; max-width: 82ch; }
+</style>
+
+<div class="wrap">
+  <header class="masthead">
+    <div>
+      <h1>Sourcery Run 2</h1>
+      <p class="sub">
+        The same question asked of eight web-search APIs, the pages each one returned handed to
+        the same judges, and every rating kept so you can check it. Only the search provider varies.
+      </p>
+    </div>
+    <dl class="runmeta" id="runmeta"></dl>
+  </header>
+
+  <section class="method">
+    <h2>Read this before the numbers</h2>
+    <ul id="method-list"></ul>
+  </section>
+
+  <nav class="tabs" role="tablist">
+    <button role="tab" id="tab-providers" aria-selected="true" aria-controls="panel-providers">Providers</button>
+    <button role="tab" id="tab-questions" aria-selected="false" aria-controls="panel-questions">Questions</button>
+  </nav>
+
+  <section class="panel" id="panel-providers" role="tabpanel" aria-labelledby="tab-providers">
+    <div class="tablewrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Provider</th>
+            <th class="n tight">Page rating</th>
+            <th class="barcol"><span class="srhide">rating as a bar</span></th>
+            <th class="n">Set rating</th>
+            <th class="n">Questions</th>
+            <th class="n">Failed</th>
+            <th class="n">Pages returned</th>
+            <th class="n">Own text</th>
+            <th class="n">Judged on another arm's text</th>
+            <th class="n">Median fetch</th>
+            <th class="n">Cost / query</th>
+          </tr>
+        </thead>
+        <tbody id="prov-body"></tbody>
+      </table>
+    </div>
+    <p class="unmeasured" style="margin-top:12px">
+      Page rating is the mean of every judge's 0&ndash;3 rating of every page the provider returned.
+      Set rating asks a different question of the whole returned set at once &mdash; could you answer
+      from this alone, without searching again &mdash; on the same rungs.
+    </p>
+  </section>
+
+  <section class="panel" id="panel-questions" role="tabpanel" aria-labelledby="tab-questions" hidden>
+    <div class="explorer">
+      <aside class="rail">
+        <div class="controls">
+          <div>
+            <label for="q-search">Search</label>
+            <input type="search" id="q-search" placeholder="question text or id" autocomplete="off">
+          </div>
+          <div>
+            <label for="q-genre">Genre</label>
+            <select id="q-genre"></select>
+          </div>
+          <div>
+            <label for="q-filter">Show</label>
+            <select id="q-filter">
+              <option value="all">every question</option>
+              <option value="knew">the model already knew the answer</option>
+              <option value="needs">retrieval was actually needed</option>
+              <option value="split">judges disagreed by 2+ rungs</option>
+              <option value="failed">some provider failed</option>
+            </select>
+          </div>
+          <div>
+            <label for="q-sort">Sort</label>
+            <select id="q-sort">
+              <option value="id">by id</option>
+              <option value="spread">widest judge disagreement first</option>
+              <option value="low">lowest rated pages first</option>
+              <option value="high">highest rated pages first</option>
+            </select>
+          </div>
+        </div>
+        <div class="count" id="q-count"></div>
+        <div class="qlist" id="q-list"></div>
+      </aside>
+      <div id="q-detail"></div>
+    </div>
+  </section>
+
+  <footer class="note" id="footer-note"></footer>
+</div>
+
+<script id="run-data" type="application/json">__SOURCERY_DATA__</script>
+<script>
+(function () {
+  "use strict";
+
+  var DATA = JSON.parse(document.getElementById("run-data").textContent);
+  var $ = function (id) { return document.getElementById(id); };
+
+  function el(tag, cls, text) {
+    var n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (text !== undefined && text !== null) n.textContent = String(text);
+    return n;
+  }
+  function label(p) { return p.replace(/_/g, " "); }
+  function fmt(x, d) { return x === null || x === undefined ? "—" : Number(x).toFixed(d === undefined ? 2 : d); }
+
+  // A rung is a named step, not a score out of three, so it is drawn as a step.
+  function rungChip(r) {
+    var n = el("span", "rung " + (r === null || r === undefined ? "rnull" : "r" + r), r === null || r === undefined ? "·" : r);
+    n.title = r === null || r === undefined ? "no usable verdict from this judge" : "rung " + r;
+    return n;
+  }
+
+  // ── masthead ────────────────────────────────────────────────────
+  (function () {
+    var dl = $("runmeta");
+    var rows = [
+      ["Questions", DATA.n_questions],
+      ["Providers", DATA.providers.length],
+      ["Judges", DATA.judges.length || "—"],
+      ["Unique pages", DATA.n_pairs.toLocaleString()],
+      ["Page ratings", DATA.n_ratings.toLocaleString()],
+      ["Set verdicts", DATA.n_set_verdicts.toLocaleString()],
+      ["Fetched", DATA.fetch_dates.join(" / ") || "—"],
+      ["Built", (DATA.generated_at || "").slice(0, 16).replace("T", " ")]
+    ];
+    rows.forEach(function (r) {
+      dl.appendChild(el("dt", null, r[0]));
+      dl.appendChild(el("dd", "num", r[1]));
+    });
+  })();
+
+  // ── method note ─────────────────────────────────────────────────
+  // These are the caveats that have to travel with the numbers. Each one is a
+  // thing that would otherwise be read off this page incorrectly.
+  (function () {
+    var ul = $("method-list");
+    var unpriced = DATA.providers.filter(function (p) {
+      return !DATA.costs[p] || DATA.costs[p].usd_per_query === null;
+    });
+    var items = [
+      "Every source is cut to 1,600 characters before any judge sees it. A provider that returned a " +
+      "40KB article and one that returned 1,600 characters of stitched-together snippets look identical " +
+      "here, so this page cannot tell you how deeply a provider extracts.",
+
+      "A page returned by four providers was judged once and the verdict reused for all four. That is " +
+      "what lets " + DATA.n_ratings.toLocaleString() + " ratings cover " + DATA.providers.length +
+      " providers, and it means each provider is credited for the best available text of a page it found, " +
+      "not its own.",
+
+      "A failure is attributed to whichever step actually threw. Anything we cannot place is recorded as " +
+      "unknown and charged to nobody.",
+
+      "Keyless search is not on this page. It is captcha-blocked after a handful of queries — eight " +
+      "consecutive failures and no successes — so it is a demonstration of the free floor, never a " +
+      "measured provider."
+    ];
+    if (unpriced.length) {
+      items.push(
+        "Cost per query is measured for " +
+        DATA.providers.filter(function (p) { return DATA.costs[p] && DATA.costs[p].usd_per_query !== null; }).map(label).join(", ") +
+        ". The rest (" + unpriced.map(label).join(", ") + ") are shown as not measured rather than estimated."
+      );
+    }
+    if (DATA.fetch_dates.length > 1) {
+      items.push(
+        "The fetch spans " + DATA.fetch_dates.join(" and ") + ". One arm throttles above a single concurrent " +
+        "request and needed its own slower repair pass, which crossed midnight."
+      );
+    }
+    items.forEach(function (t) { ul.appendChild(el("li", null, t)); });
+  })();
+
+  // ── per-provider rollup ─────────────────────────────────────────
+  var provStats = (function () {
+    var acc = {};
+    DATA.providers.forEach(function (p) {
+      acc[p] = { provider: p, pageMeans: [], setMeans: [], pages: 0, withText: 0, borrowed: 0, ms: [], attempts: 0, failed: 0 };
+    });
+    DATA.questions.forEach(function (q) {
+      DATA.providers.forEach(function (p) {
+        var a = q.providers[p];
+        if (!a) return;
+        var s = acc[p];
+        s.attempts++;
+        if (a.error) { s.failed++; return; }
+        if (a.mean_rung !== null) s.pageMeans.push(a.mean_rung);
+        if (a.set_mean !== null) s.setMeans.push(a.set_mean);
+        s.pages += a.pages.length;
+        a.pages.forEach(function (pg) {
+          if (pg.own_chars > 0) s.withText++;
+          if (pg.judged_from && pg.judged_from !== p) s.borrowed++;
+        });
+        if (a.fetch_ms) s.ms.push(a.fetch_ms);
+      });
+    });
+    return DATA.providers.map(function (p) { return acc[p]; });
+  })();
+
+  function mean(xs) { return xs.length ? xs.reduce(function (a, b) { return a + b; }, 0) / xs.length : null; }
+  function median(xs) {
+    if (!xs.length) return null;
+    var s = xs.slice().sort(function (a, b) { return a - b; });
+    return s[Math.floor(s.length / 2)];
+  }
+
+  (function () {
+    var body = $("prov-body");
+    var rows = provStats.slice().sort(function (a, b) {
+      return (mean(b.pageMeans) || -1) - (mean(a.pageMeans) || -1);
+    });
+    rows.forEach(function (s) {
+      var tr = el("tr");
+      tr.appendChild(el("td", "provname", label(s.provider)));
+
+      var m = mean(s.pageMeans);
+      tr.appendChild(el("td", "n tight", fmt(m)));
+
+      var barCell = el("td", "barcol");
+      var bar = el("div", "bar");
+      var fill = el("span");
+      fill.style.width = (m === null ? 0 : (m / 3) * 100) + "%";
+      bar.appendChild(fill);
+      barCell.appendChild(bar);
+      tr.appendChild(barCell);
+
+      var sm = mean(s.setMeans);
+      tr.appendChild(el("td", "n", s.setMeans.length ? fmt(sm) : "—"));
+      tr.appendChild(el("td", "n", s.attempts));
+
+      var failCell = el("td", "n");
+      if (s.failed) failCell.appendChild(el("span", "chip bad", s.failed));
+      else failCell.textContent = "0";
+      tr.appendChild(failCell);
+
+      tr.appendChild(el("td", "n", s.pages.toLocaleString()));
+
+      var pct = s.pages ? Math.round((s.withText / s.pages) * 100) : 0;
+      tr.appendChild(el("td", "n", s.pages ? pct + "%" : "—"));
+
+      var bpct = s.pages ? Math.round((s.borrowed / s.pages) * 100) : 0;
+      var bCell = el("td", "n");
+      if (!s.pages) bCell.textContent = "—";
+      else if (bpct >= 50) bCell.appendChild(el("span", "chip warn", bpct + "%"));
+      else bCell.textContent = bpct + "%";
+      bCell.title = s.borrowed.toLocaleString() + " of " + s.pages.toLocaleString() +
+        " pages were judged on a longer extraction from a different provider";
+      tr.appendChild(bCell);
+
+      var md = median(s.ms);
+      tr.appendChild(el("td", "n", md === null ? "—" : (md / 1000).toFixed(1) + "s"));
+
+      var c = DATA.costs[s.provider];
+      var costCell = el("td", "n");
+      if (c && c.usd_per_query !== null) {
+        costCell.textContent = "$" + c.usd_per_query.toFixed(3);
+        if (c.basis) costCell.title = c.basis + (c.source ? " — " + c.source : "");
+      } else {
+        costCell.appendChild(el("span", "unmeasured", "not measured"));
+      }
+      tr.appendChild(costCell);
+
+      body.appendChild(tr);
+    });
+  })();
+
+  // ── question index, with the derived fields the filters need ────
+  var INDEX = DATA.questions.map(function (q) {
+    var means = [], spreads = [], failed = false;
+    DATA.providers.forEach(function (p) {
+      var a = q.providers[p];
+      if (!a) return;
+      if (a.error) { failed = true; return; }
+      if (a.mean_rung !== null) means.push(a.mean_rung);
+      a.pages.forEach(function (pg) { spreads.push(pg.spread || 0); });
+    });
+    var knew = q.baseline.filter(function (b) { return b.verdict === "knew"; }).length;
+    return {
+      q: q,
+      mean: mean(means),
+      maxSpread: spreads.length ? Math.max.apply(null, spreads) : 0,
+      failed: failed,
+      knew: knew,
+      graded: q.baseline.length
+    };
+  });
+
+  (function () {
+    var sel = $("q-genre");
+    sel.appendChild(new Option("every genre", ""));
+    var genres = {};
+    DATA.questions.forEach(function (q) { if (q.genre) genres[q.genre] = 1; });
+    Object.keys(genres).sort().forEach(function (g) { sel.appendChild(new Option(g, g)); });
+  })();
+
+  var selectedId = null;
+
+  function showTab(which) {
+    [["tab-providers", "panel-providers"], ["tab-questions", "panel-questions"]].forEach(function (p) {
+      var on = p[0] === "tab-" + which;
+      $(p[0]).setAttribute("aria-selected", String(on));
+      $(p[1]).hidden = !on;
+    });
+  }
+
+  function readHash() {
+    var h = (location.hash || "").replace(/^#/, "");
+    if (h.indexOf("q/") === 0) {
+      var id = decodeURIComponent(h.slice(2));
+      if (INDEX.some(function (r) { return r.q.id === id; })) {
+        showTab("questions");
+        select(id, true);
+        return;
+      }
+    }
+    showTab(h === "questions" ? "questions" : "providers");
+  }
+
+  function visible() {
+    var term = $("q-search").value.trim().toLowerCase();
+    var genre = $("q-genre").value;
+    var mode = $("q-filter").value;
+    var rows = INDEX.filter(function (r) {
+      if (genre && r.q.genre !== genre) return false;
+      if (term && (r.q.query + " " + r.q.id).toLowerCase().indexOf(term) === -1) return false;
+      // "Already knew it" means a majority of the graders said the model answered
+      // this with no sources at all, which is the case where retrieval cannot
+      // separate providers no matter what they return.
+      if (mode === "knew" && !(r.graded && r.knew * 2 > r.graded)) return false;
+      if (mode === "needs" && r.graded && r.knew * 2 > r.graded) return false;
+      if (mode === "split" && r.maxSpread < 2) return false;
+      if (mode === "failed" && !r.failed) return false;
+      return true;
+    });
+    var sort = $("q-sort").value;
+    rows.sort(function (a, b) {
+      if (sort === "spread") return b.maxSpread - a.maxSpread;
+      if (sort === "low") return (a.mean === null ? 9 : a.mean) - (b.mean === null ? 9 : b.mean);
+      if (sort === "high") return (b.mean === null ? -1 : b.mean) - (a.mean === null ? -1 : a.mean);
+      return a.q.id.localeCompare(b.q.id);
+    });
+    return rows;
+  }
+
+  function renderList() {
+    var rows = visible();
+    var list = $("q-list");
+    list.textContent = "";
+    $("q-count").textContent = rows.length + " of " + INDEX.length + " questions";
+    rows.forEach(function (r) {
+      var b = el("button", "qitem");
+      b.type = "button";
+      var head = el("span", "qid", r.q.id + (r.maxSpread >= 2 ? "  ▲ split panel" : ""));
+      b.appendChild(head);
+      b.appendChild(el("span", "qtext", r.q.query));
+      if (r.q.id === selectedId) b.setAttribute("aria-current", "true");
+      b.addEventListener("click", function () { select(r.q.id); });
+      list.appendChild(b);
+    });
+    if (!rows.length) list.appendChild(el("div", "empty", "No question matches those filters."));
+  }
+
+  function select(id, fromHash) {
+    selectedId = id;
+    if (!fromHash) location.hash = "q/" + encodeURIComponent(id);
+    renderList();
+    renderDetail(INDEX.filter(function (r) { return r.q.id === id; })[0]);
+    var row = document.querySelector('.qitem[aria-current="true"]');
+    if (row && fromHash) row.scrollIntoView({ block: "nearest" });
+  }
+
+  function renderDetail(row) {
+    var host = $("q-detail");
+    host.textContent = "";
+    if (!row) {
+      var e = el("div", "detail");
+      e.appendChild(el("div", "empty", "Pick a question to see what each provider returned."));
+      host.appendChild(e);
+      return;
+    }
+    var q = row.q;
+    var box = el("div", "detail");
+
+    var head = el("div", "qhead");
+    head.appendChild(el("div", "qid mono", q.id));
+    head.appendChild(el("h2", null, q.query));
+    var tags = el("div", "taglist");
+    [q.genre, q.type, q.sharpness].forEach(function (t) {
+      if (t) tags.appendChild(el("span", "chip mute", label(t)));
+    });
+    if (row.maxSpread >= 2) tags.appendChild(el("span", "chip bad", "judges " + row.maxSpread + " rungs apart"));
+    head.appendChild(tags);
+    box.appendChild(head);
+
+    // The baseline belongs on the question, not on any provider: it says whether
+    // this question could separate providers at all.
+    if (q.baseline.length) {
+      var knewMajority = row.knew * 2 > row.graded;
+      var bl = el("div", "baseline" + (knewMajority ? " knew" : ""));
+      if (row.knew === 0) {
+        bl.appendChild(el("strong", null, "No grader "));
+        bl.appendChild(document.createTextNode(
+          "thinks the model could answer this without searching, across all " + row.graded +
+          " of them. The pages had to do the work here, so a gap between providers is a real gap."
+        ));
+      } else {
+        bl.appendChild(el("strong", null, row.knew + " of " + row.graded + " graders "));
+        bl.appendChild(document.createTextNode(
+          knewMajority
+            ? "say the model answered this correctly with no sources at all. Retrieval had little left to do here, so a flat result across providers is not evidence that they are alike."
+            : "say the model already knew this without searching, so the pages were only part of the answer."
+        ));
+      }
+      box.appendChild(bl);
+    }
+
+    DATA.providers.forEach(function (p) {
+      var a = q.providers[p];
+      if (!a) return;
+      box.appendChild(providerBlock(p, a));
+    });
+
+    host.appendChild(box);
+  }
+
+  function providerBlock(p, a) {
+    var d = el("details", "prov");
+    var s = el("summary");
+    s.appendChild(el("span", "caret", "▶"));
+    s.appendChild(el("span", "provname", label(p)));
+
+    var stats = el("span", "summarystats");
+    if (a.error) {
+      var chip = el("span", "chip bad", "failed");
+      stats.appendChild(chip);
+      // Say which step threw. Blaming the vendor for our own bug is the single
+      // easiest mistake this page could make.
+      stats.appendChild(el("span", null, "stage: " + (a.error_stage || "unknown")));
+      stats.appendChild(el("span", "mono", String(a.error).slice(0, 90)));
+    } else {
+      stats.appendChild(el("span", null, a.pages.length + " pages"));
+      var withText = a.pages.filter(function (pg) { return pg.own_chars > 0; }).length;
+      stats.appendChild(el("span", null, withText + " with its own text"));
+      if (a.fetch_ms) stats.appendChild(el("span", "mono", (a.fetch_ms / 1000).toFixed(1) + "s"));
+      if (a.set_mean !== null) {
+        var setWrap = el("span");
+        setWrap.appendChild(document.createTextNode("set "));
+        setWrap.appendChild(el("span", "mono", fmt(a.set_mean)));
+        stats.appendChild(setWrap);
+      }
+    }
+    s.appendChild(stats);
+
+    var right = el("span", "mono");
+    right.style.fontWeight = "600";
+    right.textContent = a.error ? "—" : fmt(a.mean_rung);
+    s.appendChild(right);
+    d.appendChild(s);
+
+    if (!a.error) {
+      var pages = el("div", "pages");
+      a.pages.slice().sort(function (x, y) {
+        return (y.mean_rung === null ? -1 : y.mean_rung) - (x.mean_rung === null ? -1 : x.mean_rung);
+      }).forEach(function (pg) { pages.appendChild(pageBlock(pg, p)); });
+      if (!a.pages.length) pages.appendChild(el("div", "unmeasured", "This provider returned nothing for this question."));
+      d.appendChild(pages);
+    }
+    return d;
+  }
+
+  function pageBlock(pg, providerOf) {
+    var d = el("details", "page");
+    var s = el("summary");
+
+    var rs = el("span", "rungset");
+    if (pg.ratings.length) {
+      pg.ratings.forEach(function (r) { rs.appendChild(rungChip(r.rung)); });
+    } else {
+      rs.appendChild(el("span", "unmeasured", "unjudged"));
+    }
+    s.appendChild(rs);
+
+    var mid = el("span");
+    var t = el("span", "pagetitle", pg.title || pg.url);
+    mid.appendChild(t);
+    var note = pg.domain + (pg.published ? "  ·  " + pg.published : "");
+    if (!pg.own_chars) note += "  ·  this arm returned no page text";
+    var dm = el("div", "pagedomain", note);
+    mid.appendChild(dm);
+    s.appendChild(mid);
+
+    var meanCell = el("span", "mono");
+    if (pg.spread >= 2) meanCell.className = "mono split";
+    meanCell.textContent = fmt(pg.mean_rung, 2);
+    meanCell.title = pg.spread >= 2 ? "judges " + pg.spread + " rungs apart on this page" : "";
+    s.appendChild(meanCell);
+    d.appendChild(s);
+
+    var meta = el("div", "pagemeta");
+    var link = el("a", null, pg.url);
+    link.href = pg.url;
+    link.target = "_blank";
+    link.rel = "noopener noreferrer";
+    meta.appendChild(link);
+    if (pg.judged_chars) {
+      var seen = "  ·  judges read " + pg.judged_chars.toLocaleString() + " characters";
+      meta.appendChild(el("span", null, seen));
+      // The pooling caveat, said where it actually bites rather than in a footnote.
+      if (pg.judged_from && pg.judged_from !== providerOf) {
+        var borrowed = el("span", "chip warn", "text from " + label(pg.judged_from));
+        borrowed.style.marginLeft = "8px";
+        borrowed.title = "This arm returned the url with " +
+          (pg.own_chars ? "a shorter extraction" : "no page text") +
+          ", so the judges read " + label(pg.judged_from) + "'s version and this arm is credited for the rating.";
+        meta.appendChild(borrowed);
+      }
+    } else {
+      meta.appendChild(el("span", null, "  ·  no text was available for this page from any provider"));
+    }
+    d.appendChild(meta);
+
+    if (pg.ratings.length) {
+      var rat = el("div", "rationales");
+      pg.ratings.forEach(function (r) {
+        var row = el("div", "rationale");
+        row.appendChild(rungChip(r.rung));
+        row.appendChild(el("span", "jname", r.judge));
+        row.appendChild(el("span", "jtext", r.rationale || "—"));
+        rat.appendChild(row);
+      });
+      d.appendChild(rat);
+    }
+    return d;
+  }
+
+  // ── tabs ────────────────────────────────────────────────────────
+  $("tab-providers").addEventListener("click", function () { location.hash = ""; showTab("providers"); });
+  $("tab-questions").addEventListener("click", function () {
+    showTab("questions");
+    if (!selectedId) { location.hash = "questions"; }
+  });
+  window.addEventListener("hashchange", readHash);
+
+  ["q-search", "q-genre", "q-filter", "q-sort"].forEach(function (id) {
+    $(id).addEventListener("input", function () { renderList(); });
+  });
+
+  $("footer-note").textContent =
+    "Built from the run's own files: every rating on this page is one judge's verdict on one page, " +
+    "kept verbatim. Nothing here is rounded up from a summary. " +
+    (DATA.judges.length ? "Judges: " + DATA.judges.join(", ") + "." : "Judging has not run yet, so no ratings are shown.");
+
+  renderList();
+  renderDetail(null);
+  readHash();
+})();
+</script>

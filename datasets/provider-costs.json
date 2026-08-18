@@ -1,0 +1,26 @@
+{
+  "_note": "What one query actually costs on each provider, for the cost column in the results explorer. A null price is one that has NOT been measured or quoted — the explorer renders those as 'not measured' rather than guessing. Do not fill these in from memory; use an invoice or the vendor's live pricing page, and put the source and date in.",
+  "_measured_on": "2026-08-17",
+  "providers": {
+    "tavily": {
+      "usd_per_query": 0.054,
+      "basis": "measured: 150 queries burned 1,000 credits at ~6.7 credits/query",
+      "source": "own invoice + credit meter, 2026-08-17"
+    },
+    "serper": {
+      "usd_per_query": 0.001,
+      "basis": "approximate, from the published per-1k-search price",
+      "source": "vendor pricing page, 2026-08-17"
+    },
+    "firecrawl": {
+      "usd_per_query": 0.12,
+      "basis": "approximate, from the credit model already encoded in core/adapters/firecrawl.ts",
+      "source": "vendor pricing page, 2026-08-17"
+    },
+    "exa": { "usd_per_query": null, "basis": null, "source": null },
+    "brave": { "usd_per_query": null, "basis": null, "source": null },
+    "perplexity": { "usd_per_query": null, "basis": null, "source": null },
+    "parallel": { "usd_per_query": null, "basis": null, "source": null },
+    "bright_data": { "usd_per_query": null, "basis": null, "source": null }
+  }
+}

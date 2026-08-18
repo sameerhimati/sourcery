@@ -54,7 +54,13 @@ describe("runPooledJudging — batch path", () => {
       batch: true,
       onRow: (r) => seen.push(r.url),
     });
-    expect(seen).toEqual(["https://a.com/1", "https://a.com/2"]);
+    // Every row reaches disk exactly once. The ORDER is deliberately not
+    // asserted: rows are now written as each batch lands rather than in job
+    // order, which is what lets a run interrupted after four hours keep what it
+    // had. The log is append-only and resume is keyed, so arrival order carries
+    // no meaning.
+    expect(seen.slice().sort()).toEqual(["https://a.com/1", "https://a.com/2"]);
+    expect(new Set(seen).size).toBe(2);
   });
 
   it("a batch error becomes an ordinary errored row, which resume retries", async () => {

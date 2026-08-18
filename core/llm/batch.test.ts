@@ -178,3 +178,81 @@ it("bounds the synchronous fallback instead of opening one socket per request", 
   expect(out.every((o) => o.error === undefined)).toBe(true);
   expect(peak).toBeLessThanOrEqual(4);
 });
+
+describe("chunkForBatch", () => {
+  const big = (id: string, chars: number) => ({
+    customId: id,
+    args: {
+      model: "gpt-5.4",
+      jsonMode: true,
+      messages: [{ role: "user" as const, content: "x".repeat(chars) }],
+    },
+  });
+
+  it("splits on the token ceiling, not just the request count", async () => {
+    const { chunkForBatch } = await import("./batch");
+    // 40k chars ~ 10k tokens each, plus the reserved output allowance.
+    const reqs = Array.from({ length: 10 }, (_, i) => big(`k${i}`, 40_000));
+    const chunks = chunkForBatch(reqs, { maxBatchTokens: 25_000, maxBatchRequests: 1000 });
+    expect(chunks.length).toBeGreaterThan(1);
+    expect(chunks.flat()).toHaveLength(10);
+    // Nothing is dropped and nothing is duplicated.
+    expect(new Set(chunks.flat().map((r) => r.customId)).size).toBe(10);
+  });
+
+  it("splits on the request ceiling too", async () => {
+    const { chunkForBatch } = await import("./batch");
+    const reqs = Array.from({ length: 4500 }, (_, i) => big(`k${i}`, 100));
+    // A high token ceiling so the request ceiling is the one doing the work.
+    const chunks = chunkForBatch(reqs, { maxBatchRequests: 2000, maxBatchTokens: 100_000_000 });
+    expect(chunks).toHaveLength(3);
+    expect(chunks.every((c) => c.length <= 2000)).toBe(true);
+    expect(chunks.flat()).toHaveLength(4500);
+  });
+
+  it("lets the reserved output allowance bind before the request count on small payloads", async () => {
+    const { chunkForBatch } = await import("./batch");
+    // Every judge call is a tiny prompt and a one-line answer, so the 1,024
+    // tokens reserved per request dominate: chunks come out well under the
+    // 2,000-request ceiling. That is the safe direction to be wrong in, and it
+    // is why 7,496 requests becomes eleven batches rather than four.
+    const chunks = chunkForBatch(Array.from({ length: 4500 }, (_, i) => big(`k${i}`, 100)));
+    expect(chunks.every((c) => c.length < 2000)).toBe(true);
+    expect(chunks.flat()).toHaveLength(4500);
+  });
+
+  it("gives an oversized single request its own batch rather than dropping it", async () => {
+    const { chunkForBatch } = await import("./batch");
+    const chunks = chunkForBatch([big("huge", 4_000_000), big("small", 10)], { maxBatchTokens: 1000 });
+    expect(chunks.flat()).toHaveLength(2);
+    expect(chunks[0]).toHaveLength(1);
+  });
+
+  it("keeps run 2's real shape under the ceiling that rejected it", async () => {
+    const { chunkForBatch } = await import("./batch");
+    // 7,496 page judgements at roughly the measured 1,477-char payload.
+    const reqs = Array.from({ length: 7496 }, (_, i) => big(`k${i}`, 1477));
+    const chunks = chunkForBatch(reqs);
+    expect(chunks.flat()).toHaveLength(7496);
+    for (const c of chunks) {
+      const tokens = c.reduce((n, r) => n + Math.ceil(r.args.messages[0].content.length / 4) + 1024, 0);
+      expect(tokens).toBeLessThanOrEqual(750_000);
+      expect(c.length).toBeLessThanOrEqual(2000);
+    }
+  });
+});
+
+it("hands results back chunk by chunk instead of only at the end", async () => {
+  const seen: number[] = [];
+  const reqs = Array.from({ length: 12 }, (_, i) =>
+    req(`k${i}`, "fireworks/accounts/fireworks/models/glm-5p2"),
+  );
+  const out = await completeBatch(reqs, {
+    syncConcurrency: 2,
+    onOutcomes: (o) => seen.push(o.length),
+  });
+  // The no-batch-api group reports once; what matters is that a caller is
+  // handed results through onOutcomes at all, because that is what reaches disk.
+  expect(seen.reduce((a, b) => a + b, 0)).toBe(12);
+  expect(out).toHaveLength(12);
+});

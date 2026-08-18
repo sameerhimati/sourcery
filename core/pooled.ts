@@ -24,7 +24,7 @@ import { mapWithConcurrency } from "./extract";
 import { buildPool, pairKey, PooledPage, returnedUrls } from "./pool";
 import { parseRungVerdict, relevanceJudge, relevanceMessages } from "./relevanceJudge";
 import { parseSetVerdict, setJudge, setJudgeMessages } from "./setJudge";
-import { completeBatch } from "./llm/batch";
+import { completeBatch, type BatchOutcome } from "./llm/batch";
 import { RELEVANCE_JUDGE_TEMP, SET_JUDGE_TEMP } from "./controls";
 import {
   ci95,
@@ -256,6 +256,36 @@ export async function runPooledJudging(
     // The resume key IS the batch id for this request, which is the whole
     // reason batching drops in without touching resume: results come back
     // labelled with it, in any order, and map straight onto the same log.
+    // Rows are emitted as each batch lands rather than after all of them, so a
+    // judging pass that runs for hours writes as it goes and `--resume` can pick
+    // up from the last completed batch. Waiting for the whole set meant a run
+    // interrupted near the end had nothing to show for any of it.
+    const jobById = new Map(
+      jobs.map((j) => [judgementKey(j.page.queryId, j.page.url, judgeLabel(j.judgeRef)), j]),
+    );
+    const rowById = new Map<string, PooledJudgementRow>();
+    const emit = (outcomes: BatchOutcome[]): void => {
+      for (const o of outcomes) {
+        const job = jobById.get(o.customId);
+        // Streaming is an optimisation, not the contract: whatever arrives here
+        // is written immediately, and anything that did not is swept from the
+        // return value below. Emitting twice for one key would double-count the
+        // progress line and append the row twice, so seen keys are skipped.
+        if (!job || rowById.has(o.customId)) continue;
+        const base = {
+          queryId: job.page.queryId,
+          url: job.page.url,
+          judge: judgeLabel(job.judgeRef),
+        };
+        const row: PooledJudgementRow =
+          o.text !== undefined
+            ? { ...base, ...parseRungVerdict(o.text || "{}") }
+            : { ...base, rung: null, rationale: "", error: o.error ?? "no batch result" };
+        rowById.set(o.customId, row);
+        opts.onRow?.(row, ++landed, total);
+      }
+    };
+
     const outcomes = await completeBatch(
       jobs.map(({ page, judgeRef }) => ({
         customId: judgementKey(page.queryId, page.url, judgeLabel(judgeRef)),
@@ -266,18 +296,22 @@ export async function runPooledJudging(
           messages: relevanceMessages(page),
         },
       })),
-      { onProgress: opts.onProgress },
+      { onProgress: opts.onProgress, onOutcomes: emit },
     );
-    const byId = new Map(outcomes.map((o) => [o.customId, o]));
+    emit(outcomes);
+
     return jobs.map(({ page, judgeRef }) => {
-      const base = { queryId: page.queryId, url: page.url, judge: judgeLabel(judgeRef) };
-      const o = byId.get(judgementKey(page.queryId, page.url, judgeLabel(judgeRef)));
-      const row: PooledJudgementRow =
-        o?.text !== undefined
-          ? { ...base, ...parseRungVerdict(o.text || "{}") }
-          : { ...base, rung: null, rationale: "", error: o?.error ?? "no batch result" };
-      opts.onRow?.(row, ++landed, total);
-      return row;
+      const key = judgementKey(page.queryId, page.url, judgeLabel(judgeRef));
+      return (
+        rowById.get(key) ?? {
+          queryId: page.queryId,
+          url: page.url,
+          judge: judgeLabel(judgeRef),
+          rung: null,
+          rationale: "",
+          error: "no batch result",
+        }
+      );
     });
   }
 
@@ -382,6 +416,29 @@ export async function runSetJudging(
   let landed = 0;
 
   if (opts.batch) {
+    // Written as each batch lands, for the same reason as the page judge above.
+    const jobById = new Map(
+      jobs.map((j) => [setVerdictKey(j.row.queryId, j.row.provider, judgeLabel(j.judgeRef)), j]),
+    );
+    const rowById = new Map<string, PooledSetVerdictRow>();
+    const emit = (outcomes: BatchOutcome[]): void => {
+      for (const o of outcomes) {
+        const job = jobById.get(o.customId);
+        if (!job || rowById.has(o.customId)) continue;
+        const base = {
+          queryId: job.row.queryId,
+          provider: job.row.provider,
+          judge: judgeLabel(job.judgeRef),
+        };
+        const out: PooledSetVerdictRow =
+          o.text !== undefined
+            ? { ...base, ...parseSetVerdict(o.text || "{}") }
+            : { ...base, score: null, rationale: "", error: o.error ?? "no batch result" };
+        rowById.set(o.customId, out);
+        opts.onRow?.(out, ++landed, total);
+      }
+    };
+
     const outcomes = await completeBatch(
       jobs.map(({ row, judgeRef }) => ({
         customId: setVerdictKey(row.queryId, row.provider, judgeLabel(judgeRef)),
@@ -392,18 +449,22 @@ export async function runSetJudging(
           messages: setJudgeMessages(row.query, row.sources),
         },
       })),
-      { onProgress: opts.onProgress },
+      { onProgress: opts.onProgress, onOutcomes: emit },
     );
-    const byId = new Map(outcomes.map((o) => [o.customId, o]));
+    emit(outcomes);
+
     return jobs.map(({ row, judgeRef }) => {
-      const base = { queryId: row.queryId, provider: row.provider, judge: judgeLabel(judgeRef) };
-      const o = byId.get(setVerdictKey(row.queryId, row.provider, judgeLabel(judgeRef)));
-      const out: PooledSetVerdictRow =
-        o?.text !== undefined
-          ? { ...base, ...parseSetVerdict(o.text || "{}") }
-          : { ...base, score: null, rationale: "", error: o?.error ?? "no batch result" };
-      opts.onRow?.(out, ++landed, total);
-      return out;
+      const key = setVerdictKey(row.queryId, row.provider, judgeLabel(judgeRef));
+      return (
+        rowById.get(key) ?? {
+          queryId: row.queryId,
+          provider: row.provider,
+          judge: judgeLabel(judgeRef),
+          score: null,
+          rationale: "",
+          error: "no batch result",
+        }
+      );
     });
   }
 

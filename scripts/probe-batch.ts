@@ -22,8 +22,13 @@ import { RELEVANCE_JUDGE_TEMP } from "../core/controls";
 
 loadEnv();
 
+const argv = process.argv.slice(2);
+// --chunk forces a tiny token ceiling so ten requests split into several
+// batches, which exercises the multi-batch path against the real queue rather
+// than against a mock.
+const forceChunk = argv.includes("--chunk");
+const models = argv.filter((a) => !a.startsWith("--"));
 const N = 10;
-const models = process.argv.slice(2);
 if (!models.length) {
   console.error("usage: npx tsx scripts/probe-batch.ts <model-ref> [<model-ref>...]");
   process.exit(1);
@@ -80,6 +85,7 @@ async function main(): Promise<void> {
     const out = await completeBatch(reqs, {
       pollMs: 5_000,
       timeoutMs: 15 * 60 * 1000,
+      ...(forceChunk ? { maxBatchTokens: 4_000, maxBatchRequests: 4 } : {}),
       onProgress: (msg) => console.log("   ", msg),
     });
     const secs = ((Date.now() - started) / 1000).toFixed(0);

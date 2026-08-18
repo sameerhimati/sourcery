@@ -38,6 +38,21 @@ const DEFAULT_POLL_MS = 10_000;
  *  tiers cap tokens per minute, and the fallback is exactly where a whole
  *  judge's workload lands when its provider has no batch API. */
 const DEFAULT_SYNC_CONCURRENCY = 4;
+/** A batch queue has a ceiling, and it is counted in tokens rather than
+ *  requests. Run 2 submitted all 7,496 of one judge's page ratings as a single
+ *  batch and OpenAI rejected the whole thing with `token_limit_exceeded:
+ *  Enqueued token limit reached` — so the batch died, and the fallback put a
+ *  judge's entire workload on the synchronous path at double the price.
+ *
+ *  These are deliberately well under either lab's published ceiling. The cost of
+ *  being conservative is a few more submissions; the cost of being wrong is a
+ *  batch that fails after it was accepted. */
+const DEFAULT_MAX_BATCH_TOKENS = 750_000;
+const DEFAULT_MAX_BATCH_REQUESTS = 2_000;
+/** Output tokens count toward the enqueued total too, and we ask for at most
+ *  ANTHROPIC_MAX_TOKENS back. Reserving that per request keeps the estimate on
+ *  the safe side of the ceiling rather than the optimistic side. */
+const RESERVED_OUTPUT_TOKENS = ANTHROPIC_MAX_TOKENS;
 /** Both labs quote most batches finishing well inside an hour, with 24h the
  *  hard ceiling. Stopping earlier is safe: unfinished work simply isn't written,
  *  and the next `--resume` picks it up. */
@@ -57,8 +72,21 @@ export interface BatchOutcome {
 
 export interface BatchOpts {
   pollMs?: number;
+  /** Token ceiling for one submitted batch. Defaults to 750,000. */
+  maxBatchTokens?: number;
+  /** Request ceiling for one submitted batch. Defaults to 2,000. */
+  maxBatchRequests?: number;
   /** Requests in flight on the synchronous fallback. Defaults to 4. */
   syncConcurrency?: number;
+  /**
+   * Fired as each chunk lands, rather than once at the end.
+   *
+   * A judging pass is hours of batches, and nothing used to reach disk until
+   * every one of them had finished — so a run killed at hour four wrote
+   * nothing at all. Callers persist from here, and `--resume` then picks up
+   * from the last completed chunk instead of from the beginning.
+   */
+  onOutcomes?: (outcomes: BatchOutcome[]) => void;
   timeoutMs?: number;
   onProgress?: (status: string) => void;
 }
@@ -181,7 +209,10 @@ async function runOpenAiBatch(reqs: BatchRequest[], opts: BatchOpts): Promise<Ba
   if (batch.status !== "completed") {
     throw new Error(
       `openai batch ${batch.id} ended as ${batch.status} with no usable results` +
-        (batch.errors ? `: ${JSON.stringify(batch.errors).slice(0, 300)}` : ""),
+        // Not truncated to a snippet: this is where a lab states the ceiling it
+        // just refused, and cutting the message at 300 characters is exactly
+        // what stopped run 2's failure from naming its own limit.
+        (batch.errors ? `: ${JSON.stringify(batch.errors).slice(0, 1200)}` : ""),
     );
   }
 
@@ -340,6 +371,44 @@ async function runAnthropicBatch(reqs: BatchRequest[], opts: BatchOpts): Promise
 
 // ─── The entry point ───
 
+/** Rough token count for one request. Four characters per token is the usual
+ *  approximation and it runs low on the newer tokenizers, which is the right
+ *  direction to be wrong in when the number is being checked against a ceiling. */
+function estimateTokens(r: BatchRequest): number {
+  const chars = r.args.messages.reduce((n, m) => n + m.content.length, 0);
+  return Math.ceil(chars / 4) + RESERVED_OUTPUT_TOKENS;
+}
+
+/**
+ * Split a group into batches that each fit under the queue ceiling.
+ *
+ * Exported for tests: the failure this prevents only shows up against a real
+ * batch queue, at a size no test suite is going to submit.
+ */
+export function chunkForBatch(reqs: BatchRequest[], opts: BatchOpts = {}): BatchRequest[][] {
+  const maxTokens = Math.max(1, opts.maxBatchTokens ?? DEFAULT_MAX_BATCH_TOKENS);
+  const maxReqs = Math.max(1, opts.maxBatchRequests ?? DEFAULT_MAX_BATCH_REQUESTS);
+
+  const chunks: BatchRequest[][] = [];
+  let current: BatchRequest[] = [];
+  let tokens = 0;
+  for (const r of reqs) {
+    const t = estimateTokens(r);
+    // A single request over the ceiling still has to go somewhere: it gets its
+    // own batch and the API can be the one to refuse it, rather than us
+    // silently dropping a unit of work.
+    if (current.length && (current.length + 1 > maxReqs || tokens + t > maxTokens)) {
+      chunks.push(current);
+      current = [];
+      tokens = 0;
+    }
+    current.push(r);
+    tokens += t;
+  }
+  if (current.length) chunks.push(current);
+  return chunks;
+}
+
 /**
  * Run many completions through the providers' batch APIs, at half price.
  *
@@ -392,7 +461,12 @@ export async function completeBatch(
   const out: BatchOutcome[] = [];
   for (const [provider, group] of groups) {
     if (provider === "__sync__") {
-      out.push(...(await runSync(group, `${group.length} request(s) on a provider with no batch API — running synchronously`)));
+      const done = await runSync(
+        group,
+        `${group.length} request(s) on a provider with no batch API — running synchronously`,
+      );
+      opts.onOutcomes?.(done);
+      out.push(...done);
       continue;
     }
 
@@ -418,28 +492,37 @@ export async function completeBatch(
       return { ...r, customId: id };
     });
 
-    try {
-      const raw = (
-        provider === "openai" ? await runOpenAiBatch(wire, opts) : await runAnthropicBatch(wire, opts)
-      ).map((o) => ({ ...o, customId: realId.get(o.customId) ?? o.customId }));
-      const wantsJson = new Map(group.map((r) => [r.customId, Boolean(r.args.jsonMode)]));
-      out.push(
-        ...raw.map((o) =>
-          o.text !== undefined && wantsJson.get(o.customId)
-            ? { ...o, text: unfenceJson(o.text) }
-            : o,
-        ),
+    const wantsJson = new Map(group.map((r) => [r.customId, Boolean(r.args.jsonMode)]));
+    const chunks = chunkForBatch(wire, opts);
+    if (chunks.length > 1) {
+      opts.onProgress?.(
+        `${provider}: ${wire.length} requests split into ${chunks.length} batches, submitted one at a time`,
       );
-    } catch (e) {
-      const raw = e instanceof Error ? e.message : String(e);
-      const spec = PROVIDERS[provider];
-      out.push(
-        ...(await runSync(
-          group,
-          `batch submission failed on ${provider}, falling back to synchronous: ` +
+    }
+
+    for (const [n, chunk] of chunks.entries()) {
+      try {
+        const raw = (
+          provider === "openai" ? await runOpenAiBatch(chunk, opts) : await runAnthropicBatch(chunk, opts)
+        ).map((o) => ({ ...o, customId: realId.get(o.customId) ?? o.customId }));
+        const done = raw.map((o) =>
+          o.text !== undefined && wantsJson.get(o.customId) ? { ...o, text: unfenceJson(o.text) } : o,
+        );
+        opts.onOutcomes?.(done);
+        out.push(...done);
+      } catch (e) {
+        const raw = e instanceof Error ? e.message : String(e);
+        const spec = PROVIDERS[provider];
+        // Per chunk, not per group: one batch hitting a queue ceiling should not
+        // drag the other batches onto the expensive path with it.
+        const done = await runSync(
+          chunk.map((r) => ({ ...r, customId: realId.get(r.customId) ?? r.customId })),
+          `batch ${n + 1}/${chunks.length} failed on ${provider}, that chunk falls back to synchronous: ` +
             explainLlmError(raw, provider, spec.envKey).slice(0, 200),
-        )),
-      );
+        );
+        opts.onOutcomes?.(done);
+        out.push(...done);
+      }
     }
   }
   return out;

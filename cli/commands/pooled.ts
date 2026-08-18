@@ -2,6 +2,7 @@ import type { Command } from "commander";
 import {
   dedupeFetchRows,
   fetchKey,
+  judgementKey,
   poolFromFetchRows,
   resumableFetchKeys,
   resumableJudgementKeys,
@@ -225,6 +226,23 @@ export function registerPooled(program: Command): void {
 
       const priorJudgements = opts.resume || opts.judgeOnly ? readPooledJudgements() : [];
       const judged = resumableJudgementKeys(priorJudgements);
+
+      // --dry-run has to be honoured here too, not only before the fetch. Its
+      // guard used to live inside the fetch branch alone, so `--judge-only
+      // --dry-run` skipped it and started judging for real — a flag whose whole
+      // promise is "nothing spent" quietly spending is worse than not having it.
+      if (opts.dryRun) {
+        const pairs = pool.filter((p) => judges.some((j) => !judged.has(judgementKey(p.queryId, p.url, judgeLabel(j)))));
+        const sets = opts.setJudge ? fetchRows.filter((r) => !r.error).length : 0;
+        process.stdout.write(
+          `\n${pairs.length * judges.length} page judgements` +
+            (priorJudgements.length ? ` (${priorJudgements.length} already on disk)` : "") +
+            (sets ? ` + ${sets * judges.length} set verdicts` : "") +
+            ` across ${judges.length} judge(s).\n` +
+            `--dry-run: nothing spent, nothing run.\n`,
+        );
+        return;
+      }
       const fresh = await runPooledJudging(pool, judges, {
         concurrency,
         done: judged,

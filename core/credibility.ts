@@ -262,9 +262,16 @@ export function isTransportFailure(error: string | undefined): boolean {
  * Counted and reported, never silently dropped: an account that died mid-run is
  * a fact about the run, and hiding it would make a truncated matrix look
  * complete. It just isn't the provider's fault.
+ *
+ * The status code is not enough on its own. Run 2 hit `Tavily 432: this request
+ * exceeds your plan` — a plan running dry, worded as neither 402 nor "credits",
+ * under a status code no other provider uses. It would have been published as
+ * twelve Tavily failures and skipped by resume, so topping up would not have
+ * gone back for them. Match the wording as well as the code, because every
+ * provider invents its own way of saying the same thing.
  */
 const ACCOUNT_FAILURES =
-  /\b(401|402|403)\b|insufficient credit|quota exceeded|payment required|out of credits|billing/i;
+  /\b(401|402|403)\b|insufficient credit|quota exceeded|payment required|out of credits|billing|exceeds your (plan|usage)|plan limit|usage limit|credit limit/i;
 
 export function isAccountFailure(error: string | undefined): boolean {
   return Boolean(error && !isTransportFailure(error) && ACCOUNT_FAILURES.test(error));

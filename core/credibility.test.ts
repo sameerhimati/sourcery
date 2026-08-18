@@ -298,6 +298,16 @@ describe("whose fault was it", () => {
     expect(isProviderFailure(e)).toBe(false);
   });
 
+  // Run 2, live: Tavily's plan ran dry at question ~150 and said so with a
+  // status code nothing else uses and no mention of credits. Charged to the
+  // vendor it was twelve fabricated failures; skipped by resume it was twelve
+  // questions Tavily never got asked again after a top-up.
+  it("blames the account when a plan runs dry in a provider's own wording", () => {
+    const e = 'Tavily 432: {"detail":{"error":"This request exceeds your plan usage limit."}}';
+    expect(isAccountFailure(e)).toBe(true);
+    expect(isProviderFailure(e)).toBe(false);
+  });
+
   it("blames the provider for its own bad response", () => {
     const e = "Bright Data returned non-JSON: Error while processing request";
     expect(isProviderFailure(e)).toBe(true);

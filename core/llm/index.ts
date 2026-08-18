@@ -211,9 +211,15 @@ export async function complete({
     res = await send(!rejectsTemperature.has(model));
   } catch (e) {
     const raw = e instanceof Error ? e.message : String(e);
-    // One retry, only for the one error that a retry can fix, and only once per
-    // model per process — after which the set above skips straight through.
-    if (temperature !== undefined && !rejectsTemperature.has(model) && isTemperatureRejection(raw)) {
+    // One retry, only for the one error that a retry can fix. Deliberately NOT
+    // conditioned on the model being absent from the set: judging runs many
+    // calls at once, and the first four all fail before any of them has learned
+    // anything. Gating the retry on "we haven't seen this yet" meant whichever
+    // call lost the race retried, and every other in-flight call threw — one
+    // arriving verdict and three dead ones, from an error every one of them
+    // could have recovered from. The retry cannot loop: send(false) omits
+    // temperature, so the same rejection cannot come back a second time.
+    if (temperature !== undefined && isTemperatureRejection(raw)) {
       rejectsTemperature.add(model);
       try {
         res = await send(false);

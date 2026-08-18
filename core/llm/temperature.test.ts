@@ -61,6 +61,22 @@ describe("complete — temperature retry", () => {
     expect(create.mock.calls[0][0]).not.toHaveProperty("temperature");
   });
 
+  it("every call in flight recovers, not just whichever one wins the race", async () => {
+    // Judging runs many calls at once, so the first several all fail before any
+    // of them has learned anything. When the retry was gated on the model being
+    // unseen, exactly one call retried and every other one threw — which killed
+    // calibration on its first batch and would have killed the run's judging.
+    create.mockImplementation((body: Record<string, unknown>) =>
+      "temperature" in body
+        ? Promise.reject(new Error("400 `temperature` is deprecated for this model."))
+        : Promise.resolve(ok),
+    );
+    const inFlight = Array.from({ length: 4 }, () =>
+      complete({ ...args, model: "openai/concurrent" }),
+    );
+    await expect(Promise.all(inFlight)).resolves.toEqual(["OK", "OK", "OK", "OK"]);
+  });
+
   it("does NOT retry an unrelated failure — one 429 must not become two", async () => {
     create.mockRejectedValue(new Error("429 rate limit exceeded"));
     await expect(complete({ ...args, model: "openai/rate-limited" })).rejects.toThrow(/rate limit/);

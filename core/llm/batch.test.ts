@@ -88,3 +88,74 @@ describe("completeBatch — the fallbacks that keep a run alive", () => {
     expect(new Set(out.map((o) => o.customId))).toEqual(new Set(["x", "y"]));
   });
 });
+
+// ─── The two bugs that cost run 2 its judging ───
+//
+// Both only appear against a real batch API, which is exactly why neither the
+// dry-run nor reading the code caught them. These pin them at the seam instead.
+describe("batch ids and whole-batch failures", () => {
+  const longKey = (n: number) =>
+    `r2-bn-0${n}|https://www.nasaspaceflight.com/2026/07/starship-flight-13-booster-recovery-analysis/|claude-sonnet-5`;
+
+  it("never puts an id over 64 characters on the wire", async () => {
+    const files = { create: vi.fn().mockResolvedValue({ id: "file-1" }), content: vi.fn() };
+    const batches = {
+      create: vi.fn().mockResolvedValue({ id: "b1", status: "completed", output_file_id: "out-1" }),
+      retrieve: vi.fn(),
+    };
+    let submitted = "";
+    files.create.mockImplementation(async (a: { file: { text: () => Promise<string> } }) => {
+      submitted = await a.file.text();
+      return { id: "file-1" };
+    });
+    files.content.mockImplementation(async () => ({
+      text: async () =>
+        submitted
+          .split("\n")
+          .filter(Boolean)
+          .map((l) => {
+            const { custom_id } = JSON.parse(l) as { custom_id: string };
+            return JSON.stringify({
+              custom_id,
+              response: { status_code: 200, body: { choices: [{ message: { content: '{"rung":2}' } }] } },
+            });
+          })
+          .join("\n"),
+    }));
+    vi.doMock("./openai-compat", () => ({ getClient: () => ({ chat: { completions: { create } }, files, batches }) }));
+    vi.resetModules();
+    const { completeBatch: cb } = await import("./batch");
+
+    const reqs = [1, 2, 3].map((n) => req(longKey(n), "gpt-5.4"));
+    expect(reqs.every((r) => r.customId.length > 64)).toBe(true);
+
+    const out = await cb(reqs, {});
+
+    // What went over the wire is short...
+    for (const line of submitted.split("\n").filter(Boolean)) {
+      expect((JSON.parse(line) as { custom_id: string }).custom_id.length).toBeLessThanOrEqual(64);
+    }
+    // ...and what comes back is keyed by the caller's real resume key.
+    expect(out.map((o) => o.customId).sort()).toEqual(reqs.map((r) => r.customId).sort());
+    expect(out.every((o) => o.text === '{"rung":2}')).toBe(true);
+  });
+
+  it("falls back to synchronous when the whole batch fails after submission", async () => {
+    const files = { create: vi.fn().mockResolvedValue({ id: "file-1" }), content: vi.fn() };
+    const batches = {
+      create: vi.fn().mockResolvedValue({ id: "b1", status: "validating" }),
+      // validating -> failed, with no output and no error file: run 2 exactly.
+      retrieve: vi.fn().mockResolvedValue({ id: "b1", status: "failed", request_counts: { completed: 0, total: 0, failed: 0 } }),
+    };
+    vi.doMock("./openai-compat", () => ({ getClient: () => ({ chat: { completions: { create } }, files, batches }) }));
+    vi.resetModules();
+    const { completeBatch: cb } = await import("./batch");
+
+    const out = await cb([req("a", "gpt-5.4"), req("b", "gpt-5.4")], { pollMs: 1 });
+
+    // Every request answered, none recorded as its own error.
+    expect(out).toHaveLength(2);
+    expect(out.every((o) => o.error === undefined)).toBe(true);
+    expect(create).toHaveBeenCalledTimes(2);
+  });
+});

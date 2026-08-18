@@ -166,6 +166,19 @@ async function runOpenAiBatch(reqs: BatchRequest[], opts: BatchOpts): Promise<Ba
     );
   }
 
+  // A batch that dies as a whole is not the same as a batch that ran and had
+  // requests fail inside it, and only the second one should be reported per
+  // request. Throwing here puts a post-submission failure back on the same
+  // fallback path as a rejected submission — which is what should have happened
+  // when this batch went straight from `validating` to `failed` and every one of
+  // its 7,496 requests was recorded as its own error instead.
+  if (batch.status !== "completed") {
+    throw new Error(
+      `openai batch ${batch.id} ended as ${batch.status} with no usable results` +
+        (batch.errors ? `: ${JSON.stringify(batch.errors).slice(0, 300)}` : ""),
+    );
+  }
+
   const outcomes = new Map<string, BatchOutcome>();
   for (const fileId of [batch.output_file_id, batch.error_file_id]) {
     if (!fileId) continue;
@@ -272,6 +285,13 @@ async function runAnthropicBatch(reqs: BatchRequest[], opts: BatchOpts): Promise
     );
   }
 
+  // Same rule as the OpenAI path: a batch that ended without a results file
+  // failed as a whole, so it belongs on the synchronous fallback rather than
+  // being written out as one error per request.
+  if (!results_url) {
+    throw new Error(`anthropic batch ${created.id} ended as ${status} with no results file`);
+  }
+
   const outcomes = new Map<string, BatchOutcome>();
   if (results_url) {
     const res = await fetch(results_url, {
@@ -365,11 +385,25 @@ export async function completeBatch(
       if (temp !== undefined) await probeTemperature(model, temp);
     }
 
+    // Both labs cap a batch id at 64 characters. Ours is the resume key,
+    // `queryId|url|judge`, and a url alone busts it: 92% of the real keys are
+    // over, median 101, longest 275. Anthropic rejects that on submit, so the
+    // fallback caught it. OpenAI accepts the upload and fails the whole batch
+    // during validation with no per-request error file, which is the same bug
+    // wearing a much costlier disguise — it cost this run every one of terra's
+    // 7,496 verdicts. So the wire gets a short opaque id and the map back to the
+    // real key stays here. Order is still never trusted; the map is explicit.
+    const realId = new Map<string, string>();
+    const wire = group.map((r, i) => {
+      const id = `sourcery-${i}`;
+      realId.set(id, r.customId);
+      return { ...r, customId: id };
+    });
+
     try {
-      const raw =
-        provider === "openai"
-          ? await runOpenAiBatch(group, opts)
-          : await runAnthropicBatch(group, opts);
+      const raw = (
+        provider === "openai" ? await runOpenAiBatch(wire, opts) : await runAnthropicBatch(wire, opts)
+      ).map((o) => ({ ...o, customId: realId.get(o.customId) ?? o.customId }));
       const wantsJson = new Map(group.map((r) => [r.customId, Boolean(r.args.jsonMode)]));
       out.push(
         ...raw.map((o) =>

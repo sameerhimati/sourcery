@@ -128,6 +128,27 @@ describe("unfenceJson — a fenced judge response still parses", () => {
   it("survives being applied twice", () => {
     expect(unfenceJson(unfenceJson('```json\n{"score": 1}\n```'))).toBe('{"score": 1}');
   });
+
+  // Measured on claude-sonnet-5 against real pages: 1 call in 12 wrote a
+  // sentence before the object, and every one of those verdicts was dropped.
+  it("recovers the object from behind a sentence of prose", () => {
+    const raw =
+      'This describes Flight 13 as the most recent, matching the question.\n\n{"rung": 3, "rationale": "answers it"}';
+    expect(unfenceJson(raw)).toBe('{"rung": 3, "rationale": "answers it"}');
+  });
+
+  it("recovers it from prose AND a fence together", () => {
+    expect(unfenceJson('Here is my verdict:\n```json\n{"rung": 0}\n```')).toBe('{"rung": 0}');
+  });
+
+  it("keeps a brace that lives inside the rationale", () => {
+    const raw = 'Verdict below.\n{"rung": 2, "rationale": "the page shows a {tag} literal"}';
+    expect(unfenceJson(raw)).toBe('{"rung": 2, "rationale": "the page shows a {tag} literal"}');
+  });
+
+  it("leaves text with no object at all untouched, so the caller still errors", () => {
+    expect(unfenceJson("I would rate this a 3 honestly")).toBe("I would rate this a 3 honestly");
+  });
 });
 
 describe("requiredEnvKeys — deduped keys for a set of refs", () => {

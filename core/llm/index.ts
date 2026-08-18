@@ -125,7 +125,7 @@ export function explainLlmError(message: string, provider: string, envKey: strin
 }
 
 /**
- * Strip a markdown code fence off a JSON response.
+ * Recover the JSON object out of a response that wrapped it in something else.
  *
  * Nothing forces bare JSON on a provider in "prompt" mode, and Claude fences it
  * every time — 6 of 6 across both judge prompts and the classifier. Every JSON
@@ -133,12 +133,30 @@ export function explainLlmError(message: string, provider: string, envKey: strin
  * into score 0 with "unparseable output": a silently wrong number rather than an
  * error, which is the worst way for this to fail.
  *
- * Runs for every provider, not just the fenced ones. A fence is never valid
- * JSON, so removing one cannot break a response that already parsed.
+ * Two wrappers, both measured on real judge calls:
+ *
+ * 1. A markdown code fence around the whole object.
+ * 2. A sentence of prose BEFORE the object — "This describes Flight 13 as the
+ *    most recent…\n\n{"rung": 3, …}". Claude Sonnet 5 did this on 1 call in 12
+ *    against real pages, and it cost that judge 11% of its verdicts in a live
+ *    smoke run: dropped, counted as null, excluded from scoring. Loud rather
+ *    than wrong, but a judge quietly missing an eighth of its ratings is not a
+ *    judge you want on a five-model panel.
+ *
+ * Runs for every provider, not just the ones that wrap. Neither a fence nor a
+ * preamble is valid JSON, so removing one cannot break a response that already
+ * parsed — and a response that starts with `{` is returned untouched.
  */
 export function unfenceJson(text: string): string {
-  const match = text.trim().match(/^```(?:json)?\s*\n?([\s\S]*?)\n?\s*```$/);
-  return match ? match[1].trim() : text;
+  const fenced = text.trim().match(/^```(?:json)?\s*\n?([\s\S]*?)\n?\s*```$/);
+  const body = (fenced ? fenced[1] : text).trim();
+  if (body.startsWith("{")) return body;
+  // First brace to last brace. The judges' shapes are flat objects whose only
+  // string field is a one-sentence rationale, so the outermost pair is the
+  // object even when the rationale itself contains a brace.
+  const open = body.indexOf("{");
+  const close = body.lastIndexOf("}");
+  return open !== -1 && close > open ? body.slice(open, close + 1) : body;
 }
 
 /**

@@ -34,6 +34,10 @@ import {
 /** Anthropic requires max_tokens; the judges emit one short JSON object. */
 const ANTHROPIC_MAX_TOKENS = 1024;
 const DEFAULT_POLL_MS = 10_000;
+/** How many requests the synchronous fallback keeps in flight. Fireworks free
+ *  tiers cap tokens per minute, and the fallback is exactly where a whole
+ *  judge's workload lands when its provider has no batch API. */
+const DEFAULT_SYNC_CONCURRENCY = 4;
 /** Both labs quote most batches finishing well inside an hour, with 24h the
  *  hard ceiling. Stopping earlier is safe: unfinished work simply isn't written,
  *  and the next `--resume` picks it up. */
@@ -53,6 +57,8 @@ export interface BatchOutcome {
 
 export interface BatchOpts {
   pollMs?: number;
+  /** Requests in flight on the synchronous fallback. Defaults to 4. */
+  syncConcurrency?: number;
   timeoutMs?: number;
   onProgress?: (status: string) => void;
 }
@@ -358,17 +364,29 @@ export async function completeBatch(
     (groups.get(key) ?? groups.set(key, []).get(key)!).push(r);
   }
 
+  // Bounded, and it has to be. This used to be Promise.all over the whole
+  // group, which meant the fallback opened one connection per request: run 2
+  // put all 7,496 of glm-5p2's judgements in flight at once and got 2,027
+  // rate-limit errors and 2,863 timeouts back. The caller's --concurrency never
+  // reached here, because it governs the pipeline feeding completeBatch rather
+  // than what completeBatch does with a group.
   const runSync = async (group: BatchRequest[], why?: string): Promise<BatchOutcome[]> => {
     if (why) opts.onProgress?.(why);
-    return Promise.all(
-      group.map(async (r) => {
+    const limit = Math.max(1, opts.syncConcurrency ?? DEFAULT_SYNC_CONCURRENCY);
+    const out: BatchOutcome[] = new Array(group.length);
+    let next = 0;
+    const worker = async (): Promise<void> => {
+      for (let i = next++; i < group.length; i = next++) {
+        const r = group[i];
         try {
-          return { customId: r.customId, text: await complete(r.args) };
+          out[i] = { customId: r.customId, text: await complete(r.args) };
         } catch (e) {
-          return { customId: r.customId, error: e instanceof Error ? e.message : String(e) };
+          out[i] = { customId: r.customId, error: e instanceof Error ? e.message : String(e) };
         }
-      }),
-    );
+      }
+    };
+    await Promise.all(Array.from({ length: Math.min(limit, group.length) }, worker));
+    return out;
   };
 
   const out: BatchOutcome[] = [];

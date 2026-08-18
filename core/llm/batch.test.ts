@@ -159,3 +159,22 @@ describe("batch ids and whole-batch failures", () => {
     expect(create).toHaveBeenCalledTimes(2);
   });
 });
+
+it("bounds the synchronous fallback instead of opening one socket per request", async () => {
+  let inFlight = 0;
+  let peak = 0;
+  create.mockImplementation(async () => {
+    peak = Math.max(peak, ++inFlight);
+    await new Promise((r) => setTimeout(r, 5));
+    inFlight--;
+    return { choices: [{ message: { content: '{"rung": 2}' } }] };
+  });
+  // Fireworks has no batch API, so the whole group lands on the fallback.
+  const reqs = Array.from({ length: 40 }, (_, i) =>
+    req(`k${i}`, "fireworks/accounts/fireworks/models/glm-5p2"),
+  );
+  const out = await completeBatch(reqs, { syncConcurrency: 4 });
+  expect(out).toHaveLength(40);
+  expect(out.every((o) => o.error === undefined)).toBe(true);
+  expect(peak).toBeLessThanOrEqual(4);
+});

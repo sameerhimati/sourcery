@@ -256,3 +256,35 @@ it("hands results back chunk by chunk instead of only at the end", async () => {
   expect(seen.reduce((a, b) => a + b, 0)).toBe(12);
   expect(out).toHaveLength(12);
 });
+
+it("keeps polling a batch through a transient network error instead of abandoning it", async () => {
+  const files = { create: vi.fn().mockResolvedValue({ id: "f1" }), content: vi.fn() };
+  let polls = 0;
+  const batches = {
+    create: vi.fn().mockResolvedValue({ id: "b1", status: "in_progress" }),
+    retrieve: vi.fn().mockImplementation(async () => {
+      // One dropped connection mid-poll — the exact failure that cost run 2 a
+      // submitted batch of 459 requests.
+      if (++polls === 1) throw new Error("fetch failed");
+      return { id: "b1", status: "completed", output_file_id: "out-1", request_counts: { completed: 1, total: 1, failed: 0 } };
+    }),
+  };
+  files.content.mockResolvedValue({
+    text: async () =>
+      JSON.stringify({
+        custom_id: "sourcery-0",
+        response: { status_code: 200, body: { choices: [{ message: { content: '{"rung":2}' } }] } },
+      }),
+  });
+  vi.doMock("./openai-compat", () => ({ getClient: () => ({ chat: { completions: { create } }, files, batches }) }));
+  vi.resetModules();
+  const { completeBatch: cb } = await import("./batch");
+
+  const out = await cb([req("k0", "gpt-5.4")], { pollMs: 1 });
+  expect(out).toHaveLength(1);
+  expect(out[0].error).toBeUndefined();
+  expect(out[0].text).toBe('{"rung":2}');
+  // It recovered by polling again, not by re-submitting or falling back.
+  expect(batches.create).toHaveBeenCalledTimes(1);
+  expect(create).not.toHaveBeenCalled();
+});

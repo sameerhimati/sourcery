@@ -192,7 +192,12 @@ async function runOpenAiBatch(reqs: BatchRequest[], opts: BatchOpts): Promise<Ba
       }));
     }
     await new Promise((r) => setTimeout(r, opts.pollMs ?? DEFAULT_POLL_MS));
-    batch = await client.batches.retrieve(batch.id);
+    batch = await withPollRetry(
+      `openai batch ${batch.id} poll`,
+      () => client.batches.retrieve(batch.id),
+      opts.onProgress,
+      opts.pollMs ?? DEFAULT_POLL_MS,
+    );
     const c = batch.request_counts;
     opts.onProgress?.(
       `openai batch ${batch.id}: ${batch.status}` +
@@ -257,6 +262,40 @@ async function runOpenAiBatch(reqs: BatchRequest[], opts: BatchOpts): Promise<Ba
 
 const ANTHROPIC_BASE = "https://api.anthropic.com/v1";
 
+/**
+ * A poll that fails is not a batch that failed.
+ *
+ * Run 2 lost a submitted batch of 459 requests to a single `fetch failed` while
+ * asking whether it had finished. That threw out of the poll loop, the chunk
+ * fell back to the synchronous path, and 459 calls ground for over two hours
+ * writing nothing — for work Anthropic had already queued and may already have
+ * charged for. Transient network errors get retried here instead, with the
+ * batch id still in hand, because the batch outlives our connection to it.
+ */
+async function withPollRetry<T>(
+  what: string,
+  fn: () => Promise<T>,
+  onProgress?: (s: string) => void,
+  baseMs: number = DEFAULT_POLL_MS,
+): Promise<T> {
+  let lastError: unknown;
+  for (let attempt = 1; attempt <= 5; attempt++) {
+    try {
+      return await fn();
+    } catch (e) {
+      lastError = e;
+      const msg = e instanceof Error ? e.message : String(e);
+      // A 4xx is a real answer and retrying will not change it. Anything else —
+      // a dropped connection, a 5xx, a DNS hiccup — is worth another try.
+      if (/\b4\d\d\b/.test(msg)) throw e;
+      const wait = baseMs * attempt;
+      onProgress?.(`${what} failed (${msg.slice(0, 80)}), retrying in ${Math.round(wait / 1000)}s`);
+      await new Promise((r) => setTimeout(r, wait));
+    }
+  }
+  throw lastError instanceof Error ? lastError : new Error(String(lastError));
+}
+
 async function anthropicFetch(path: string, apiKey: string, init?: RequestInit): Promise<unknown> {
   const res = await fetch(`${ANTHROPIC_BASE}${path}`, {
     ...init,
@@ -308,7 +347,12 @@ async function runAnthropicBatch(reqs: BatchRequest[], opts: BatchOpts): Promise
       }));
     }
     await new Promise((r) => setTimeout(r, opts.pollMs ?? DEFAULT_POLL_MS));
-    const got = (await anthropicFetch(`/messages/batches/${created.id}`, apiKey)) as {
+    const got = (await withPollRetry(
+      `anthropic batch ${created.id} poll`,
+      () => anthropicFetch(`/messages/batches/${created.id}`, apiKey),
+      opts.onProgress,
+      opts.pollMs ?? DEFAULT_POLL_MS,
+    )) as {
       processing_status: string;
       results_url?: string;
       request_counts?: Record<string, number>;

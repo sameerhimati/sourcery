@@ -19,19 +19,19 @@ function source(over: Partial<Source> = {}): Source {
 
 describe("parseSetVerdict", () => {
   it("keeps a valid score and its rationale", () => {
-    expect(parseSetVerdict('{"score": 7, "rationale": "solid"}')).toEqual({
-      score: 7,
+    expect(parseSetVerdict('{"score": 2, "rationale": "solid"}')).toEqual({
+      score: 2,
       rationale: "solid",
     });
   });
 
   it("accepts both ends of the scale", () => {
     expect(parseSetVerdict('{"score": 0}').score).toBe(0);
-    expect(parseSetVerdict('{"score": 10}').score).toBe(10);
+    expect(parseSetVerdict('{"score": 3}').score).toBe(3);
   });
 
   it("rounds a fractional score rather than discarding it", () => {
-    expect(parseSetVerdict('{"score": 6.4}').score).toBe(6);
+    expect(parseSetVerdict('{"score": 2.4}').score).toBe(2);
   });
 
   it("a missing score is null, NOT a real zero", () => {
@@ -42,13 +42,15 @@ describe("parseSetVerdict", () => {
     expect(parseSetVerdict('{"score": null}').score).toBeNull();
   });
 
-  it("an off-scale score is null — 11 is a broken judge, not a great result set", () => {
-    expect(parseSetVerdict('{"score": 11}').score).toBeNull();
+  it("an off-scale score is null — 4 is a broken judge, not a great result set", () => {
+    expect(parseSetVerdict('{"score": 4}').score).toBeNull();
     expect(parseSetVerdict('{"score": -1}').score).toBeNull();
+    // The scale it replaced. A judge still answering 0-10 is misgraded, not rescaled.
+    expect(parseSetVerdict('{"score": 10}').score).toBeNull();
   });
 
   it("unparseable output is null and says so", () => {
-    const v = parseSetVerdict("I think about a 7 honestly");
+    const v = parseSetVerdict("I think about a 2 honestly");
     expect(v.score).toBeNull();
     expect(v.rationale).toMatch(/unparseable/);
   });

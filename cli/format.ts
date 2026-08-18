@@ -303,13 +303,14 @@ export function renderPooled(s: PooledSummary): string {
   });
 
   // Only when the run graded whole sets. Printed as its own block rather than
-  // another column, because it is a different judge on a different scale —
-  // putting 0–10 beside 0–3 in one table invites reading them as one number.
+  // another column: the two judges share the 0–3 rungs but grade different
+  // things — one page, and all eight together — and a shared scale makes them
+  // easier, not harder, to mistake for one number.
   const setBlock = s.by_provider_set.length
     ? [
         "",
-        "Each provider's whole returned set, graded 0–10 — the question a per-page",
-        "mean can only approximate: was this a good set to hand an agent?",
+        "Each provider's whole returned set, graded 0–3 — the question a per-page",
+        "mean can only approximate: could you answer from this set alone?",
         ...s.by_provider_set.map(
           (p) =>
             `  ${pad(label(p.provider), 12)}  ${meanCi(p.mean_score, p.mean_score_ci95)}` +

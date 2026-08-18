@@ -25,7 +25,7 @@ import { buildPool, pairKey, PooledPage, returnedUrls } from "./pool";
 import { parseRungVerdict, relevanceJudge, relevanceMessages } from "./relevanceJudge";
 import { parseSetVerdict, setJudge, setJudgeMessages } from "./setJudge";
 import { completeBatch } from "./llm/batch";
-import { RELEVANCE_JUDGE_TEMP, RETRIEVAL_JUDGE_TEMP } from "./controls";
+import { RELEVANCE_JUDGE_TEMP, SET_JUDGE_TEMP } from "./controls";
 import {
   ci95,
   createNetworkBreaker,
@@ -338,7 +338,7 @@ export interface PooledSetVerdictRow {
   queryId: string;
   provider: Provider;
   judge: string; // short label — judgeLabel(ref)
-  /** 0–10, or null when the judge answered with something that wasn't a score.
+  /** 0–3, or null when the judge answered with something that wasn't a score.
    *  Null is counted and excluded, never folded into a real zero. */
   score: number | null;
   rationale: string;
@@ -387,7 +387,7 @@ export async function runSetJudging(
         customId: setVerdictKey(row.queryId, row.provider, judgeLabel(judgeRef)),
         args: {
           model: judgeRef,
-          temperature: RETRIEVAL_JUDGE_TEMP,
+          temperature: SET_JUDGE_TEMP,
           jsonMode: true,
           messages: setJudgeMessages(row.query, row.sources),
         },
@@ -536,12 +536,13 @@ export interface VarianceShares {
   n_cells: number;
 }
 
-/** A provider's set-level result: the whole returned set graded 0–10, averaged
+/** A provider's set-level result: the whole returned set graded 0–3, averaged
  *  per query first so the confidence interval is over questions — the same unit
  *  as every other interval this run publishes. Kept apart from
- *  PooledProviderStat rather than folded into it, because the two numbers come
- *  from different judges on different scales and averaging them together would
- *  invent a measurement nobody made. */
+ *  PooledProviderStat rather than folded into it, and the shared 0–3 scale makes
+ *  that more important, not less: the two numbers grade different things — one
+ *  page, and a whole set of eight — so a scale that now invites averaging them
+ *  would invent a measurement nobody made. */
 export interface PooledSetStat {
   provider: Provider;
   /** Queries this provider was measured on, misses included. The CI unit. */

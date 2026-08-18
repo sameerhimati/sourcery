@@ -1,15 +1,14 @@
 import { complete, type ChatMessage } from "./llm";
-import { RETRIEVAL_JUDGE_SYSTEM, RETRIEVAL_JUDGE_TEMP } from "./controls";
+import { SET_JUDGE_SYSTEM, SET_JUDGE_TEMP, SET_RUNGS } from "./controls";
 import type { Source } from "./types";
 
-// Run 2's set-level judge: one question, one provider's WHOLE returned set, a
-// score from 0 to 10. The companion to relevanceJudge, which grades one page at
-// a time — this one answers the question a per-page mean only approximates, was
-// this a good set of results to hand an agent.
+// Run 2's set-level judge: one question, one provider's WHOLE returned set, on
+// the same 0-3 rungs relevanceJudge uses for one page. The companion to it —
+// this one answers the question a per-page mean only approximates, was this set
+// enough to answer from.
 //
-// The prompt and temperature are run 1's, imported unchanged from controls.ts,
-// so a set score here and a set score there are the same measurement. What is
-// NOT reused is run 1's parse: retrievalJudge maps unparseable output to a real
+// The prompt is run 2's own (see SET_JUDGE_SYSTEM for why run 1's was dropped),
+// and so is the parse: retrievalJudge maps unparseable output to a real
 // 0, which is the exact failure relevanceJudge exists to avoid — a broken judge
 // becomes indistinguishable from a genuinely bad result set and drags the mean
 // down with nothing in the output saying so. A null here is excluded from
@@ -36,7 +35,7 @@ export function parseSetVerdict(raw: string): SetVerdict {
       return { score: null, rationale: "judge returned an out-of-range or missing score" };
     }
     const n = Math.round(Number(p.score));
-    if (!Number.isFinite(n) || n < 0 || n > 10) {
+    if (!Number.isFinite(n) || n < 0 || n > SET_RUNGS.length - 1) {
       return { score: null, rationale: "judge returned an out-of-range or missing score" };
     }
     return { score: n, rationale: String(p.rationale ?? "") };
@@ -66,7 +65,7 @@ export function renderSources(sources: Source[]): string {
  *  submit byte-identical work. See relevanceMessages for why that matters. */
 export function setJudgeMessages(query: string, sources: Source[]): ChatMessage[] {
   return [
-    { role: "system", content: RETRIEVAL_JUDGE_SYSTEM },
+    { role: "system", content: SET_JUDGE_SYSTEM },
     {
       role: "user",
       content: `Query: ${query}\n\nFetched sources (title, domain — date, then extracted content):\n${renderSources(sources)}`,
@@ -82,7 +81,7 @@ export async function setJudge(
   const raw =
     (await complete({
       model,
-      temperature: RETRIEVAL_JUDGE_TEMP,
+      temperature: SET_JUDGE_TEMP,
       jsonMode: true,
       messages: setJudgeMessages(query, sources),
     })) || "{}";

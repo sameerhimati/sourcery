@@ -95,6 +95,52 @@ ${RELEVANCE_RUNGS.map((r) => `${r.rung} = ${r.name}: ${r.meaning}`).join("\n")}
 A page can contain every word of the question and answer nothing — judge whether it answers, not whether it matches keywords. Judge the body, not the headline: if a page's title or opening promises the subject but the actual content is about something else, that is 0, however closely the title matches. A missing publish date is not itself disqualifying; stale content that the question implicitly needs fresh is.
 Return JSON only: {"rung": <int 0-3>, "rationale": "<one sentence>"}.`;
 
+// ─── Run 2: the set-level judge ───
+// The companion to the per-page judge above. That one asks whether ONE page
+// helps; this one asks whether a provider's WHOLE returned set was enough to
+// answer with — the question a mean of page scores only approximates, because
+// eight pages that each hold a third of the answer and eight that each hold
+// nothing can average out the same.
+//
+// This is a run-2 prompt rather than run 1's RETRIEVAL_JUDGE_SYSTEM, and the
+// smoke test is why. Run 1's prompt grades the *quality of the sources* —
+// freshness, authority, how cleanly they extracted. On r2u-14, a question with
+// no answer anywhere, it returned 5/10 while the per-page judge correctly rated
+// every page 0 or 1. Neither was broken; they were answering different
+// questions, and the sources genuinely were good. Good sources that cannot
+// answer.
+//
+// That generalises past the unanswerable set: a source-quality score rewards
+// being on the topic, which is the easy half of retrieval and the half every
+// provider passes. So the two run-2 metrics now ask the same thing at two
+// scopes, and the set score means what a reader assumes it means.
+//
+// Same four rungs as the per-page judge, for the same reason and one more. The
+// reason: a named rung is something two models can agree on, where a bare
+// number on a wide scale is something each invents its own version of. The
+// extra one: the two metrics now ask one question at two scopes — one page,
+// then the whole set — so answering it on two different scales would make them
+// look like different measurements when the only difference is how much is
+// being looked at.
+
+export const SET_JUDGE_TEMP = 0;
+
+/** The four rungs, scoped to a whole returned set rather than one page. Index =
+ *  the rung's numeric value, and each meaning is the set-level echo of the
+ *  same-numbered rung in RELEVANCE_RUNGS. */
+export const SET_RUNGS = [
+  { rung: 0, name: "nothing", meaning: "no source here addresses the question" },
+  { rung: 1, name: "on topic only", meaning: "about the right subject, but reading all of it would not answer the question" },
+  { rung: 2, name: "partial", meaning: "part of the answer is here; the rest would need another search" },
+  { rung: 3, name: "answerable", meaning: "the question can be answered from this set alone" },
+] as const;
+
+export const SET_JUDGE_SYSTEM = `You judge whether ONE web-search provider's WHOLE set of returned sources is enough to answer ONE question. The question you are answering is: could someone answer it from this set alone, without searching again? Grade the set on this scale:
+${SET_RUNGS.map((r) => `${r.rung} = ${r.name}: ${r.meaning}`).join("\n")}
+Grade what the sources say, not what they are about. Authoritative, on-topic, cleanly extracted pages that do not contain the answer are a 1 — a set of the right organisation's pages that never states the fact asked for is a failed retrieval, not a good one. If nothing in the set answers the question, say so even when every source is credible.
+Judge the body, not the headline: a page whose title promises the subject while its content is about something else contributes nothing. A missing publish date is not itself disqualifying; stale content that the question implicitly needs fresh is.
+Return JSON only: {"score": <int 0-3>, "rationale": "<one sentence>"}.`;
+
 // ─── Run 2: the no-search baseline ───
 // Additive again, and not a provider arm — nothing is retrieved here at all.
 // This is the control that finds which questions the model could already answer

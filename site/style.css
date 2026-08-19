@@ -53,10 +53,6 @@
   --space-xl:  48px;
   --space-2xl: 72px;
   --page-gutter: 24px;
-
-  /* In characters, so a container cannot run 100 wide the moment its type
-     steps down. */
-  --measure: 68ch;
 }
 
 * { box-sizing: border-box; }
@@ -71,7 +67,11 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-.wrap { max-width: 880px; margin: 0 auto; padding: 0 var(--page-gutter) var(--space-2xl); }
+/* One column, one width. Prose used to be capped at 68ch, which is a different
+   number of pixels at every type size on the page — so a paragraph at 0.92rem
+   wrapped visibly short of the rule above it. Nothing is capped now: text,
+   tables, cards, charts and rules all end at the same edge, and this is it. */
+.wrap { max-width: 760px; margin: 0 auto; padding: 0 var(--page-gutter) var(--space-2xl); }
 
 h1, h2, h3 {
   font-family: var(--font-display);
@@ -85,7 +85,7 @@ h1 { font-size: clamp(2.4rem, 6vw, 4rem); font-weight: 800; letter-spacing: -0.0
 h2 { font-size: clamp(1.35rem, 2.8vw, 1.75rem); font-weight: 700; letter-spacing: -0.025em; line-height: 1.12; margin: 0 0 var(--space-sm); }
 h3 { font-size: 1rem; font-weight: 700; letter-spacing: -0.01em; margin: 0 0 var(--space-3xs); }
 
-p { margin: 0 0 var(--space-sm); max-width: var(--measure); }
+p { margin: 0 0 var(--space-sm); }
 p:last-child { margin-bottom: 0; }
 strong { color: var(--ink); font-weight: 700; }
 .mono { font-family: var(--font-mono); font-size: 0.92em; }
@@ -99,7 +99,7 @@ a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
    style, and are appended to this file at build time. */
 
 header.lead { padding: var(--space-xl) 0 var(--space-lg); }
-.standfirst { font-size: 1.14rem; line-height: 1.5; color: var(--ink-2); max-width: 54ch; }
+.standfirst { font-size: 1.14rem; line-height: 1.5; color: var(--ink-2); }
 .standfirst strong { color: var(--ink); }
 
 /* ── who ran this ───────────────────────────────────────────────────────── */
@@ -120,7 +120,7 @@ header.lead { padding: var(--space-xl) 0 var(--space-lg); }
 }
 .disclosure dl { margin: 0; display: grid; grid-template-columns: 11rem 1fr; gap: var(--space-2xs) var(--space-md); }
 .disclosure dt { font-weight: 700; color: var(--ink); font-size: 0.86rem; }
-.disclosure dd { margin: 0; font-size: 0.86rem; color: var(--muted); max-width: var(--measure); }
+.disclosure dd { margin: 0; font-size: 0.86rem; color: var(--muted); }
 .disclosure dd a { color: var(--ink-2); }
 .dnote { margin: var(--space-sm) 0 0; font-size: 0.86rem; color: var(--ink-2); }
 @media (max-width: 620px) {
@@ -152,8 +152,8 @@ header.lead { padding: var(--space-xl) 0 var(--space-lg); }
 }
 .toc a { text-decoration: none; color: var(--neutral); }
 .toc a:hover { color: var(--accent); text-decoration: underline; text-decoration-color: var(--accent); }
-/* An anchor jump should not bury the heading under the top of the viewport. */
-section[id] { scroll-margin-top: var(--space-md); }
+/* An anchor jump should not bury the heading under the sticky nav bar. */
+section[id] { scroll-margin-top: 92px; }
 
 section { margin: 0 0 var(--space-2xl); }
 section:last-child { margin-bottom: 0; }
@@ -173,7 +173,7 @@ section:last-child { margin-bottom: 0; }
 figure { margin: var(--space-md) 0 var(--space-lg); }
 .scroller { overflow-x: auto; }
 .scroller > svg { min-width: 600px; }
-figcaption { font-size: 0.8rem; line-height: 1.5; color: var(--muted); margin-top: var(--space-xs); max-width: var(--measure); }
+figcaption { font-size: 0.8rem; line-height: 1.5; color: var(--muted); margin-top: var(--space-xs); }
 
 .viz { display: block; height: auto; overflow: visible; }
 .viz text { font-family: var(--font-body); }
@@ -226,24 +226,24 @@ td.prose { font-family: var(--font-body); font-size: 0.84rem; color: var(--muted
 td .pm { color: var(--muted); font-size: 0.76rem; margin-left: var(--space-3xs); }
 td .star { color: var(--accent); }
 td .na { color: var(--muted); font-family: var(--font-body); }
-.tnote { font-size: 0.78rem; color: var(--muted); margin-top: var(--space-sm); max-width: var(--measure); }
+.tnote { font-size: 0.78rem; color: var(--muted); margin-top: var(--space-sm); }
 
 /* ── the picks: a definition list, not a card grid ──────────────────────── */
 .picks { margin-top: var(--space-md); border-top: 1px solid var(--ink); }
-.pickrow { display: grid; grid-template-columns: 15rem 1fr; gap: var(--space-md); padding: var(--space-sm) 0; border-bottom: 1px solid var(--rule); align-items: baseline; }
+.pickrow { display: grid; grid-template-columns: 12rem 1fr; gap: var(--space-md); padding: var(--space-sm) 0; border-bottom: 1px solid var(--rule); align-items: baseline; }
 .pickrow .who { font-weight: 700; color: var(--ink); font-size: 1rem; letter-spacing: -0.015em; }
 .pickrow .who span { display: block; font-weight: 500; font-size: 0.75rem; color: var(--muted); letter-spacing: 0; margin-top: 1px; }
-.pickrow p { margin: 0; font-size: 0.9rem; color: var(--ink-2); max-width: none; }
+.pickrow p { margin: 0; font-size: 0.9rem; color: var(--ink-2); }
 @media (max-width: 620px) { .pickrow { grid-template-columns: 1fr; gap: var(--space-3xs); } }
 
 /* ── limits: a tight list ───────────────────────────────────────────────── */
 .limits { margin-top: var(--space-md); border-top: 1px solid var(--ink); }
 .limit { padding: var(--space-sm) 0; border-bottom: 1px solid var(--rule); }
-.limit p { margin: 0; max-width: var(--measure); font-size: 0.9rem; color: var(--muted); }
+.limit p { margin: 0; font-size: 0.9rem; color: var(--muted); }
 .limit h3 { color: var(--ink); }
 
 /* ── rubric rungs ───────────────────────────────────────────────────────── */
-.rungs { margin: var(--space-sm) 0 0; max-width: var(--measure); border-top: 1px solid var(--ink); }
+.rungs { margin: var(--space-sm) 0 0; border-top: 1px solid var(--ink); }
 .rung { display: grid; grid-template-columns: 1.6rem 8.5rem 1fr; gap: var(--space-sm); padding: var(--space-xs) 0; border-bottom: 1px solid var(--rule); align-items: baseline; font-size: 0.88rem; }
 .rung .n { font-family: var(--font-mono); color: var(--accent); font-variant-numeric: tabular-nums; }
 .rung .nm { font-weight: 700; color: var(--ink); }

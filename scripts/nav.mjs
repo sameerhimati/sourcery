@@ -66,10 +66,14 @@ export const NAV_CSS = `
    second, sitting directly on the bar's bottom rule. The current page's link
    punches through that rule by taking the page background, and the trick only
    works if nothing can ever wrap in between the links and the rule. */
+/* Stuck to the top of the viewport, so the way back to the other pages is
+   never a scroll away on a page this long. It carries its own background for
+   that: a transparent bar would let the text scroll through it. */
 .sitenav {
   --nav-bg: #fafcfe;
+  position: sticky; top: 0; z-index: 20; background: var(--nav-bg);
   display: flex; flex-wrap: wrap; align-items: baseline; column-gap: 20px; row-gap: 2px;
-  padding-top: 20px; border-bottom: 1px solid #0a0e12;
+  padding-top: 14px; border-bottom: 1px solid #0a0e12;
   font-size: 0.78rem; letter-spacing: 0.02em; color: #5b5e61;
 }
 .sitenav .brand { font-weight: 800; text-transform: uppercase; color: #0a0e12; white-space: nowrap; }
@@ -79,9 +83,9 @@ export const NAV_CSS = `
 .sitenav .meta a { color: #5b5e61; text-decoration: none; }
 .sitenav .meta a:hover { color: #d01e1c; }
 .sitenav .stamp .mono { font-size: 0.85em; }
-.sitenav .navlinks { width: 100%; display: flex; flex-wrap: wrap; margin-top: 6px; }
+.sitenav .navlinks { width: 100%; display: flex; flex-wrap: wrap; margin-top: 4px; }
 .sitenav .navlinks a {
-  padding: 10px 14px; font-weight: 700; font-size: 0.84rem; letter-spacing: 0.01em;
+  padding: 8px 14px; font-weight: 700; font-size: 0.84rem; letter-spacing: 0.01em;
   color: #5b5e61; text-decoration: none;
   border: 1px solid transparent; border-bottom: 0; margin-bottom: -1px;
 }

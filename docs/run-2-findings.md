@@ -1,7 +1,8 @@
 # Run 2 — working draft
 
-> Numbers here are final. Judging finished at 22,457 page ratings and 4,886 set
-> verdicts, three judges, nothing unjudged.
+> Numbers here are final. Every page and every set went to all three judges, and
+> nothing was left unjudged: 22,457 page ratings and 4,886 set verdicts came back
+> with a score a judge could parse.
 >
 > The `[YOURS]` markers are sentences I should not write. They are the parts only
 > you know — what you paid, what broke, what you expected and did not get.
@@ -31,6 +32,11 @@ Every page came back to the same three judges. Only the search provider varied.
                ×  3 judges                       =  22,488 page ratings
              +   1,631 sets × 3 judges           =   4,893 set verdicts
 ```
+
+Those last two lines are the arithmetic. What was recorded is 22,488 page ratings
+and 4,891 set verdicts, two short of it. Of those, 22,457 page ratings and 4,886
+set verdicts carry a score a judge could parse, and every average here is over
+the scored ones.
 
 Two things readers assume wrongly.
 
@@ -64,14 +70,14 @@ that cannot answer. Your words.
 
 | provider | set | ±95% | base | hard | base→hard |
 |---|---|---|---|---|---|
-| perplexity | 2.768 | 0.068 | 2.331 | 2.329 | −0.003 |
-| brave | 2.611 | 0.081 | 2.088 | 2.019 | −0.069 |
-| parallel | 2.556 | 0.088 | 1.929 | 1.923 | −0.005 |
-| exa | 2.549 | 0.086 | 2.097 | 1.948 | −0.149 |
-| tavily | 2.149 | 0.109 | 1.682 | 1.419 | −0.263 |
-| serper | 2.123 | 0.104 | 1.590 | 1.418 | −0.172 |
-| firecrawl | 2.064 | 0.112 | 1.560 | 1.304 | −0.255 |
-| bright_data | 1.950 | 0.105 | 1.482 | 1.285 | −0.196 |
+| perplexity | 2.768 | 0.068 | 2.367 | 2.332 | −0.034 |
+| brave | 2.611 | 0.081 | 2.117 | 2.037 | −0.080 |
+| parallel | 2.556 | 0.088 | 1.928 | 1.929 | +0.001 |
+| exa | 2.549 | 0.086 | 2.130 | 1.960 | −0.169 |
+| tavily | 2.149 | 0.109 | 1.685 | 1.419 | −0.266 |
+| serper | 2.123 | 0.104 | 1.603 | 1.420 | −0.183 |
+| firecrawl | 2.064 | 0.112 | 1.533 | 1.283 | −0.249 |
+| bright_data | 1.950 | 0.105 | 1.488 | 1.262 | −0.226 |
 
 Brave, Parallel and Exa are one group. Their intervals overlap and the ordering
 between them means nothing. Perplexity sits clear above, the bottom four clear
@@ -82,12 +88,12 @@ four-rung scale.
 
 ### The gap widens where it should
 
-Best to worst goes from **0.850 on the base questions to 1.043 on the hard ones**,
-23% wider. Easy questions make providers look alike.
+Best to worst goes from **0.879 on the base questions to 1.070 on the hard ones**,
+22% wider. Easy questions make providers look alike.
 
 The mechanism is not that the leaders improve, it is that the bottom falls out.
-Perplexity and Parallel lose nothing going from base to hard. Tavily, Firecrawl
-and Bright Data lose a quarter of a rung.
+Parallel loses nothing going from base to hard and Perplexity loses three
+hundredths of a rung. Tavily, Firecrawl and Bright Data lose a quarter of a rung.
 
 ### Judge choice moves every number and no ranking
 
@@ -109,14 +115,14 @@ and the order is identical under both thresholds:
 
 | provider | only rung 3 counts | rung 2 or 3 counts |
 |---|---|---|
-| perplexity | 48.3% | 81.8% |
-| brave | 33.9% | 72.8% |
-| exa | 30.3% | 70.9% |
-| parallel | 29.4% | 67.7% |
+| perplexity | 49.9% | 82.6% |
+| brave | 34.8% | 73.7% |
+| exa | 32.2% | 71.7% |
+| parallel | 29.3% | 67.3% |
 | tavily | 20.2% | 50.5% |
-| serper | 17.3% | 48.5% |
-| firecrawl | 15.9% | 44.6% |
-| bright_data | 15.5% | 43.2% |
+| serper | 17.8% | 48.6% |
+| firecrawl | 15.6% | 43.8% |
+| bright_data | 14.9% | 42.5% |
 
 Strict scoring widens Perplexity's lead. It returns a page that fully answers at
 1.4 times the rate of anyone else, and the mean hides that because rung 2s
@@ -129,15 +135,15 @@ the whole set answers than its average page suggests.
 
 | provider | page | set | lift |
 |---|---|---|---|
-| perplexity | 2.226 | 2.768 | +0.542 |
-| exa | 1.938 | 2.548 | +0.610 |
-| brave | 1.967 | 2.611 | +0.644 |
-| parallel | 1.864 | 2.556 | +0.691 |
-| firecrawl | 1.361 | 2.063 | +0.701 |
+| perplexity | 2.259 | 2.768 | +0.509 |
+| exa | 1.966 | 2.549 | +0.583 |
+| brave | 1.997 | 2.611 | +0.614 |
+| parallel | 1.860 | 2.556 | +0.696 |
+| firecrawl | 1.348 | 2.064 | +0.716 |
 
 High lift means the eight pages cover different parts of the answer. Low lift
 means they repeat each other. Perplexity has the lowest lift of anyone and the
-highest set score — its pages are 48% rung-3, so each already answers and
+highest set score — its pages are 50% rung-3, so each already answers and
 assembling them adds little.
 
 Exa and Parallel end up level on set from opposite directions. Exa's individual
@@ -148,24 +154,41 @@ pages are better; Parallel's fit together better.
 Twelve questions have no answer anywhere — a Postgres setting that does not
 exist, a Docker option never added. Scoring **low** is the good outcome.
 
-| bright_data | 0.370 |
-| firecrawl | 0.406 |
+Twelve questions is not enough to rank eight providers. Grouped by question,
+every provider's interval overlaps every other's. What twelve questions can
+support is a comparison of two providers on the same twelve, counting how many
+each one wins — a sign test, which asks how often a split that lopsided would
+turn up by luck alone if the two providers were really the same. That figure is
+the p below, and a small one means luck is a poor explanation. Firecrawl scored
+lower than Perplexity on all twelve of twelve, p < 0.001. It also separates from
+Exa, 11 of 12, p = 0.006, and from Parallel, 10 of 12, p = 0.039. Bright Data
+beats Perplexity 11 of 12, p = 0.006. Most other pairs do not separate at all:
+Parallel against Perplexity is 7–5, Tavily against Serper 7–5, and Parallel
+against Exa is a 6–6 tie, so among the four arms that rank well there is no most
+restrained one.
+
+The averages over those twelve questions, as supporting detail:
+
+| firecrawl | 0.404 |
+| bright_data | 0.422 |
 | tavily | 0.447 |
-| serper | 0.466 |
-| **exa** | **0.559** |
-| perplexity | 0.646 |
-| parallel | 0.647 |
-| brave | 0.678 |
+| serper | 0.454 |
+| parallel | 0.643 |
+| exa | 0.681 |
+| brave | 0.726 |
+| perplexity | 0.816 |
 
 A high score means the provider found a convincing near-miss. Asked for the
 default of `max_parallel_vacuum_workers`, which does not exist, one arm returned
 a page about `max_parallel_maintenance_workers` — a real setting, real default —
 and a judge called it a direct answer.
 
-Perplexity is the best at finding answers and among the worst at not
-manufacturing the appearance of one. Exa is the most restrained of the four
-providers that rank well. For an agent that matters more than the leaderboard,
-because nothing downstream catches it.
+Firecrawl's restraint is confounded and has to be read as such: a provider that
+finds less also finds fewer convincing near-misses, and Firecrawl comes 7th
+overall. The finding without that problem is the trade-off at the top.
+Perplexity is the best at finding answers and the worst at not manufacturing the
+appearance of one. For an agent that matters more than the leaderboard, because
+nothing downstream catches it.
 
 It indicts the judge too. glm marked that Postgres page down and said the
 parameter name did not match. Sonnet did not. The metric mixes whether a provider
@@ -252,8 +275,8 @@ extraction is what Firecrawl sells.
 
 **Providers overlap.** The same page often comes back from several of them. It is
 rated once, and the rating counts for everyone who returned it, using the longest
-version anyone returned. Seven in ten pages came from exactly one provider, and
-15 of 7,496 came from all eight. These indexes overlap far less than you would
+version anyone returned. Two in three pages came from exactly one provider, and
+24 of 7,496 came from all eight. These indexes overlap far less than you would
 guess.
 
 **Nobody abstains.** All eight returned their eight results on the unanswerable
@@ -268,7 +291,7 @@ answer is the caller's job.
 
 Candidates from the data:
 
-- Hold the URLs fixed and vary only the extraction. 2,406 pages came back from
+- Hold the URLs fixed and vary only the extraction. 2,485 pages came back from
   two or more providers, so the comparison is already paid for. That measures the
   axis this run is blind to.
 - Store provider-native relevance scores. Exa returns one. Without it there is no
@@ -292,5 +315,10 @@ Candidates from the data:
   and no successes. A demonstration of the free floor, not a measured provider.
 - Prices are pay-as-you-go rates off the author's own billing pages, not
   out-of-pocket. Free credits are a fact about one account.
+- The page-level numbers were rebuilt after the first draft: a rating is now
+  matched to the provider that returned it through the same URL cleanup the
+  pooling uses, so every page counts instead of only the ones whose URLs needed
+  no cleaning. `docs/report-data.json` carries a `corrections` block saying what
+  moved.
 
 Every rating, with the judge's own sentence, is in the explorer.

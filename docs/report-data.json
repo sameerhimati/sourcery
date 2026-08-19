@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-08-19T16:02:59.622Z",
+ "generated_at": "2026-08-19T16:59:27.524Z",
  "run": "run 2",
  "source": "derived by scripts/build-report-data.mjs from .sourcery/pooled-*.jsonl and pooled-summary.json",
  "judges": [
@@ -502,6 +502,316 @@
    }
   }
  },
+ "unanswerable_pairwise": [
+  {
+   "a": "perplexity",
+   "b": "brave",
+   "n_questions": 12,
+   "a_lower": 4,
+   "b_lower": 7,
+   "ties": 1,
+   "p": 0.5488,
+   "separates": false,
+   "better": null
+  },
+  {
+   "a": "perplexity",
+   "b": "parallel",
+   "n_questions": 12,
+   "a_lower": 5,
+   "b_lower": 7,
+   "ties": 0,
+   "p": 0.7744,
+   "separates": false,
+   "better": null
+  },
+  {
+   "a": "perplexity",
+   "b": "exa",
+   "n_questions": 12,
+   "a_lower": 5,
+   "b_lower": 7,
+   "ties": 0,
+   "p": 0.7744,
+   "separates": false,
+   "better": null
+  },
+  {
+   "a": "perplexity",
+   "b": "tavily",
+   "n_questions": 12,
+   "a_lower": 2,
+   "b_lower": 10,
+   "ties": 0,
+   "p": 0.0386,
+   "separates": true,
+   "better": "tavily"
+  },
+  {
+   "a": "perplexity",
+   "b": "serper",
+   "n_questions": 12,
+   "a_lower": 1,
+   "b_lower": 11,
+   "ties": 0,
+   "p": 0.0063,
+   "separates": true,
+   "better": "serper"
+  },
+  {
+   "a": "perplexity",
+   "b": "firecrawl",
+   "n_questions": 12,
+   "a_lower": 0,
+   "b_lower": 12,
+   "ties": 0,
+   "p": 0.0005,
+   "separates": true,
+   "better": "firecrawl"
+  },
+  {
+   "a": "perplexity",
+   "b": "bright_data",
+   "n_questions": 12,
+   "a_lower": 1,
+   "b_lower": 11,
+   "ties": 0,
+   "p": 0.0063,
+   "separates": true,
+   "better": "bright_data"
+  },
+  {
+   "a": "brave",
+   "b": "parallel",
+   "n_questions": 12,
+   "a_lower": 5,
+   "b_lower": 7,
+   "ties": 0,
+   "p": 0.7744,
+   "separates": false,
+   "better": null
+  },
+  {
+   "a": "brave",
+   "b": "exa",
+   "n_questions": 12,
+   "a_lower": 6,
+   "b_lower": 6,
+   "ties": 0,
+   "p": 1,
+   "separates": false,
+   "better": null
+  },
+  {
+   "a": "brave",
+   "b": "tavily",
+   "n_questions": 12,
+   "a_lower": 2,
+   "b_lower": 7,
+   "ties": 3,
+   "p": 0.1797,
+   "separates": false,
+   "better": null
+  },
+  {
+   "a": "brave",
+   "b": "serper",
+   "n_questions": 12,
+   "a_lower": 5,
+   "b_lower": 7,
+   "ties": 0,
+   "p": 0.7744,
+   "separates": false,
+   "better": null
+  },
+  {
+   "a": "brave",
+   "b": "firecrawl",
+   "n_questions": 12,
+   "a_lower": 4,
+   "b_lower": 8,
+   "ties": 0,
+   "p": 0.3877,
+   "separates": false,
+   "better": null
+  },
+  {
+   "a": "brave",
+   "b": "bright_data",
+   "n_questions": 12,
+   "a_lower": 4,
+   "b_lower": 8,
+   "ties": 0,
+   "p": 0.3877,
+   "separates": false,
+   "better": null
+  },
+  {
+   "a": "parallel",
+   "b": "exa",
+   "n_questions": 12,
+   "a_lower": 6,
+   "b_lower": 6,
+   "ties": 0,
+   "p": 1,
+   "separates": false,
+   "better": null
+  },
+  {
+   "a": "parallel",
+   "b": "tavily",
+   "n_questions": 12,
+   "a_lower": 1,
+   "b_lower": 10,
+   "ties": 1,
+   "p": 0.0117,
+   "separates": true,
+   "better": "tavily"
+  },
+  {
+   "a": "parallel",
+   "b": "serper",
+   "n_questions": 12,
+   "a_lower": 3,
+   "b_lower": 9,
+   "ties": 0,
+   "p": 0.146,
+   "separates": false,
+   "better": null
+  },
+  {
+   "a": "parallel",
+   "b": "firecrawl",
+   "n_questions": 12,
+   "a_lower": 2,
+   "b_lower": 10,
+   "ties": 0,
+   "p": 0.0386,
+   "separates": true,
+   "better": "firecrawl"
+  },
+  {
+   "a": "parallel",
+   "b": "bright_data",
+   "n_questions": 12,
+   "a_lower": 1,
+   "b_lower": 11,
+   "ties": 0,
+   "p": 0.0063,
+   "separates": true,
+   "better": "bright_data"
+  },
+  {
+   "a": "exa",
+   "b": "tavily",
+   "n_questions": 12,
+   "a_lower": 2,
+   "b_lower": 10,
+   "ties": 0,
+   "p": 0.0386,
+   "separates": true,
+   "better": "tavily"
+  },
+  {
+   "a": "exa",
+   "b": "serper",
+   "n_questions": 12,
+   "a_lower": 3,
+   "b_lower": 9,
+   "ties": 0,
+   "p": 0.146,
+   "separates": false,
+   "better": null
+  },
+  {
+   "a": "exa",
+   "b": "firecrawl",
+   "n_questions": 12,
+   "a_lower": 1,
+   "b_lower": 11,
+   "ties": 0,
+   "p": 0.0063,
+   "separates": true,
+   "better": "firecrawl"
+  },
+  {
+   "a": "exa",
+   "b": "bright_data",
+   "n_questions": 12,
+   "a_lower": 3,
+   "b_lower": 8,
+   "ties": 1,
+   "p": 0.2266,
+   "separates": false,
+   "better": null
+  },
+  {
+   "a": "tavily",
+   "b": "serper",
+   "n_questions": 12,
+   "a_lower": 7,
+   "b_lower": 5,
+   "ties": 0,
+   "p": 0.7744,
+   "separates": false,
+   "better": null
+  },
+  {
+   "a": "tavily",
+   "b": "firecrawl",
+   "n_questions": 12,
+   "a_lower": 5,
+   "b_lower": 6,
+   "ties": 1,
+   "p": 1,
+   "separates": false,
+   "better": null
+  },
+  {
+   "a": "tavily",
+   "b": "bright_data",
+   "n_questions": 12,
+   "a_lower": 5,
+   "b_lower": 7,
+   "ties": 0,
+   "p": 0.7744,
+   "separates": false,
+   "better": null
+  },
+  {
+   "a": "serper",
+   "b": "firecrawl",
+   "n_questions": 12,
+   "a_lower": 2,
+   "b_lower": 6,
+   "ties": 4,
+   "p": 0.2891,
+   "separates": false,
+   "better": null
+  },
+  {
+   "a": "serper",
+   "b": "bright_data",
+   "n_questions": 12,
+   "a_lower": 4,
+   "b_lower": 4,
+   "ties": 4,
+   "p": 1,
+   "separates": false,
+   "better": null
+  },
+  {
+   "a": "firecrawl",
+   "b": "bright_data",
+   "n_questions": 12,
+   "a_lower": 6,
+   "b_lower": 1,
+   "ties": 5,
+   "p": 0.125,
+   "separates": false,
+   "better": null
+  }
+ ],
  "corrections": {
   "page_join_rebuilt": "The draft's page-level tables attached a rating to a provider by matching the url the provider returned against the url the judgement log stores, which is the pooled one. A page whose url needed normalizing to pool — a trailing slash, a tracking parameter — therefore had no rating attached, and the arms lost between 1% and 43% of their pages to it. Everything downstream of that join has been rebuilt here with core/pool.ts's own normalizeUrl on both sides, which matches 100% of every arm's pages. The page averages, base and hard averages, both binary thresholds, lift, the spread and the unanswerable scores all moved; every one of them is now over the whole of what a provider returned rather than over the subset whose urls happened to need no cleaning. The draft's numbers should be replaced, not reconciled.",
   "bright_data_double_count_gone": "Bright Data throttles above one concurrent request and needed a slower repair pass, which left some questions with two clean fetch rows, and the draft's page numbers counted both. Deduping pages by question and pooled url fixes this as a side effect — the same page under one key — so no arm needs special-casing any more.",

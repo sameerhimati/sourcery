@@ -275,6 +275,7 @@ const bySet = new Map(summary.by_provider_set.map((r) => [r.provider, r]));
 const providerOrder = [...bySet.values()].sort((a, b) => b.mean_score - a.mean_score).map((r) => r.provider);
 
 const providers = {};
+const unansByQuestion = {};
 // Best-minus-worst is a difference of two averages, so it is taken before
 // rounding. Differencing the rounded numbers moves the third decimal.
 const exact = {};
@@ -295,6 +296,18 @@ for (const p of providerOrder) {
   const perPage = pages.map((x) => mean(x.rungs));
   const cost = costs[p] ?? {};
   exact[p] = { base, hard };
+  // Kept for the paired test below: one score per unanswerable QUESTION, so two
+  // providers can be compared on the same twelve rather than through their
+  // averages. `pages` is one row per page, and a question has eight of them, so
+  // the rows have to be gathered per question first — keying a map by queryId
+  // directly would silently keep whichever page happened to come last.
+  const unansQ = new Map();
+  for (const x of pages) {
+    if (groupOf(x.queryId) !== "unanswerable") continue;
+    if (!unansQ.has(x.queryId)) unansQ.set(x.queryId, []);
+    unansQ.get(x.queryId).push(mean(x.rungs));
+  }
+  unansByQuestion[p] = new Map([...unansQ].map(([q, v]) => [q, mean(v)]));
 
   providers[p] = {
     // The headline. Give a judge all eight pages one provider returned and ask
@@ -429,6 +442,60 @@ const payload = {
   // What was rebuilt after the draft was written, and what moved. Somebody will
   // hold the published draft next to this file and needs the answer here rather
   // than in a commit message.
+  // ─── The twelve questions with no answer ───
+  //
+  // Twelve questions cannot rank eight providers: grouped by question, every
+  // arm's interval overlaps every other's. What twelve can support is a
+  // head-to-head on the same twelve — count how many each provider wins, then
+  // ask how often a split that lopsided would come up by luck alone if the two
+  // were really the same. That last figure is `p`, and a small one means luck
+  // is a poor explanation. Published numbers have to be reproducible from this
+  // file, and an average cannot reproduce a paired result.
+  unanswerable_pairwise: (() => {
+    const half = (n, k) => {
+      // exact two-sided sign test: 2 × P(X ≤ k) under a fair coin
+      let tail = 0;
+      let c = 1;
+      for (let i = 0; i <= k; i++) {
+        tail += c;
+        c = (c * (n - i)) / (i + 1);
+      }
+      return Math.min(1, (2 * tail) / Math.pow(2, n));
+    };
+    const out = [];
+    for (let i = 0; i < providerOrder.length; i++) {
+      for (let j = i + 1; j < providerOrder.length; j++) {
+        const a = providerOrder[i];
+        const b = providerOrder[j];
+        let aLower = 0;
+        let bLower = 0;
+        let n = 0;
+        for (const [q, av] of unansByQuestion[a]) {
+          const bv = unansByQuestion[b].get(q);
+          if (bv === undefined) continue;
+          n++;
+          if (av < bv) aLower++;
+          else if (bv < av) bLower++;
+        }
+        const decided = aLower + bLower;
+        const pv = decided ? half(decided, Math.min(aLower, bLower)) : 1;
+        out.push({
+          a,
+          b,
+          n_questions: n,
+          a_lower: aLower,
+          b_lower: bLower,
+          ties: n - decided,
+          p: Number(pv.toFixed(4)),
+          separates: pv < 0.05,
+          // "lower" is better here: fewer convincing near-misses on a question
+          // that has no answer.
+          better: pv < 0.05 ? (aLower > bLower ? a : b) : null,
+        });
+      }
+    }
+    return out;
+  })(),
   corrections: {
     page_join_rebuilt:
       "The draft's page-level tables attached a rating to a provider by matching the url the provider returned against the url the judgement log stores, which is the pooled one. A page whose url needed normalizing to pool — a trailing slash, a tracking parameter — therefore had no rating attached, and the arms lost between 1% and 43% of their pages to it. Everything downstream of that join has been rebuilt here with core/pool.ts's own normalizeUrl on both sides, which matches 100% of every arm's pages. The page averages, base and hard averages, both binary thresholds, lift, the spread and the unanswerable scores all moved; every one of them is now over the whole of what a provider returned rather than over the subset whose urls happened to need no cleaning. The draft's numbers should be replaced, not reconciled.",

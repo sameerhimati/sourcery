@@ -1,10 +1,17 @@
 #!/usr/bin/env node
 // Build the public results page from the run's own derived numbers.
 //
-// Every figure on the page — and every mark in every chart — comes from
-// docs/report-data.json, so a chart and the sentence beside it cannot disagree.
-// Nothing here is typed by hand. If a number looks wrong it is wrong upstream,
-// in scripts/build-report-data.mjs, and fixing it there fixes the page.
+// Every figure in a chart, a tile or the table comes from docs/report-data.json,
+// so a chart and the number beside it cannot disagree. If one of those looks
+// wrong it is wrong upstream, in scripts/build-report-data.mjs, and fixing it
+// there fixes the page.
+//
+// The prose is not all generated, and the earlier version of this comment
+// claiming otherwise was wrong. A few figures in the templates' running text —
+// Firecrawl's credit burn, the captcha failures, the YouTube share — are
+// transcribed from docs/run-2-findings.md because nothing derives them yet.
+// Anything quantitative that a reader would check should move into the data
+// file rather than being typed into a sentence.
 //
 // The charts are static SVG emitted at build time rather than drawn by script in
 // the browser. Two reasons: the page needs no JavaScript to show its results,
@@ -18,10 +25,25 @@
 // Usage: node scripts/build-report.mjs [data.json] [template.html] [out.html]
 
 import fs from "node:fs";
+// Imported, not transcribed: the rubrics and rung names the methodology page
+// publishes are the ones the run actually used. A copy would drift.
+import {
+  RELEVANCE_RUNGS,
+  SET_RUNGS,
+  RELEVANCE_JUDGE_SYSTEM,
+  SET_JUDGE_SYSTEM,
+  RELEVANCE_JUDGE_TEMP,
+  SET_JUDGE_TEMP,
+  NUM_SOURCES,
+} from "../core/controls.ts";
 
 const DATA = process.argv[2] ?? "docs/report-data.json";
-const TPL = process.argv[3] ?? "docs/report-template.html";
-const OUT = process.argv[4] ?? "docs/index.html";
+
+// Where the pages link to each other. Absolute, because these files are served
+// from Pages *and* published as standalone artifacts, and a relative link only
+// works in one of those.
+const BASE = "https://sameerhimati.github.io/sourcery/";
+const REPO = "https://github.com/sameerhimati/sourcery";
 
 const d = JSON.parse(fs.readFileSync(DATA, "utf8"));
 const P = d.providers;
@@ -226,8 +248,9 @@ function chartPrice() {
   return frame(
     h,
     { id: "pr", text: "Set rating against cost per query" },
-    `Cost runs from ${money(P.serper.cost.per_query_usd)} to ${money(P.firecrawl.cost.per_query_usd)} a query, an 86-fold spread, ` +
-      `and the three cheapest providers take three of the top four places. Firecrawl is the most expensive and seventh on quality.`,
+    `Cost runs from ${money(P.serper.cost.per_query_usd)} to ${money(P.firecrawl.cost.per_query_usd)} a query, ` +
+      `a ${Math.round(P.firecrawl.cost.per_query_usd / P.serper.cost.per_query_usd)}-fold spread, and the three arms on the cheapest ` +
+      `per-query tier take three of the top four places while the outright cheapest places sixth. Firecrawl is the most expensive and seventh on quality.`,
     s,
   );
 }
@@ -259,7 +282,9 @@ function chartStructure() {
       const v = P[k].structure[field];
       const step = v >= 80 ? 4 : v >= 55 ? 3 : v >= 30 ? 2 : v >= 8 ? 1 : 0;
       s += `<rect x="${GUT + c * cw + 1}" y="${yy + 2}" width="${cw - 4}" height="${ROW - 5}" rx="2" class="cell s${step}"/>`;
-      s += txt(GUT + c * cw + cw / 2, yy + ROW / 2 + 4, `cellv${step >= 3 ? " on" : ""}`, `${Math.round(v)}%`, "middle");
+      // Light text only on the darkest step. On the step below it the off-white
+      // reads at 3.75:1 and the dark ink at 4.58:1, so that one keeps dark ink.
+      s += txt(GUT + c * cw + cw / 2, yy + ROW / 2 + 4, `cellv${step >= 4 ? " on" : ""}`, `${Math.round(v)}%`, "middle");
     });
   });
   // Serper gets a sentence, not a row of zeroes. It returns no page text at all,
@@ -305,7 +330,7 @@ function stats() {
   const dear = ORDER.reduce((a, k) => (P[k].cost.per_query_usd > P[a].cost.per_query_usd ? k : a), ORDER[0]);
   const ratio = Math.round(P[dear].cost.per_query_usd / P[cheap].cost.per_query_usd);
   return [
-    [d.counts.page_ratings_scored.toLocaleString("en-US"), "pages graded", `${d.counts.questions} questions, ${d.counts.judges} judges, never an answer`],
+    [d.counts.page_ratings_scored.toLocaleString("en-US"), "page ratings", `${d.counts.unique_pairs.toLocaleString("en-US")} pages, each read by ${d.counts.judges} judges`],
     [`${ratio}×`, "price spread", `${money(P[cheap].cost.per_query_usd)} to ${money(P[dear].cost.per_query_usd)}, same question`],
     [`${(d.variance_shares.judge * 100).toFixed(1)}%`, "down to the judge", `the provider accounts for ${(d.variance_shares.provider * 100).toFixed(1)}%`],
     [`$${d.cost_total_usd.toFixed(2)}`, "total retrieval bill", "eight providers, one day, no caching"],
@@ -316,6 +341,30 @@ function stats() {
     )
     .join("\n");
 }
+
+// ── the methodology page ──────────────────────────────────────────────────────
+const rungRows = (rungs) =>
+  rungs
+    .map(
+      (r) =>
+        `<div class="rung"><div class="n">${r.rung}</div><div class="nm">${esc(r.name)}</div><div class="mg">${esc(r.meaning)}</div></div>`,
+    )
+    .join("\n");
+
+// Every row is a value the run held identical across all eight arms. The "why"
+// column matters more than the value: a constant without a reason is a constant
+// somebody will change.
+const CONSTANTS = [
+  ["Results requested", String(NUM_SOURCES.default), "the same number from every provider, so nobody wins by returning more"],
+  ["Judges", d.judges.join(", "), "three labs, so no single vendor's model decides the ranking"],
+  ["Judge temperature", String(RELEVANCE_JUDGE_TEMP === SET_JUDGE_TEMP ? RELEVANCE_JUDGE_TEMP : `${RELEVANCE_JUDGE_TEMP} / ${SET_JUDGE_TEMP}`), "grading should not wander between two identical pages"],
+  ["Text per page", `${P.firecrawl.truncation.limit_chars} chars`, "the same cut an answer step would apply, and the run's largest blind spot"],
+  ["Caching", "off", "a cached page is yesterday's index answering today's question"],
+  ["Requests per question", "1", "what a caller gets in production, and the reason the intervals are as wide as they are"],
+  ["Fetched", d.run + ", " + new Date(d.generated_at).toISOString().slice(0, 10), "one day, so no provider is compared against another's different week"],
+]
+  .map(([k, v, why]) => `<tr><th>${esc(k)}</th><td class="v">${esc(v)}</td><td class="why">${esc(why)}</td></tr>`)
+  .join("\n");
 
 // ── assemble ──────────────────────────────────────────────────────────────────
 const REPL = {
@@ -349,21 +398,42 @@ const REPL = {
   __TRUNC_FIRECRAWL__: String(Math.round(P.firecrawl.truncation.pct)),
   __TRUNC_PERPLEXITY__: String(Math.round(P.perplexity.truncation.pct)),
   __GENERATED__: new Date(d.generated_at).toISOString().slice(0, 10),
+  __BASE__: BASE,
+  __REPO__: REPO,
+  __NUM_SOURCES__: String(NUM_SOURCES.default),
+  __PAGE_RUNGS__: rungRows(RELEVANCE_RUNGS),
+  __SET_RUNGS__: rungRows(SET_RUNGS),
+  __PAGE_PROMPT__: esc(RELEVANCE_JUDGE_SYSTEM),
+  __SET_PROMPT__: esc(SET_JUDGE_SYSTEM),
+  __CONSTANTS__: CONSTANTS,
+  __STYLE__: fs.readFileSync("docs/report-style.css", "utf8").trimEnd(),
 };
 
-let html = fs.readFileSync(TPL, "utf8");
-for (const [key, val] of Object.entries(REPL)) {
-  if (!html.includes(key)) {
-    console.error(`Template never uses ${key}. Either wire it in or drop it — an unused figure means a number quietly left the page.`);
+const PAGES = [
+  ["docs/report-template.html", "docs/index.html"],
+  ["docs/methodology-template.html", "docs/methodology.html"],
+];
+
+const usedSomewhere = new Set();
+for (const [tpl, out] of PAGES) {
+  let html = fs.readFileSync(tpl, "utf8");
+  for (const [key, val] of Object.entries(REPL)) {
+    if (html.includes(key)) usedSomewhere.add(key);
+    html = html.replaceAll(key, () => val);
+  }
+  const left = html.match(/__[A-Z_]+__/g);
+  if (left) {
+    console.error(`${out}: unfilled tokens — ${[...new Set(left)].join(", ")}`);
     process.exit(1);
   }
-  html = html.replaceAll(key, () => val);
-}
-const left = html.match(/__[A-Z_]+__/g);
-if (left) {
-  console.error(`Unfilled tokens left in the page: ${[...new Set(left)].join(", ")}`);
-  process.exit(1);
+  fs.writeFileSync(out, html);
+  console.log(`${out} — ${(fs.statSync(out).size / 1024).toFixed(1)} KB`);
 }
 
-fs.writeFileSync(OUT, html);
-console.log(`${OUT} — ${(fs.statSync(OUT).size / 1024).toFixed(1)} KB, from ${DATA} (${d.run}, ${REPL.__GENERATED__})`);
+// A token no page uses is a number that quietly left the site.
+const orphans = Object.keys(REPL).filter((k) => !usedSomewhere.has(k));
+if (orphans.length) {
+  console.error(`\nNo page uses: ${orphans.join(", ")}. Wire them in or drop them.`);
+  process.exit(1);
+}
+console.log(`from ${DATA} (${d.run}, ${REPL.__GENERATED__})`);

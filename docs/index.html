@@ -1,7 +1,9 @@
 <!-- Rendered by scripts/build-report.mjs into docs/index.html. Every double-underscored
-     token is filled from docs/report-data.json, which is derived from the run itself,
-     so no number on this page was typed by a person. Edit this file for wording and
-     layout; edit the data pipeline for figures. -->
+     token is filled from docs/report-data.json, which is derived from the run itself.
+     Charts, tiles and the table are entirely generated; a handful of figures in the
+     running prose are still transcribed from docs/run-2-findings.md and are marked as
+     such in scripts/build-report.mjs. Edit this file for wording; edit the data
+     pipeline for figures. -->
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Search APIs, graded on their sources</title>
@@ -12,26 +14,41 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Instrument+Sans:wght@400;500;600&family=Instrument+Serif&display=swap">
 
 <style>
-/* Hallmark · macrostructure: Long Document · nav: N6 masthead · footer: Ft5 statement
- * tone: technical-editorial · genre: editorial · anchor hue: warm (burnt orange 40°)
+/* Shared by docs/index.html and docs/methodology.html. Inlined into both by
+   scripts/build-report.mjs so each page stays a single self-contained file —
+   they are published as standalone artifacts as well as served from Pages. */
+
+/* Hallmark · macrostructure: Long Document (with a stat-tile hero and a card grid
+ *   grafted in from Stat-Led — noted rather than claimed as pure)
+ * nav: N9 edge-aligned · footer: Ft4 dense colophon
+ *   — an earlier stamp here claimed N6 masthead and Ft5 statement. Neither was
+ *     built: N6 wants a centred display wordmark and a double rule, Ft5 wants a
+ *     display sentence carrying the footer. A stamp that names an archetype the
+ *     markup does not implement sends the next run rotating away from something
+ *     that was never used, so it says what shipped.
+ * tone: technical-editorial · genre: editorial · anchor hue: warm (amber 55°)
  * theme: custom (paper #fbfaf8 · ink #16181d · marks #1a5fa8 + #b4671f, dataviz-validated)
- * light-only by request · motion: none · pre-emit critique: P5 H4 E4 S5 R5 V4
+ * light-only by request · motion: none
+ * pre-emit critique: P5 H3 E3 S5 R4 V3 — Execution was the honest 3, not a 4;
+ *   contrast, measure and the spacing scale all needed a second pass.
  */
 
 :root {
   /* paper & ink */
   --paper:      #fbfaf8;
-  --surface:    #ffffff;
+  --surface:    #fefdfb;
   --surface-2:  #f4f2ee;
   --ink:        #16181d;
   --ink-2:      #3d434e;
-  --muted:      #6b7280;
-  --faint:      #9aa1ac;
+  --muted:      #5f5a52;
+  --faint:      #726c62;
   --line:       #e5e3de;
   --line-2:     #d2cfc8;
 
-  /* accent — emphasis and the tie brackets only, never a data series */
-  --accent:      #b4671f;
+  /* Accent for emphasis and the tie brackets. Darker than the data-mark amber
+     below because this one carries text at 11px, where 4.5:1 is the floor; the
+     mark only has to clear 3:1 as a graphic. Same hue, two jobs, two steps. */
+  --accent:      #995a1c;
   --accent-wash: #f8f0e6;
 
   /* data marks — validated as a two-slot categorical set on --paper:
@@ -45,7 +62,7 @@
   --s2: #9dbcdc;
   --s3: #4c85bf;
   --s4: #1a5fa8;
-  --on-deep: #ffffff;
+  --on-deep: #fdfbf7;
 
   /* type */
   --font-display: "Instrument Serif", Georgia, "Times New Roman", serif;
@@ -53,6 +70,8 @@
   --font-mono:    "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
 
   /* 4pt spacing scale */
+  --space-3xs: 4px;
+  --space-2xs: 6px;
   --space-xs: 8px;
   --space-sm: 12px;
   --space-md: 20px;
@@ -60,7 +79,13 @@
   --space-xl: 56px;
   --space-2xl: 88px;
 
-  --measure: 34rem;
+  --page-gutter: 24px;
+
+  /* Measured in characters, not rem: every one of these containers sets its own
+     font-size, and a rem literal sized for the body copy runs 20–45 characters
+     over once the type steps down. */
+  --measure: 66ch;
+  --measure-wide: 72ch;
 }
 
 * { box-sizing: border-box; }
@@ -76,7 +101,7 @@ body {
   text-rendering: optimizeLegibility;
 }
 
-.wrap { max-width: 860px; margin: 0 auto; padding: 0 24px var(--space-2xl); }
+.wrap { max-width: 860px; margin: 0 auto; padding: 0 var(--page-gutter) var(--space-2xl); }
 
 h1, h2, h3 {
   font-family: var(--font-display);
@@ -88,22 +113,23 @@ h1, h2, h3 {
 }
 h1 { font-size: clamp(2.4rem, 6.4vw, 3.9rem); line-height: 1.04; margin: 0 0 var(--space-md); }
 h2 { font-size: clamp(1.6rem, 3.6vw, 2.15rem); line-height: 1.16; margin: 0 0 var(--space-sm); }
-h3 { font-size: 1.12rem; font-family: var(--font-body); font-weight: 600; margin: 0 0 6px; letter-spacing: 0; }
+h3 { font-size: 1.12rem; font-family: var(--font-body); font-weight: 600; margin: 0 0 var(--space-2xs); letter-spacing: 0; }
 
 p { margin: 0 0 var(--space-md); max-width: var(--measure); color: var(--ink-2); }
-p.wide { max-width: 44rem; }
+p.wide { max-width: var(--measure-wide); }
 strong { color: var(--ink); font-weight: 600; }
 em { font-style: italic; }
 
 a { color: var(--ink); text-decoration: underline; text-decoration-color: var(--line-2); text-underline-offset: 3px; text-decoration-thickness: 1px; }
 a:hover { text-decoration-color: var(--accent); }
+a:active { text-decoration-color: var(--accent); color: var(--accent); }
 a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 2px; }
 
 /* ── masthead ─────────────────────────────────────────────────────────── */
 .masthead {
   display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--space-xs) var(--space-md);
   padding: var(--space-md) 0; border-bottom: 1px solid var(--ink);
-  font-family: var(--font-mono); font-size: 0.775rem; letter-spacing: 0.04em;
+  font-size: 0.8rem; letter-spacing: 0.02em;
 }
 .masthead .brand { font-weight: 500; text-transform: uppercase; letter-spacing: 0.16em; }
 .masthead .sep { color: var(--faint); }
@@ -111,8 +137,8 @@ a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-
 .masthead a:hover { color: var(--accent); }
 .masthead .right { margin-left: auto; display: flex; gap: var(--space-md); }
 
-header.lead { padding: var(--space-xl) 0 var(--space-lg); }
-.standfirst { font-size: 1.2rem; line-height: 1.56; color: var(--ink-2); max-width: 40rem; }
+header.lead { padding: var(--space-xl) 0 var(--space-2xl); }
+.standfirst { font-size: 1.2rem; line-height: 1.56; color: var(--ink-2); max-width: 48ch; }
 .standfirst strong { color: var(--ink); }
 
 .tiles {
@@ -121,9 +147,9 @@ header.lead { padding: var(--space-xl) 0 var(--space-lg); }
   background: var(--line); border: 1px solid var(--line);
 }
 .tile { background: var(--surface); padding: var(--space-md); }
-.tn { font-size: 1.7rem; font-weight: 600; letter-spacing: -0.02em; line-height: 1.1; font-variant-numeric: tabular-nums; color: var(--ink); }
-.tl { font-size: 0.86rem; color: var(--ink-2); margin-top: 2px; }
-.ts { font-size: 0.75rem; color: var(--faint); margin-top: 5px; line-height: 1.45; }
+.tn { font-size: 1.7rem; font-weight: 600; letter-spacing: -0.02em; line-height: 1.1; font-variant-numeric: tabular-nums; color: var(--ink); overflow-wrap: anywhere; min-width: 0; }
+.tl { font-size: 0.86rem; color: var(--ink-2); margin-top: var(--space-3xs); }
+.ts { font-size: 0.75rem; color: var(--faint); margin-top: var(--space-2xs); line-height: 1.45; }
 
 section { margin: var(--space-2xl) 0 0; }
 .rule { border: 0; border-top: 1px solid var(--line); margin: var(--space-2xl) 0 0; }
@@ -135,7 +161,7 @@ figure { margin: var(--space-lg) 0 0; }
 figcaption {
   font-size: 0.83rem; line-height: 1.55; color: var(--muted);
   margin-top: var(--space-sm); padding-top: var(--space-sm);
-  border-top: 1px solid var(--line); max-width: 44rem;
+  border-top: 1px solid var(--line); max-width: var(--measure);
 }
 
 .viz { display: block; height: auto; overflow: visible; }
@@ -162,7 +188,11 @@ figcaption {
 .cell.s0 { fill: var(--s0); } .cell.s1 { fill: var(--s1); } .cell.s2 { fill: var(--s2); }
 .cell.s3 { fill: var(--s3); } .cell.s4 { fill: var(--s4); }
 .cell.na { fill: var(--surface-2); }
-.cellv   { fill: var(--ink-2); font-size: 11.5px; font-family: var(--font-mono); }
+/* Full ink, not --ink-2. These sit on the sequential ramp, and on its second-
+   darkest step --ink-2 reads at 2.6:1 where --ink reads at 4.6:1. Lightening the
+   ramp instead would have closed the gap between two steps that mean different
+   things — the encoding is worth more than the convenience. */
+.cellv   { fill: var(--ink); font-size: 11.5px; font-family: var(--font-mono); }
 .cellv.on { fill: var(--on-deep); }
 .cellna  { fill: var(--muted); font-size: 11.5px; }
 
@@ -171,39 +201,39 @@ figcaption {
    its own row, and the odd one out reads as an afterthought rather than a pick. */
 .picks { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)); gap: 1px; margin-top: var(--space-lg); background: var(--line); border: 1px solid var(--line); }
 .pick { background: var(--surface); padding: var(--space-md); }
-.pick .role { font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); }
-.pick .who { font-family: var(--font-display); font-size: 1.55rem; line-height: 1.1; margin: 6px 0 var(--space-xs); }
+.pick .role { font-size: 0.72rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); }
+.pick .who { font-family: var(--font-display); font-size: 1.55rem; line-height: 1.1; margin: var(--space-2xs) 0 var(--space-xs); overflow-wrap: anywhere; min-width: 0; }
 .pick p { font-size: 0.9rem; margin: 0; color: var(--muted); max-width: none; }
 .pick.against { background: var(--accent-wash); }
 
 /* ── table ────────────────────────────────────────────────────────────── */
 table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
-thead th { text-align: left; font-weight: 500; font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); border-bottom: 1px solid var(--ink); padding: 0 10px var(--space-xs); white-space: nowrap; font-family: var(--font-mono); }
+thead th { text-align: left; font-weight: 500; font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); border-bottom: 1px solid var(--ink); padding: 0 var(--space-sm) var(--space-xs); white-space: nowrap; font-family: var(--font-mono); }
 thead th.n, td.n { text-align: right; }
-tbody th { text-align: left; font-weight: 600; padding: 9px 10px; border-bottom: 1px solid var(--line); white-space: nowrap; }
-td { padding: 9px 10px; border-bottom: 1px solid var(--line); font-family: var(--font-mono); font-variant-numeric: tabular-nums; color: var(--ink-2); }
+tbody th { text-align: left; font-weight: 600; padding: var(--space-xs) var(--space-sm); border-bottom: 1px solid var(--line); white-space: nowrap; }
+td { padding: var(--space-xs) var(--space-sm); border-bottom: 1px solid var(--line); font-family: var(--font-mono); font-variant-numeric: tabular-nums; color: var(--ink-2); }
 td.lead { color: var(--ink); }
-td .pm { color: var(--faint); font-size: 0.76rem; margin-left: 5px; }
+td .pm { color: var(--faint); font-size: 0.76rem; margin-left: var(--space-3xs); }
 td .star { color: var(--accent); }
 td .na { color: var(--faint); font-family: var(--font-body); }
-.tnote { font-size: 0.8rem; color: var(--faint); margin-top: var(--space-sm); max-width: 44rem; }
+.tnote { font-size: 0.8rem; color: var(--faint); margin-top: var(--space-sm); max-width: var(--measure); }
 
 /* ── limits ───────────────────────────────────────────────────────────── */
 .limits { margin-top: var(--space-lg); border-top: 1px solid var(--line); }
 .limit { padding: var(--space-md) 0; border-bottom: 1px solid var(--line); }
-.limit p { margin: 0; max-width: 44rem; font-size: 0.94rem; }
+.limit p { margin: 0; max-width: var(--measure); font-size: 0.94rem; }
 
 /* ── footer ───────────────────────────────────────────────────────────── */
 footer { margin-top: var(--space-2xl); padding-top: var(--space-lg); border-top: 1px solid var(--ink); }
-footer p { font-size: 0.9rem; color: var(--muted); max-width: 40rem; }
+footer p { font-size: 0.9rem; color: var(--muted); max-width: var(--measure); }
 .links { display: flex; flex-wrap: wrap; gap: var(--space-sm); margin: var(--space-md) 0; }
-.links a { display: inline-block; padding: 9px 15px; border: 1px solid var(--line-2); background: var(--surface); text-decoration: none; font-size: 0.88rem; font-weight: 500; white-space: nowrap; }
+.links a { display: inline-block; padding: var(--space-xs) var(--space-md); border: 1px solid var(--line-2); background: var(--surface); text-decoration: none; font-size: 0.88rem; font-weight: 500; white-space: nowrap; }
 .links a:hover { border-color: var(--accent); color: var(--accent); }
-.colophon { font-family: var(--font-mono); font-size: 0.75rem; color: var(--faint); }
+.colophon { font-size: 0.78rem; color: var(--faint); }
 
 @media (max-width: 640px) {
   body { font-size: 16px; }
-  .wrap { padding: 0 18px var(--space-xl); }
+  .wrap { padding: 0 var(--space-md) var(--space-xl); }
   .masthead .right { margin-left: 0; width: 100%; }
   section { margin-top: var(--space-xl); }
 }
@@ -218,15 +248,15 @@ footer p { font-size: 0.9rem; color: var(--muted); max-width: 40rem; }
   <span class="sep">/</span>
   <span>2026-08-19</span>
   <span class="right">
-    <a href="explorer/">Explorer</a>
+    <a href="https://sameerhimati.github.io/sourcery/explorer/">Explorer</a>
     <a href="https://github.com/sameerhimati/sourcery">Source</a>
   </span>
 </nav>
 
 <header class="lead">
   <h1>Search APIs, graded on their sources</h1>
-  <p class="standfirst">Every published benchmark of a search API grades the answer a language model writes after reading the results. That number is mostly a score of the model. <strong>This one never looks at an answer.</strong> Eight providers, the same 204 questions on one day, and three judges reading the 22,457 pages that actually came back.</p>
-  <div class="tiles"><div class="tile"><div class="tn">22,457</div><div class="tl">pages graded</div><div class="ts">204 questions, 3 judges, never an answer</div></div>
+  <p class="standfirst">Every published benchmark of a search API grades the answer a language model writes after reading the results. That number is mostly a score of the model. <strong>This one never looks at an answer.</strong> Eight providers, the same 204 questions on one day, and 3 judges reading every one of the 7,496 pages that actually came back — 22,457 ratings in all.</p>
+  <div class="tiles"><div class="tile"><div class="tn">22,457</div><div class="tl">page ratings</div><div class="ts">7,496 pages, each read by 3 judges</div></div>
 <div class="tile"><div class="tn">86×</div><div class="tl">price spread</div><div class="ts">$0.001 to $0.0856, same question</div></div>
 <div class="tile"><div class="tn">2.2%</div><div class="tl">down to the judge</div><div class="ts">the provider accounts for 23.1%</div></div>
 <div class="tile"><div class="tn">$40.08</div><div class="tl">total retrieval bill</div><div class="ts">eight providers, one day, no caching</div></div></div>
@@ -235,7 +265,7 @@ footer p { font-size: 0.9rem; color: var(--muted); max-width: 40rem; }
 <section>
   <h2>Two ways to grade a search API</h2>
   <p>The usual way is end to end. Give an agent a hard question and a search tool, let it run, and score the answer it produces against a known one. It is a real measurement and it has an obvious appeal: the answer is the thing you wanted.</p>
-  <p>The problem is what else is in that number. A capable model answers a lot of questions from what it already knows. When a benchmark of this kind publishes its no-search baseline — the same model, same questions, no search tool at all — that baseline lands around a third of the winning score. So a third of the result was never about retrieval. The search provider is being graded through a filter that is itself doing much of the work, and a provider that returns nothing useful can still ride a confident model to a passing answer.</p>
+  <p>The problem is what else is in that number. A capable model answers a lot of questions from what it already knows. When a benchmark of this kind publishes its no-search baseline — the same model, same questions, no search tool at all — that baseline can land near half the winning score. <a href="https://artificialanalysis.ai/methodology/search-api">Artificial Analysis’s search index</a>, published the day before this page, scores 33 for the model alone against 75 for its top-ranked provider. So a third of the result was never about retrieval. The search provider is being graded through a filter that is itself doing much of the work, and a provider that returns nothing useful can still ride a confident model to a passing answer.</p>
   <p>An earlier version of this project measured both sides on the same queries and found they barely move together — the correlation between how good the fetched sources were and how good the final answer scored was 0.16. Ranking providers by answer quality mostly ranks your own model.</p>
   <p>So this measures the other half. A judge sees one question and one page and answers a single question: does this page help? Nothing else. It is never asked what the answer is, never shown a draft, and never allowed to fill a gap from memory, because it has no gap to fill. What comes out is a score for the retrieval layer on its own.</p>
   <p><strong>Neither number replaces the other.</strong> An answer-graded benchmark tells you what an agent built on a provider ends up producing, with real reference answers behind it. This tells you what the provider actually handed over. If you are choosing a search API and you only look at the first kind, you cannot tell a good index from a good guesser.</p>
@@ -275,17 +305,17 @@ footer p { font-size: 0.9rem; color: var(--muted); max-width: 40rem; }
   <h2>Price buys nothing</h2>
   <p>The same 204 questions cost twenty cents through the cheapest provider and seventeen dollars through the most expensive. The quality ordering does not follow the price ordering anywhere.</p>
   <figure>
-    <div class="scroller"><svg viewBox="0 0 720 356" width="100%" role="img" aria-labelledby="pr-t pr-d" class="viz"><title id="pr-t">Set rating against cost per query</title><desc id="pr-d">Cost runs from $0.001 to $0.0856 a query, an 86-fold spread, and the three cheapest providers take three of the top four places. Firecrawl is the most expensive and seventh on quality.</desc><line x1="96" y1="249.3" x2="636" y2="249.3" class="grid"/><text x="82" y="253.3" class="tick" text-anchor="end">2.00</text><line x1="96" y1="184.8" x2="636" y2="184.8" class="grid"/><text x="82" y="188.8" class="tick" text-anchor="end">2.25</text><line x1="96" y1="120.30000000000001" x2="636" y2="120.30000000000001" class="grid"/><text x="82" y="124.30000000000001" class="tick" text-anchor="end">2.50</text><line x1="96" y1="55.80000000000001" x2="636" y2="55.80000000000001" class="grid"/><text x="82" y="59.80000000000001" class="tick" text-anchor="end">2.75</text><text x="119.67022971552741" y="310" class="tick" text-anchor="middle">$0.001</text><text x="290.39335783564616" y="310" class="tick" text-anchor="middle">$0.005</text><text x="363.9198070379418" y="310" class="tick" text-anchor="middle">$0.01</text><text x="534.6429351580605" y="310" class="tick" text-anchor="middle">$0.05</text><text x="608.1693843603562" y="310" class="tick" text-anchor="middle">$0.1</text><line x1="96" y1="288" x2="636" y2="288" class="axis"/><text x="96" y="332" class="collab">cost per query, log scale</text><text class="collab" transform="translate(26 159) rotate(-90)" text-anchor="middle">set rating</text><circle cx="290.39335783564616" cy="51.15600000000006" r="5.5" class="est"/><text x="301.39335783564616" y="42.15600000000006" class="ptname" text-anchor="start">Perplexity</text><circle cx="290.39335783564616" cy="91.66199999999998" r="5.5" class="est"/><text x="301.39335783564616" y="94.66199999999998" class="ptname" text-anchor="start">Brave</text><circle cx="290.39335783564616" cy="105.852" r="5.5" class="est"/><text x="301.39335783564616" y="119.852" class="ptname" text-anchor="start">Parallel</text><circle cx="400.366512232444" cy="107.65800000000004" r="5.5" class="est"/><text x="411.366512232444" y="100.65800000000004" class="ptname" text-anchor="start">Exa</text><circle cx="542.8066733082758" cy="210.858" r="5.5" class="est ring"/><text x="531.8066733082758" y="202.858" class="ptname" text-anchor="end">Tavily</text><circle cx="119.67022971552741" cy="217.56599999999997" r="5.5" class="est ring"/><text x="130.6702297155274" y="221.56599999999997" class="ptname" text-anchor="start">Serper</text><circle cx="591.676129924577" cy="232.788" r="5.5" class="est ring"/><text x="580.676129924577" y="236.788" class="ptname" text-anchor="end">Firecrawl</text><circle cx="390.93129703474165" cy="262.20000000000005" r="5.5" class="est ring"/><text x="401.93129703474165" y="266.20000000000005" class="ptname" text-anchor="start">Bright Data</text></svg></div>
+    <div class="scroller"><svg viewBox="0 0 720 356" width="100%" role="img" aria-labelledby="pr-t pr-d" class="viz"><title id="pr-t">Set rating against cost per query</title><desc id="pr-d">Cost runs from $0.001 to $0.0856 a query, a 86-fold spread, and the three arms on the cheapest per-query tier take three of the top four places while the outright cheapest places sixth. Firecrawl is the most expensive and seventh on quality.</desc><line x1="96" y1="249.3" x2="636" y2="249.3" class="grid"/><text x="82" y="253.3" class="tick" text-anchor="end">2.00</text><line x1="96" y1="184.8" x2="636" y2="184.8" class="grid"/><text x="82" y="188.8" class="tick" text-anchor="end">2.25</text><line x1="96" y1="120.30000000000001" x2="636" y2="120.30000000000001" class="grid"/><text x="82" y="124.30000000000001" class="tick" text-anchor="end">2.50</text><line x1="96" y1="55.80000000000001" x2="636" y2="55.80000000000001" class="grid"/><text x="82" y="59.80000000000001" class="tick" text-anchor="end">2.75</text><text x="119.67022971552741" y="310" class="tick" text-anchor="middle">$0.001</text><text x="290.39335783564616" y="310" class="tick" text-anchor="middle">$0.005</text><text x="363.9198070379418" y="310" class="tick" text-anchor="middle">$0.01</text><text x="534.6429351580605" y="310" class="tick" text-anchor="middle">$0.05</text><text x="608.1693843603562" y="310" class="tick" text-anchor="middle">$0.1</text><line x1="96" y1="288" x2="636" y2="288" class="axis"/><text x="96" y="332" class="collab">cost per query, log scale</text><text class="collab" transform="translate(26 159) rotate(-90)" text-anchor="middle">set rating</text><circle cx="290.39335783564616" cy="51.15600000000006" r="5.5" class="est"/><text x="301.39335783564616" y="42.15600000000006" class="ptname" text-anchor="start">Perplexity</text><circle cx="290.39335783564616" cy="91.66199999999998" r="5.5" class="est"/><text x="301.39335783564616" y="94.66199999999998" class="ptname" text-anchor="start">Brave</text><circle cx="290.39335783564616" cy="105.852" r="5.5" class="est"/><text x="301.39335783564616" y="119.852" class="ptname" text-anchor="start">Parallel</text><circle cx="400.366512232444" cy="107.65800000000004" r="5.5" class="est"/><text x="411.366512232444" y="100.65800000000004" class="ptname" text-anchor="start">Exa</text><circle cx="542.8066733082758" cy="210.858" r="5.5" class="est ring"/><text x="531.8066733082758" y="202.858" class="ptname" text-anchor="end">Tavily</text><circle cx="119.67022971552741" cy="217.56599999999997" r="5.5" class="est ring"/><text x="130.6702297155274" y="221.56599999999997" class="ptname" text-anchor="start">Serper</text><circle cx="591.676129924577" cy="232.788" r="5.5" class="est ring"/><text x="580.676129924577" y="236.788" class="ptname" text-anchor="end">Firecrawl</text><circle cx="390.93129703474165" cy="262.20000000000005" r="5.5" class="est ring"/><text x="401.93129703474165" y="266.20000000000005" class="ptname" text-anchor="start">Bright Data</text></svg></div>
     <figcaption>A hollow ring marks a price taken from a published rate card rather than a settled invoice. All prices are pay-as-you-go list rates from the author's own billing pages, not out-of-pocket cost — free credits are a fact about one account, not about a product.</figcaption>
   </figure>
-  <p>The three cheapest arms take three of the top four places. Serper matches Tavily's score at a fifty-fourth of the price, which is less surprising than it sounds once you know what Serper does: it returns links and snippets and never page content. If you already run a scraper, that is the whole product you were paying extra for.</p>
+  <p>The three arms sharing the cheapest per-query tier take three of the top four places, and the outright cheapest provider of all places sixth — price predicts nothing in either direction. Serper matches Tavily's score at a fifty-fourth of the price, which is less surprising than it sounds once you know what Serper does: it returns links and snippets and never page content. If you already run a scraper, that is the whole product you were paying extra for.</p>
 </section>
 
 <section>
   <h2>&ldquo;Page text&rdquo; means something different to each of them</h2>
   <p>Two providers can both return a page and hand you completely different things. None of this appears in a relevance score, and it decides what you can build on top.</p>
   <figure>
-    <div class="scroller"><svg viewBox="0 0 720 338" width="100%" role="img" aria-labelledby="st-t st-d" class="viz"><title id="st-t">Structural elements present in each provider's returned page text</title><desc id="st-d">Firecrawl and Tavily return full documents with links, images and headings. Exa and Parallel keep headings and drop links. Brave returns page text on 1% of results because its content is joined search snippets. Serper returns no page content at all.</desc><text x="160" y="22" class="collab" text-anchor="middle">markdown</text><text x="256" y="22" class="collab" text-anchor="middle">headings</text><text x="352" y="22" class="collab" text-anchor="middle">links</text><text x="448" y="22" class="collab" text-anchor="middle">images</text><text x="544" y="22" class="collab" text-anchor="middle">tables</text><text x="96" y="55" class="name" text-anchor="end">Perplexity</text><rect x="113" y="36" width="92" height="29" rx="2" class="cell s3"/><text x="160" y="55" class="cellv on" text-anchor="middle">64%</text><rect x="209" y="36" width="92" height="29" rx="2" class="cell s1"/><text x="256" y="55" class="cellv" text-anchor="middle">25%</text><rect x="305" y="36" width="92" height="29" rx="2" class="cell s0"/><text x="352" y="55" class="cellv" text-anchor="middle">1%</text><rect x="401" y="36" width="92" height="29" rx="2" class="cell s0"/><text x="448" y="55" class="cellv" text-anchor="middle">0%</text><rect x="497" y="36" width="92" height="29" rx="2" class="cell s1"/><text x="544" y="55" class="cellv" text-anchor="middle">15%</text><text x="96" y="89" class="name" text-anchor="end">Brave</text><rect x="113" y="70" width="92" height="29" rx="2" class="cell s0"/><text x="160" y="89" class="cellv" text-anchor="middle">1%</text><rect x="209" y="70" width="92" height="29" rx="2" class="cell s0"/><text x="256" y="89" class="cellv" text-anchor="middle">1%</text><rect x="305" y="70" width="92" height="29" rx="2" class="cell s0"/><text x="352" y="89" class="cellv" text-anchor="middle">0%</text><rect x="401" y="70" width="92" height="29" rx="2" class="cell s0"/><text x="448" y="89" class="cellv" text-anchor="middle">0%</text><rect x="497" y="70" width="92" height="29" rx="2" class="cell s0"/><text x="544" y="89" class="cellv" text-anchor="middle">0%</text><text x="96" y="123" class="name" text-anchor="end">Parallel</text><rect x="113" y="104" width="92" height="29" rx="2" class="cell s4"/><text x="160" y="123" class="cellv on" text-anchor="middle">91%</text><rect x="209" y="104" width="92" height="29" rx="2" class="cell s4"/><text x="256" y="123" class="cellv on" text-anchor="middle">89%</text><rect x="305" y="104" width="92" height="29" rx="2" class="cell s2"/><text x="352" y="123" class="cellv" text-anchor="middle">36%</text><rect x="401" y="104" width="92" height="29" rx="2" class="cell s0"/><text x="448" y="123" class="cellv" text-anchor="middle">1%</text><rect x="497" y="104" width="92" height="29" rx="2" class="cell s0"/><text x="544" y="123" class="cellv" text-anchor="middle">2%</text><text x="96" y="157" class="name" text-anchor="end">Exa</text><rect x="113" y="138" width="92" height="29" rx="2" class="cell s4"/><text x="160" y="157" class="cellv on" text-anchor="middle">91%</text><rect x="209" y="138" width="92" height="29" rx="2" class="cell s4"/><text x="256" y="157" class="cellv on" text-anchor="middle">89%</text><rect x="305" y="138" width="92" height="29" rx="2" class="cell s0"/><text x="352" y="157" class="cellv" text-anchor="middle">7%</text><rect x="401" y="138" width="92" height="29" rx="2" class="cell s0"/><text x="448" y="157" class="cellv" text-anchor="middle">3%</text><rect x="497" y="138" width="92" height="29" rx="2" class="cell s1"/><text x="544" y="157" class="cellv" text-anchor="middle">14%</text><text x="96" y="191" class="name" text-anchor="end">Tavily</text><rect x="113" y="172" width="92" height="29" rx="2" class="cell s4"/><text x="160" y="191" class="cellv on" text-anchor="middle">98%</text><rect x="209" y="172" width="92" height="29" rx="2" class="cell s4"/><text x="256" y="191" class="cellv on" text-anchor="middle">87%</text><rect x="305" y="172" width="92" height="29" rx="2" class="cell s4"/><text x="352" y="191" class="cellv on" text-anchor="middle">91%</text><rect x="401" y="172" width="92" height="29" rx="2" class="cell s3"/><text x="448" y="191" class="cellv on" text-anchor="middle">73%</text><rect x="497" y="172" width="92" height="29" rx="2" class="cell s0"/><text x="544" y="191" class="cellv" text-anchor="middle">8%</text><text x="96" y="225" class="name" text-anchor="end">Firecrawl</text><rect x="113" y="206" width="92" height="29" rx="2" class="cell s4"/><text x="160" y="225" class="cellv on" text-anchor="middle">99%</text><rect x="209" y="206" width="92" height="29" rx="2" class="cell s4"/><text x="256" y="225" class="cellv on" text-anchor="middle">82%</text><rect x="305" y="206" width="92" height="29" rx="2" class="cell s4"/><text x="352" y="225" class="cellv on" text-anchor="middle">90%</text><rect x="401" y="206" width="92" height="29" rx="2" class="cell s3"/><text x="448" y="225" class="cellv on" text-anchor="middle">65%</text><rect x="497" y="206" width="92" height="29" rx="2" class="cell s1"/><text x="544" y="225" class="cellv" text-anchor="middle">9%</text><text x="96" y="259" class="name" text-anchor="end">Bright Data</text><rect x="113" y="240" width="92" height="29" rx="2" class="cell s4"/><text x="160" y="259" class="cellv on" text-anchor="middle">92%</text><rect x="209" y="240" width="92" height="29" rx="2" class="cell s3"/><text x="256" y="259" class="cellv on" text-anchor="middle">69%</text><rect x="305" y="240" width="92" height="29" rx="2" class="cell s4"/><text x="352" y="259" class="cellv on" text-anchor="middle">90%</text><rect x="401" y="240" width="92" height="29" rx="2" class="cell s3"/><text x="448" y="259" class="cellv on" text-anchor="middle">78%</text><rect x="497" y="240" width="92" height="29" rx="2" class="cell s0"/><text x="544" y="259" class="cellv" text-anchor="middle">0%</text><text x="96" y="293" class="name" text-anchor="end">Serper</text><rect x="113" y="274" width="476" height="29" rx="2" class="cell na"/><text x="124" y="293" class="cellna">returns links and snippets only — never page content</text></svg></div>
+    <div class="scroller"><svg viewBox="0 0 720 338" width="100%" role="img" aria-labelledby="st-t st-d" class="viz"><title id="st-t">Structural elements present in each provider's returned page text</title><desc id="st-d">Firecrawl and Tavily return full documents with links, images and headings. Exa and Parallel keep headings and drop links. Brave returns page text on 1% of results because its content is joined search snippets. Serper returns no page content at all.</desc><text x="160" y="22" class="collab" text-anchor="middle">markdown</text><text x="256" y="22" class="collab" text-anchor="middle">headings</text><text x="352" y="22" class="collab" text-anchor="middle">links</text><text x="448" y="22" class="collab" text-anchor="middle">images</text><text x="544" y="22" class="collab" text-anchor="middle">tables</text><text x="96" y="55" class="name" text-anchor="end">Perplexity</text><rect x="113" y="36" width="92" height="29" rx="2" class="cell s3"/><text x="160" y="55" class="cellv" text-anchor="middle">64%</text><rect x="209" y="36" width="92" height="29" rx="2" class="cell s1"/><text x="256" y="55" class="cellv" text-anchor="middle">25%</text><rect x="305" y="36" width="92" height="29" rx="2" class="cell s0"/><text x="352" y="55" class="cellv" text-anchor="middle">1%</text><rect x="401" y="36" width="92" height="29" rx="2" class="cell s0"/><text x="448" y="55" class="cellv" text-anchor="middle">0%</text><rect x="497" y="36" width="92" height="29" rx="2" class="cell s1"/><text x="544" y="55" class="cellv" text-anchor="middle">15%</text><text x="96" y="89" class="name" text-anchor="end">Brave</text><rect x="113" y="70" width="92" height="29" rx="2" class="cell s0"/><text x="160" y="89" class="cellv" text-anchor="middle">1%</text><rect x="209" y="70" width="92" height="29" rx="2" class="cell s0"/><text x="256" y="89" class="cellv" text-anchor="middle">1%</text><rect x="305" y="70" width="92" height="29" rx="2" class="cell s0"/><text x="352" y="89" class="cellv" text-anchor="middle">0%</text><rect x="401" y="70" width="92" height="29" rx="2" class="cell s0"/><text x="448" y="89" class="cellv" text-anchor="middle">0%</text><rect x="497" y="70" width="92" height="29" rx="2" class="cell s0"/><text x="544" y="89" class="cellv" text-anchor="middle">0%</text><text x="96" y="123" class="name" text-anchor="end">Parallel</text><rect x="113" y="104" width="92" height="29" rx="2" class="cell s4"/><text x="160" y="123" class="cellv on" text-anchor="middle">91%</text><rect x="209" y="104" width="92" height="29" rx="2" class="cell s4"/><text x="256" y="123" class="cellv on" text-anchor="middle">89%</text><rect x="305" y="104" width="92" height="29" rx="2" class="cell s2"/><text x="352" y="123" class="cellv" text-anchor="middle">36%</text><rect x="401" y="104" width="92" height="29" rx="2" class="cell s0"/><text x="448" y="123" class="cellv" text-anchor="middle">1%</text><rect x="497" y="104" width="92" height="29" rx="2" class="cell s0"/><text x="544" y="123" class="cellv" text-anchor="middle">2%</text><text x="96" y="157" class="name" text-anchor="end">Exa</text><rect x="113" y="138" width="92" height="29" rx="2" class="cell s4"/><text x="160" y="157" class="cellv on" text-anchor="middle">91%</text><rect x="209" y="138" width="92" height="29" rx="2" class="cell s4"/><text x="256" y="157" class="cellv on" text-anchor="middle">89%</text><rect x="305" y="138" width="92" height="29" rx="2" class="cell s0"/><text x="352" y="157" class="cellv" text-anchor="middle">7%</text><rect x="401" y="138" width="92" height="29" rx="2" class="cell s0"/><text x="448" y="157" class="cellv" text-anchor="middle">3%</text><rect x="497" y="138" width="92" height="29" rx="2" class="cell s1"/><text x="544" y="157" class="cellv" text-anchor="middle">14%</text><text x="96" y="191" class="name" text-anchor="end">Tavily</text><rect x="113" y="172" width="92" height="29" rx="2" class="cell s4"/><text x="160" y="191" class="cellv on" text-anchor="middle">98%</text><rect x="209" y="172" width="92" height="29" rx="2" class="cell s4"/><text x="256" y="191" class="cellv on" text-anchor="middle">87%</text><rect x="305" y="172" width="92" height="29" rx="2" class="cell s4"/><text x="352" y="191" class="cellv on" text-anchor="middle">91%</text><rect x="401" y="172" width="92" height="29" rx="2" class="cell s3"/><text x="448" y="191" class="cellv" text-anchor="middle">73%</text><rect x="497" y="172" width="92" height="29" rx="2" class="cell s0"/><text x="544" y="191" class="cellv" text-anchor="middle">8%</text><text x="96" y="225" class="name" text-anchor="end">Firecrawl</text><rect x="113" y="206" width="92" height="29" rx="2" class="cell s4"/><text x="160" y="225" class="cellv on" text-anchor="middle">99%</text><rect x="209" y="206" width="92" height="29" rx="2" class="cell s4"/><text x="256" y="225" class="cellv on" text-anchor="middle">82%</text><rect x="305" y="206" width="92" height="29" rx="2" class="cell s4"/><text x="352" y="225" class="cellv on" text-anchor="middle">90%</text><rect x="401" y="206" width="92" height="29" rx="2" class="cell s3"/><text x="448" y="225" class="cellv" text-anchor="middle">65%</text><rect x="497" y="206" width="92" height="29" rx="2" class="cell s1"/><text x="544" y="225" class="cellv" text-anchor="middle">9%</text><text x="96" y="259" class="name" text-anchor="end">Bright Data</text><rect x="113" y="240" width="92" height="29" rx="2" class="cell s4"/><text x="160" y="259" class="cellv on" text-anchor="middle">92%</text><rect x="209" y="240" width="92" height="29" rx="2" class="cell s3"/><text x="256" y="259" class="cellv" text-anchor="middle">69%</text><rect x="305" y="240" width="92" height="29" rx="2" class="cell s4"/><text x="352" y="259" class="cellv on" text-anchor="middle">90%</text><rect x="401" y="240" width="92" height="29" rx="2" class="cell s3"/><text x="448" y="259" class="cellv" text-anchor="middle">78%</text><rect x="497" y="240" width="92" height="29" rx="2" class="cell s0"/><text x="544" y="259" class="cellv" text-anchor="middle">0%</text><text x="96" y="293" class="name" text-anchor="end">Serper</text><rect x="113" y="274" width="476" height="29" rx="2" class="cell na"/><text x="124" y="293" class="cellna">returns links and snippets only — never page content</text></svg></div>
     <figcaption>Share of each provider's returned pages containing the element. Nobody returns video at all: three to six per cent of Bright Data and Firecrawl pages mention a YouTube link, with no transcript or caption behind it.</figcaption>
   </figure>
   <p>Brave is the one to look at. It scores well on relevance and returns real page text on one per cent of results — what it hands back is search snippets joined together, entities still undecoded, fragments ending in the result page's own ellipsis. That is fine for grounding a summary and useless to an agent that has to read a document. Exa keeps structure and drops links. Bright Data keeps almost every image and no tables. A crawler built on the wrong one of these fails for reasons that never show up in a score.</p>
@@ -332,7 +362,7 @@ footer p { font-size: 0.9rem; color: var(--muted); max-width: 40rem; }
     </div>
     <div class="limit">
       <h3>Plan limits shaped the run, not just the bill</h3>
-      <p>Bright Data throttles above one concurrent request, so its pass ran slowly enough to cross midnight and needed a repair round. Tavily's plan ran out around question 150 and also needed a second pass. Firecrawl consumed 3,493 credits — about seventy per cent of a 5,000-credit month — in a single day, for $25. A keyless control arm was dropped entirely after eight consecutive captcha failures and no successes. The retrieval bill was $40.08 in total, and the ceiling on a run like this is a rate limit long before it is money.</p>
+      <p>Bright Data throttles above one concurrent request, so its pass ran slowly enough to cross midnight and needed a repair round. Tavily's plan ran out around question 150 and also needed a second pass. Firecrawl consumed 3,493 credits in a single day, about seventy per cent of a 5,000-credit month, bought for $25 — against the $17.47 list-rate figure in the table above, which is what the run would cost at the published per-query price rather than what was actually paid for the credits. A keyless control arm was dropped entirely after eight consecutive captcha failures and no successes. The retrieval bill was $40.08 in total, and the ceiling on a run like this is a rate limit long before it is money.</p>
     </div>
     <div class="limit">
       <h3>Providers overlap, and a page is graded once</h3>
@@ -388,9 +418,9 @@ footer p { font-size: 0.9rem; color: var(--muted); max-width: 40rem; }
   <p>Sourcery is an open-source harness, not a leaderboard service. The questions here are frozen so these numbers stay comparable, but the point of shipping it is that you can run the same comparison on the queries you actually care about, with your own keys and your own judge.</p>
   <p>Every rating on this page is published with the sentence the judge wrote to justify it, and every figure is generated from a derived data file that is committed alongside the raw verdicts. Any number here can be traced back to the verdict that produced it without taking anyone's word for it.</p>
   <div class="links">
-    <a href="explorer/">Open the explorer</a>
+    <a href="https://sameerhimati.github.io/sourcery/explorer/">Open the explorer</a>
     <a href="https://github.com/sameerhimati/sourcery">Read the code</a>
-    <a href="https://github.com/sameerhimati/sourcery/blob/main/docs/run-2-findings.md">Full method notes</a>
+    <a href="https://sameerhimati.github.io/sourcery/methodology.html">How this was measured</a>
   </div>
   <p class="colophon">Run 2 &middot; fetched and judged 2026-08-19 &middot; MIT licensed</p>
 </footer>

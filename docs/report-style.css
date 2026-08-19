@@ -1,0 +1,223 @@
+/* Shared by docs/index.html and docs/methodology.html. Inlined into both by
+   scripts/build-report.mjs so each page stays a single self-contained file —
+   they are published as standalone artifacts as well as served from Pages. */
+
+/* Hallmark · macrostructure: Long Document (with a stat-tile hero and a card grid
+ *   grafted in from Stat-Led — noted rather than claimed as pure)
+ * nav: N9 edge-aligned · footer: Ft4 dense colophon
+ *   — an earlier stamp here claimed N6 masthead and Ft5 statement. Neither was
+ *     built: N6 wants a centred display wordmark and a double rule, Ft5 wants a
+ *     display sentence carrying the footer. A stamp that names an archetype the
+ *     markup does not implement sends the next run rotating away from something
+ *     that was never used, so it says what shipped.
+ * tone: technical-editorial · genre: editorial · anchor hue: warm (amber 55°)
+ * theme: custom (paper #fbfaf8 · ink #16181d · marks #1a5fa8 + #b4671f, dataviz-validated)
+ * light-only by request · motion: none
+ * pre-emit critique: P5 H3 E3 S5 R4 V3 — Execution was the honest 3, not a 4;
+ *   contrast, measure and the spacing scale all needed a second pass.
+ */
+
+:root {
+  /* paper & ink */
+  --paper:      #fbfaf8;
+  --surface:    #fefdfb;
+  --surface-2:  #f4f2ee;
+  --ink:        #16181d;
+  --ink-2:      #3d434e;
+  --muted:      #5f5a52;
+  --faint:      #726c62;
+  --line:       #e5e3de;
+  --line-2:     #d2cfc8;
+
+  /* Accent for emphasis and the tie brackets. Darker than the data-mark amber
+     below because this one carries text at 11px, where 4.5:1 is the floor; the
+     mark only has to clear 3:1 as a graphic. Same hue, two jobs, two steps. */
+  --accent:      #995a1c;
+  --accent-wash: #f8f0e6;
+
+  /* data marks — validated as a two-slot categorical set on --paper:
+     chroma floor, CVD separation, normal-vision floor and 3:1 contrast all pass */
+  --mark:     #1a5fa8;
+  --mark-alt: #b4671f;
+
+  /* sequential ramp, one hue, light to dark */
+  --s0: #f1efeb;
+  --s1: #d3e0ee;
+  --s2: #9dbcdc;
+  --s3: #4c85bf;
+  --s4: #1a5fa8;
+  --on-deep: #fdfbf7;
+
+  /* type */
+  --font-display: "Instrument Serif", Georgia, "Times New Roman", serif;
+  --font-body:    "Instrument Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono:    "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  /* 4pt spacing scale */
+  --space-3xs: 4px;
+  --space-2xs: 6px;
+  --space-xs: 8px;
+  --space-sm: 12px;
+  --space-md: 20px;
+  --space-lg: 32px;
+  --space-xl: 56px;
+  --space-2xl: 88px;
+
+  --page-gutter: 24px;
+
+  /* Measured in characters, not rem: every one of these containers sets its own
+     font-size, and a rem literal sized for the body copy runs 20–45 characters
+     over once the type steps down. */
+  --measure: 66ch;
+  --measure-wide: 72ch;
+}
+
+* { box-sizing: border-box; }
+html, body { overflow-x: clip; }
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 17px;
+  line-height: 1.68;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+.wrap { max-width: 860px; margin: 0 auto; padding: 0 var(--page-gutter) var(--space-2xl); }
+
+h1, h2, h3 {
+  font-family: var(--font-display);
+  font-style: normal;
+  font-weight: 400;
+  letter-spacing: -0.008em;
+  overflow-wrap: anywhere;
+  min-width: 0;
+}
+h1 { font-size: clamp(2.4rem, 6.4vw, 3.9rem); line-height: 1.04; margin: 0 0 var(--space-md); }
+h2 { font-size: clamp(1.6rem, 3.6vw, 2.15rem); line-height: 1.16; margin: 0 0 var(--space-sm); }
+h3 { font-size: 1.12rem; font-family: var(--font-body); font-weight: 600; margin: 0 0 var(--space-2xs); letter-spacing: 0; }
+
+p { margin: 0 0 var(--space-md); max-width: var(--measure); color: var(--ink-2); }
+p.wide { max-width: var(--measure-wide); }
+strong { color: var(--ink); font-weight: 600; }
+em { font-style: italic; }
+
+a { color: var(--ink); text-decoration: underline; text-decoration-color: var(--line-2); text-underline-offset: 3px; text-decoration-thickness: 1px; }
+a:hover { text-decoration-color: var(--accent); }
+a:active { text-decoration-color: var(--accent); color: var(--accent); }
+a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 2px; }
+
+/* ── masthead ─────────────────────────────────────────────────────────── */
+.masthead {
+  display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--space-xs) var(--space-md);
+  padding: var(--space-md) 0; border-bottom: 1px solid var(--ink);
+  font-size: 0.8rem; letter-spacing: 0.02em;
+}
+.masthead .brand { font-weight: 500; text-transform: uppercase; letter-spacing: 0.16em; }
+.masthead .sep { color: var(--faint); }
+.masthead a { text-decoration: none; color: var(--ink-2); }
+.masthead a:hover { color: var(--accent); }
+.masthead .right { margin-left: auto; display: flex; gap: var(--space-md); }
+
+header.lead { padding: var(--space-xl) 0 var(--space-2xl); }
+.standfirst { font-size: 1.2rem; line-height: 1.56; color: var(--ink-2); max-width: 48ch; }
+.standfirst strong { color: var(--ink); }
+
+.tiles {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 1px; margin: var(--space-lg) 0 0;
+  background: var(--line); border: 1px solid var(--line);
+}
+.tile { background: var(--surface); padding: var(--space-md); }
+.tn { font-size: 1.7rem; font-weight: 600; letter-spacing: -0.02em; line-height: 1.1; font-variant-numeric: tabular-nums; color: var(--ink); overflow-wrap: anywhere; min-width: 0; }
+.tl { font-size: 0.86rem; color: var(--ink-2); margin-top: var(--space-3xs); }
+.ts { font-size: 0.75rem; color: var(--faint); margin-top: var(--space-2xs); line-height: 1.45; }
+
+section { margin: var(--space-2xl) 0 0; }
+.rule { border: 0; border-top: 1px solid var(--line); margin: var(--space-2xl) 0 0; }
+
+/* ── figures ──────────────────────────────────────────────────────────── */
+figure { margin: var(--space-lg) 0 0; }
+.scroller { overflow-x: auto; padding-bottom: 4px; }
+.scroller > svg { min-width: 600px; }
+figcaption {
+  font-size: 0.83rem; line-height: 1.55; color: var(--muted);
+  margin-top: var(--space-sm); padding-top: var(--space-sm);
+  border-top: 1px solid var(--line); max-width: var(--measure);
+}
+
+.viz { display: block; height: auto; overflow: visible; }
+.viz text { font-family: var(--font-body); }
+.grid  { stroke: var(--line); stroke-width: 1; }
+.axis  { stroke: var(--line-2); stroke-width: 1; }
+.iv     { stroke: var(--mark); stroke-width: 1.5; }
+.iv-cap { stroke: var(--mark); stroke-width: 1.5; }
+.est    { fill: var(--mark); }
+.est.alt  { fill: var(--mark-alt); }
+.est.ring { fill: var(--surface); stroke: var(--mark); stroke-width: 2; }
+.join  { stroke: var(--line-2); stroke-width: 1.5; }
+.brace { fill: none; stroke: var(--accent); stroke-width: 1; }
+.name    { fill: var(--ink); font-size: 13.5px; }
+.tick    { fill: var(--faint); font-size: 11px; font-family: var(--font-mono); }
+.collab  { fill: var(--muted); font-size: 11px; font-family: var(--font-mono); letter-spacing: 0.02em; }
+.legend  { fill: var(--ink-2); font-size: 12px; }
+.num     { fill: var(--ink); font-size: 13px; font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+.num.dim { fill: var(--faint); }
+.num.hot { fill: var(--accent); }
+.bracelab { fill: var(--accent); font-size: 11px; font-family: var(--font-mono); }
+.ptname  { fill: var(--ink); font-size: 12.5px; }
+.cell    { fill: var(--s0); }
+.cell.s0 { fill: var(--s0); } .cell.s1 { fill: var(--s1); } .cell.s2 { fill: var(--s2); }
+.cell.s3 { fill: var(--s3); } .cell.s4 { fill: var(--s4); }
+.cell.na { fill: var(--surface-2); }
+/* Full ink, not --ink-2. These sit on the sequential ramp, and on its second-
+   darkest step --ink-2 reads at 2.6:1 where --ink reads at 4.6:1. Lightening the
+   ramp instead would have closed the gap between two steps that mean different
+   things — the encoding is worth more than the convenience. */
+.cellv   { fill: var(--ink); font-size: 11.5px; font-family: var(--font-mono); }
+.cellv.on { fill: var(--on-deep); }
+.cellna  { fill: var(--muted); font-size: 11.5px; }
+
+/* ── picks ────────────────────────────────────────────────────────────── */
+/* 2×2, not 3+1: four cards across an 860px measure would strand the fourth on
+   its own row, and the odd one out reads as an afterthought rather than a pick. */
+.picks { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)); gap: 1px; margin-top: var(--space-lg); background: var(--line); border: 1px solid var(--line); }
+.pick { background: var(--surface); padding: var(--space-md); }
+.pick .role { font-size: 0.72rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); }
+.pick .who { font-family: var(--font-display); font-size: 1.55rem; line-height: 1.1; margin: var(--space-2xs) 0 var(--space-xs); overflow-wrap: anywhere; min-width: 0; }
+.pick p { font-size: 0.9rem; margin: 0; color: var(--muted); max-width: none; }
+.pick.against { background: var(--accent-wash); }
+
+/* ── table ────────────────────────────────────────────────────────────── */
+table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+thead th { text-align: left; font-weight: 500; font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); border-bottom: 1px solid var(--ink); padding: 0 var(--space-sm) var(--space-xs); white-space: nowrap; font-family: var(--font-mono); }
+thead th.n, td.n { text-align: right; }
+tbody th { text-align: left; font-weight: 600; padding: var(--space-xs) var(--space-sm); border-bottom: 1px solid var(--line); white-space: nowrap; }
+td { padding: var(--space-xs) var(--space-sm); border-bottom: 1px solid var(--line); font-family: var(--font-mono); font-variant-numeric: tabular-nums; color: var(--ink-2); }
+td.lead { color: var(--ink); }
+td .pm { color: var(--faint); font-size: 0.76rem; margin-left: var(--space-3xs); }
+td .star { color: var(--accent); }
+td .na { color: var(--faint); font-family: var(--font-body); }
+.tnote { font-size: 0.8rem; color: var(--faint); margin-top: var(--space-sm); max-width: var(--measure); }
+
+/* ── limits ───────────────────────────────────────────────────────────── */
+.limits { margin-top: var(--space-lg); border-top: 1px solid var(--line); }
+.limit { padding: var(--space-md) 0; border-bottom: 1px solid var(--line); }
+.limit p { margin: 0; max-width: var(--measure); font-size: 0.94rem; }
+
+/* ── footer ───────────────────────────────────────────────────────────── */
+footer { margin-top: var(--space-2xl); padding-top: var(--space-lg); border-top: 1px solid var(--ink); }
+footer p { font-size: 0.9rem; color: var(--muted); max-width: var(--measure); }
+.links { display: flex; flex-wrap: wrap; gap: var(--space-sm); margin: var(--space-md) 0; }
+.links a { display: inline-block; padding: var(--space-xs) var(--space-md); border: 1px solid var(--line-2); background: var(--surface); text-decoration: none; font-size: 0.88rem; font-weight: 500; white-space: nowrap; }
+.links a:hover { border-color: var(--accent); color: var(--accent); }
+.colophon { font-size: 0.78rem; color: var(--faint); }
+
+@media (max-width: 640px) {
+  body { font-size: 16px; }
+  .wrap { padding: 0 var(--space-md) var(--space-xl); }
+  .masthead .right { margin-left: 0; width: 100%; }
+  section { margin-top: var(--space-xl); }
+}

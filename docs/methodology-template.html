@@ -1,0 +1,186 @@
+<!-- Rendered by scripts/build-report.mjs into docs/methodology.html. The rubrics and
+     constants here are imported from core/controls.ts at build time, not transcribed,
+     so the published method cannot drift from the one that ran. -->
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>How Sourcery Grades Search</title>
+<meta name="description" content="The full method behind the run: what was held constant, the two rubrics verbatim, how pages are pooled and blinded, how failures are attributed, and what the statistics mean in words.">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Instrument+Sans:wght@400;500;600&family=Instrument+Serif&display=swap">
+
+<style>
+__STYLE__
+
+/* Methodology-only: the verbatim prompt blocks and the constants table. */
+.prompt {
+  font-family: var(--font-mono); font-size: 0.79rem; line-height: 1.62;
+  background: var(--surface); border: 1px solid var(--line);
+  padding: var(--space-md); margin: var(--space-md) 0 0;
+  white-space: pre-wrap; overflow-wrap: anywhere; color: var(--ink-2);
+  max-width: 44rem;
+}
+.rungs { margin: var(--space-md) 0 0; max-width: 44rem; border-top: 1px solid var(--line); }
+.rung { display: grid; grid-template-columns: 2.2rem 9rem 1fr; gap: var(--space-sm); padding: 10px 0; border-bottom: 1px solid var(--line); align-items: baseline; }
+.rung .n { font-family: var(--font-mono); font-size: 1rem; color: var(--mark); font-variant-numeric: tabular-nums; }
+.rung .nm { font-weight: 600; font-size: 0.9rem; }
+.rung .mg { color: var(--muted); font-size: 0.9rem; }
+@media (max-width: 560px) { .rung { grid-template-columns: 2.2rem 1fr; } .rung .mg { grid-column: 2; } }
+
+.kv { width: 100%; border-collapse: collapse; font-size: 0.88rem; margin-top: var(--space-md); }
+.kv th { text-align: left; font-weight: 500; padding: 9px 12px 9px 0; border-bottom: 1px solid var(--line); white-space: nowrap; vertical-align: top; }
+.kv td { padding: 9px 0 9px 12px; border-bottom: 1px solid var(--line); }
+.kv td.v { font-family: var(--font-mono); font-size: 0.84rem; color: var(--ink); white-space: nowrap; width: 1%; }
+.kv td.why { color: var(--muted); font-size: 0.85rem; }
+
+.defs { margin-top: var(--space-md); }
+.def { padding: var(--space-md) 0; border-bottom: 1px solid var(--line); }
+.def:first-child { border-top: 1px solid var(--line); }
+.def p { margin: 0; max-width: 44rem; font-size: 0.94rem; }
+.def .term { font-weight: 600; color: var(--ink); }
+</style>
+
+<div class="wrap">
+
+<nav class="masthead">
+  <span class="brand">Sourcery</span>
+  <span class="sep">/</span>
+  <span>method</span>
+  <span class="sep">/</span>
+  <span>run 2</span>
+  <span class="right">
+    <a href="__BASE__">Results</a>
+    <a href="__BASE__explorer/">Explorer</a>
+    <a href="__REPO__">Source</a>
+  </span>
+</nav>
+
+<header class="lead">
+  <h1>How this grades a search API</h1>
+  <p class="standfirst">A provider-swap comparison. Every arm gets the same question, the same settings and the same judges; only the retrieval backend changes. This page is the whole method, including the parts that limit what the numbers can mean.</p>
+</header>
+
+<section>
+  <h2>What varies, and what does not</h2>
+  <p>One question goes to all __N_PROVIDERS__ providers. Each returns up to __NUM_SOURCES__ results. Every page any provider returned is then graded, and each provider's whole returned set is graded separately. Nothing else differs between arms — not the prompt, not the judge, not the number of results requested, not the day it ran.</p>
+  <p>The controls live in one file, <span class="mono">core/controls.ts</span>, and every stage imports from it rather than carrying its own copy. That is deliberate: a setting that exists in two places is a setting that will eventually differ between two arms, and the whole comparison rests on it not doing that. The values below are read out of that file when this page is built, so what you are reading is what ran.</p>
+  <table class="kv">
+    <tbody>__CONSTANTS__</tbody>
+  </table>
+</section>
+
+<hr class="rule">
+
+<section>
+  <h2>The two rubrics</h2>
+  <p>Both ask the same thing at two scopes — one page, then the whole set — on the same four rungs. Two models can agree on a named rung; a bare number on a wide scale is something each one invents its own version of.</p>
+
+  <h3 style="margin-top:var(--space-lg)">Page rating &mdash; does this page help?</h3>
+  <p>A judge sees one question and one page. It is never told which provider returned the page, never shown an answer, and never asked to write one.</p>
+  <div class="rungs">__PAGE_RUNGS__</div>
+  <p style="margin-top:var(--space-md)">The prompt, verbatim:</p>
+  <div class="prompt">__PAGE_PROMPT__</div>
+
+  <h3 style="margin-top:var(--space-xl)">Set rating &mdash; could someone answer from these alone?</h3>
+  <p>The headline number. A per-page average cannot answer this: eight pages each holding a third of the answer and eight pages holding nothing average out the same. Only the set answers a question.</p>
+  <div class="rungs">__SET_RUNGS__</div>
+  <p style="margin-top:var(--space-md)">The prompt, verbatim:</p>
+  <div class="prompt">__SET_PROMPT__</div>
+  <p style="margin-top:var(--space-md)">This prompt replaced an earlier one partway through the run, and the reason is worth stating because it changed a number. The first version graded whether the sources <em>looked</em> good — fresh, authoritative, cleanly extracted. On one question that has no answer anywhere, it returned a passing score while the page judge correctly rated every page 0 or 1. Neither judge was broken; the sources genuinely were good. They just could not answer. A source-quality score rewards being on the topic, which is the easy half of retrieval and the half every provider passes.</p>
+</section>
+
+<hr class="rule">
+
+<section>
+  <h2>Pooling, and why a page is graded once</h2>
+  <p>Providers overlap heavily. Before anything is judged, every page from every arm is collapsed into one pool keyed by its normalized URL, and each unique question-and-page pair is graded a single time. That rating then counts for every provider that returned the page.</p>
+  <p>This does two things. It makes the run affordable — __UNIQUE_PAIRS__ unique pairs instead of grading the same page eight times — and, more importantly, it blinds the judge structurally rather than by promise. Pooling detaches a page from whoever returned it before the judge ever sees it, so there is no provider name to be influenced by, because the information is not in the record at that point.</p>
+  <p>The cost is real and worth stating plainly: a provider is not credited for its own extraction of a shared page. Where several arms returned the same URL, the longest extraction anyone returned is the text that gets graded, and the record notes whose it was. __OVERLAP_ONE__% of pages came from exactly one provider and only __OVERLAP_ALL__ came from all eight, so this affects less of the run than you would guess — but on the pages it does affect, extraction quality is averaged away.</p>
+</section>
+
+<section>
+  <h2>Truncation</h2>
+  <p>Every page is cut to __TRUNC_LIMIT__ characters before a judge sees it, the same limit an answer step would apply. That cut binds unevenly: it hit __TRUNC_FIRECRAWL__% of Firecrawl's pages and __TRUNC_PERPLEXITY__% of Perplexity's, so a long article and a short block of stitched snippets can reach the judge at the same length.</p>
+  <p>The consequence is the single biggest limit on what these numbers mean. <strong>This measures which pages a provider finds, not how well it extracts them.</strong> A provider whose product is extraction quality is being graded on the half of its work this run can see.</p>
+</section>
+
+<section>
+  <h2>How failures are attributed</h2>
+  <p>One result is a search call plus several model calls, and any of them can throw an error that names nobody. Every stage is tagged, so a failure is recorded against the step that actually threw. A failure that cannot be placed is recorded as unknown and charged to no one.</p>
+  <p>This rule exists because it kept being needed. Every single-digit failure count this project has published turned out to be its own bug rather than a vendor's — a billing lapse, a client timeout, a batch identifier too long for an API that caps them. A provider is never charged for a failure that was not theirs, and a number that would blame one is checked before it is written down.</p>
+  <p>Failures that <em>are</em> a provider's are kept in the results rather than retried away. A provider that rate-limits you is telling you something about what running it at scale costs, and a method that retries until success cannot report that.</p>
+</section>
+
+<section>
+  <h2>How cost is counted</h2>
+  <p>Prices are pay-as-you-go list rates taken from the author's own billing pages, not out-of-pocket spend. Free credits and trial balances are facts about one account, not about a product, and pricing them in would make a provider look cheap to this run and not to you.</p>
+  <p>Where a rate is published but the invoice for this run did not settle to it, the figure is marked as an estimate rather than presented as measured. The retrieval bill for the whole run was $__COST_TOTAL__.</p>
+</section>
+
+<hr class="rule">
+
+<section>
+  <h2>The questions</h2>
+  <p>__N_QUESTIONS__ questions, frozen before the run and unchanged since: __N_BASE__ ordinary ones, __N_HARD__ written to be harder on purpose — multi-hop, ambiguous, or needing a source that is not the first result — and __N_UNANS__ with no answer anywhere.</p>
+  <p>That last group is an honesty check rather than a difficulty tier. Asked for a Postgres setting that does not exist, a provider can return a page about a real setting with a similar name, and a judge can call it a direct answer. Scoring <em>low</em> there is the good outcome. It is worth knowing that the metric mixes two things — whether a provider surfaced a trap, and whether the judge fell into it — and that __N_UNANS__ questions is enough to compare two providers head to head and not enough to rank eight.</p>
+  <p>The questions are frozen because published findings are anchored to them. New questions go in a new set rather than into this one, so old results stay comparable to new ones.</p>
+</section>
+
+<section>
+  <h2>The statistics, in words</h2>
+  <div class="defs">
+    <div class="def">
+      <p><span class="term">Confidence interval.</span> The range the real value is likely to sit in, given that __N_QUESTIONS__ questions is a sample and not every question that exists. When two providers' intervals overlap, the order between them is not a finding — run it again on a different __N_QUESTIONS__ questions and they may swap. Every headline number on the results page carries one.</p>
+    </div>
+    <div class="def">
+      <p><span class="term">Variance shares.</span> Of everything that varies across the run, how much is explained by each thing that could explain it. Here the provider explains __VAR_PROVIDER__% and the choice of judge explains __VAR_JUDGE__%. That is the answer to "would a different judge have changed your conclusion": it moves every absolute number and leaves the ranking where it was.</p>
+    </div>
+    <div class="def">
+      <p><span class="term">Kappa.</span> How much two judges agree, after subtracting the agreement you would get from two people guessing at the same rates. Zero is chance; one is perfect. The three judges here run __KAPPA_LO__ to __KAPPA_HI__, which is moderate — they agree on the ordering and argue about the decimals.</p>
+    </div>
+    <div class="def">
+      <p><span class="term">Sign test.</span> A way to compare two providers on a small set of questions: count how many of them each one wins, then ask how often a split that lopsided would come up by luck alone if the two were really the same. That last figure is the p-value, and a small one means luck is a poor explanation. It is used on the __N_UNANS__ unanswerable questions, where there are far too few to rank eight providers but plenty to compare two on the same __N_UNANS__.</p>
+    </div>
+    <div class="def">
+      <p><span class="term">Binary relevance.</span> Re-scoring the whole run as a yes-or-no — a page either counts or it does not — to check that the four-rung scale did not invent the gap. If the ranking survives throwing the scale away, the scale was not doing the work.</p>
+    </div>
+  </div>
+</section>
+
+<hr class="rule">
+
+<section>
+  <h2>What this can and cannot tell you</h2>
+  <p class="wide">A method section that only lists strengths is a sales page. These are the limits, in the order they would change a decision.</p>
+  <div class="limits">
+    <div class="limit">
+      <h3>It cannot tell you who extracts a page best</h3>
+      <p>The __TRUNC_LIMIT__-character cut and the pooled grading both flatten extraction. If you are choosing between providers on how cleanly they turn a URL you already have into usable text, this run does not answer that. The right test holds the URLs fixed and varies only the extractor, and it has not been run.</p>
+    </div>
+    <div class="limit">
+      <h3>It cannot tell you what your agent will answer</h3>
+      <p>Nothing here grades an answer, on purpose. If you want to know what a whole agent built on a provider ends up producing, an answer-graded benchmark measures that and this does not — bearing in mind that such a number also grades your model, which is why both exist.</p>
+    </div>
+    <div class="limit">
+      <h3>It is one day, one set of questions, one request each</h3>
+      <p>Indexes change, and a question asked twice can return different pages. Every arm was asked once, which is what a caller in production gets, but it means the run carries the noise of a single sample and the confidence intervals are the honest expression of that.</p>
+    </div>
+    <div class="limit">
+      <h3>The questions are synthetic</h3>
+      <p>They were written to probe retrieval rather than collected from real traffic. They are frozen, documented and public, so you can judge whether they resemble what you would ask — and if they do not, the harness exists so you can run your own instead.</p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <p>Everything described here is in the repository, including the raw judge verdicts with the sentence each judge wrote to justify its rating. Any number on the results page can be traced back to the verdict that produced it without taking anyone's word for it.</p>
+  <div class="links">
+    <a href="__BASE__">The results</a>
+    <a href="__BASE__explorer/">Every rating</a>
+    <a href="__REPO__">Read the code</a>
+  </div>
+  <p class="colophon">Run 2 &middot; method as run on __GENERATED__ &middot; MIT licensed</p>
+</footer>
+
+</div>

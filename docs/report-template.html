@@ -1,7 +1,9 @@
 <!-- Rendered by scripts/build-report.mjs into docs/index.html. Every double-underscored
-     token is filled from docs/report-data.json, which is derived from the run itself,
-     so no number on this page was typed by a person. Edit this file for wording and
-     layout; edit the data pipeline for figures. -->
+     token is filled from docs/report-data.json, which is derived from the run itself.
+     Charts, tiles and the table are entirely generated; a handful of figures in the
+     running prose are still transcribed from docs/run-2-findings.md and are marked as
+     such in scripts/build-report.mjs. Edit this file for wording; edit the data
+     pipeline for figures. -->
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Search APIs, graded on their sources</title>
@@ -12,201 +14,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Instrument+Sans:wght@400;500;600&family=Instrument+Serif&display=swap">
 
 <style>
-/* Hallmark · macrostructure: Long Document · nav: N6 masthead · footer: Ft5 statement
- * tone: technical-editorial · genre: editorial · anchor hue: warm (burnt orange 40°)
- * theme: custom (paper #fbfaf8 · ink #16181d · marks #1a5fa8 + #b4671f, dataviz-validated)
- * light-only by request · motion: none · pre-emit critique: P5 H4 E4 S5 R5 V4
- */
-
-:root {
-  /* paper & ink */
-  --paper:      #fbfaf8;
-  --surface:    #ffffff;
-  --surface-2:  #f4f2ee;
-  --ink:        #16181d;
-  --ink-2:      #3d434e;
-  --muted:      #6b7280;
-  --faint:      #9aa1ac;
-  --line:       #e5e3de;
-  --line-2:     #d2cfc8;
-
-  /* accent — emphasis and the tie brackets only, never a data series */
-  --accent:      #b4671f;
-  --accent-wash: #f8f0e6;
-
-  /* data marks — validated as a two-slot categorical set on --paper:
-     chroma floor, CVD separation, normal-vision floor and 3:1 contrast all pass */
-  --mark:     #1a5fa8;
-  --mark-alt: #b4671f;
-
-  /* sequential ramp, one hue, light to dark */
-  --s0: #f1efeb;
-  --s1: #d3e0ee;
-  --s2: #9dbcdc;
-  --s3: #4c85bf;
-  --s4: #1a5fa8;
-  --on-deep: #ffffff;
-
-  /* type */
-  --font-display: "Instrument Serif", Georgia, "Times New Roman", serif;
-  --font-body:    "Instrument Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
-  --font-mono:    "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
-
-  /* 4pt spacing scale */
-  --space-xs: 8px;
-  --space-sm: 12px;
-  --space-md: 20px;
-  --space-lg: 32px;
-  --space-xl: 56px;
-  --space-2xl: 88px;
-
-  --measure: 34rem;
-}
-
-* { box-sizing: border-box; }
-html, body { overflow-x: clip; }
-body {
-  margin: 0;
-  background: var(--paper);
-  color: var(--ink);
-  font-family: var(--font-body);
-  font-size: 17px;
-  line-height: 1.68;
-  -webkit-font-smoothing: antialiased;
-  text-rendering: optimizeLegibility;
-}
-
-.wrap { max-width: 860px; margin: 0 auto; padding: 0 24px var(--space-2xl); }
-
-h1, h2, h3 {
-  font-family: var(--font-display);
-  font-style: normal;
-  font-weight: 400;
-  letter-spacing: -0.008em;
-  overflow-wrap: anywhere;
-  min-width: 0;
-}
-h1 { font-size: clamp(2.4rem, 6.4vw, 3.9rem); line-height: 1.04; margin: 0 0 var(--space-md); }
-h2 { font-size: clamp(1.6rem, 3.6vw, 2.15rem); line-height: 1.16; margin: 0 0 var(--space-sm); }
-h3 { font-size: 1.12rem; font-family: var(--font-body); font-weight: 600; margin: 0 0 6px; letter-spacing: 0; }
-
-p { margin: 0 0 var(--space-md); max-width: var(--measure); color: var(--ink-2); }
-p.wide { max-width: 44rem; }
-strong { color: var(--ink); font-weight: 600; }
-em { font-style: italic; }
-
-a { color: var(--ink); text-decoration: underline; text-decoration-color: var(--line-2); text-underline-offset: 3px; text-decoration-thickness: 1px; }
-a:hover { text-decoration-color: var(--accent); }
-a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 2px; }
-
-/* ── masthead ─────────────────────────────────────────────────────────── */
-.masthead {
-  display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--space-xs) var(--space-md);
-  padding: var(--space-md) 0; border-bottom: 1px solid var(--ink);
-  font-family: var(--font-mono); font-size: 0.775rem; letter-spacing: 0.04em;
-}
-.masthead .brand { font-weight: 500; text-transform: uppercase; letter-spacing: 0.16em; }
-.masthead .sep { color: var(--faint); }
-.masthead a { text-decoration: none; color: var(--ink-2); }
-.masthead a:hover { color: var(--accent); }
-.masthead .right { margin-left: auto; display: flex; gap: var(--space-md); }
-
-header.lead { padding: var(--space-xl) 0 var(--space-lg); }
-.standfirst { font-size: 1.2rem; line-height: 1.56; color: var(--ink-2); max-width: 40rem; }
-.standfirst strong { color: var(--ink); }
-
-.tiles {
-  display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
-  gap: 1px; margin: var(--space-lg) 0 0;
-  background: var(--line); border: 1px solid var(--line);
-}
-.tile { background: var(--surface); padding: var(--space-md); }
-.tn { font-size: 1.7rem; font-weight: 600; letter-spacing: -0.02em; line-height: 1.1; font-variant-numeric: tabular-nums; color: var(--ink); }
-.tl { font-size: 0.86rem; color: var(--ink-2); margin-top: 2px; }
-.ts { font-size: 0.75rem; color: var(--faint); margin-top: 5px; line-height: 1.45; }
-
-section { margin: var(--space-2xl) 0 0; }
-.rule { border: 0; border-top: 1px solid var(--line); margin: var(--space-2xl) 0 0; }
-
-/* ── figures ──────────────────────────────────────────────────────────── */
-figure { margin: var(--space-lg) 0 0; }
-.scroller { overflow-x: auto; padding-bottom: 4px; }
-.scroller > svg { min-width: 600px; }
-figcaption {
-  font-size: 0.83rem; line-height: 1.55; color: var(--muted);
-  margin-top: var(--space-sm); padding-top: var(--space-sm);
-  border-top: 1px solid var(--line); max-width: 44rem;
-}
-
-.viz { display: block; height: auto; overflow: visible; }
-.viz text { font-family: var(--font-body); }
-.grid  { stroke: var(--line); stroke-width: 1; }
-.axis  { stroke: var(--line-2); stroke-width: 1; }
-.iv     { stroke: var(--mark); stroke-width: 1.5; }
-.iv-cap { stroke: var(--mark); stroke-width: 1.5; }
-.est    { fill: var(--mark); }
-.est.alt  { fill: var(--mark-alt); }
-.est.ring { fill: var(--surface); stroke: var(--mark); stroke-width: 2; }
-.join  { stroke: var(--line-2); stroke-width: 1.5; }
-.brace { fill: none; stroke: var(--accent); stroke-width: 1; }
-.name    { fill: var(--ink); font-size: 13.5px; }
-.tick    { fill: var(--faint); font-size: 11px; font-family: var(--font-mono); }
-.collab  { fill: var(--muted); font-size: 11px; font-family: var(--font-mono); letter-spacing: 0.02em; }
-.legend  { fill: var(--ink-2); font-size: 12px; }
-.num     { fill: var(--ink); font-size: 13px; font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
-.num.dim { fill: var(--faint); }
-.num.hot { fill: var(--accent); }
-.bracelab { fill: var(--accent); font-size: 11px; font-family: var(--font-mono); }
-.ptname  { fill: var(--ink); font-size: 12.5px; }
-.cell    { fill: var(--s0); }
-.cell.s0 { fill: var(--s0); } .cell.s1 { fill: var(--s1); } .cell.s2 { fill: var(--s2); }
-.cell.s3 { fill: var(--s3); } .cell.s4 { fill: var(--s4); }
-.cell.na { fill: var(--surface-2); }
-.cellv   { fill: var(--ink-2); font-size: 11.5px; font-family: var(--font-mono); }
-.cellv.on { fill: var(--on-deep); }
-.cellna  { fill: var(--muted); font-size: 11.5px; }
-
-/* ── picks ────────────────────────────────────────────────────────────── */
-/* 2×2, not 3+1: four cards across an 860px measure would strand the fourth on
-   its own row, and the odd one out reads as an afterthought rather than a pick. */
-.picks { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)); gap: 1px; margin-top: var(--space-lg); background: var(--line); border: 1px solid var(--line); }
-.pick { background: var(--surface); padding: var(--space-md); }
-.pick .role { font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); }
-.pick .who { font-family: var(--font-display); font-size: 1.55rem; line-height: 1.1; margin: 6px 0 var(--space-xs); }
-.pick p { font-size: 0.9rem; margin: 0; color: var(--muted); max-width: none; }
-.pick.against { background: var(--accent-wash); }
-
-/* ── table ────────────────────────────────────────────────────────────── */
-table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
-thead th { text-align: left; font-weight: 500; font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); border-bottom: 1px solid var(--ink); padding: 0 10px var(--space-xs); white-space: nowrap; font-family: var(--font-mono); }
-thead th.n, td.n { text-align: right; }
-tbody th { text-align: left; font-weight: 600; padding: 9px 10px; border-bottom: 1px solid var(--line); white-space: nowrap; }
-td { padding: 9px 10px; border-bottom: 1px solid var(--line); font-family: var(--font-mono); font-variant-numeric: tabular-nums; color: var(--ink-2); }
-td.lead { color: var(--ink); }
-td .pm { color: var(--faint); font-size: 0.76rem; margin-left: 5px; }
-td .star { color: var(--accent); }
-td .na { color: var(--faint); font-family: var(--font-body); }
-.tnote { font-size: 0.8rem; color: var(--faint); margin-top: var(--space-sm); max-width: 44rem; }
-
-/* ── limits ───────────────────────────────────────────────────────────── */
-.limits { margin-top: var(--space-lg); border-top: 1px solid var(--line); }
-.limit { padding: var(--space-md) 0; border-bottom: 1px solid var(--line); }
-.limit p { margin: 0; max-width: 44rem; font-size: 0.94rem; }
-
-/* ── footer ───────────────────────────────────────────────────────────── */
-footer { margin-top: var(--space-2xl); padding-top: var(--space-lg); border-top: 1px solid var(--ink); }
-footer p { font-size: 0.9rem; color: var(--muted); max-width: 40rem; }
-.links { display: flex; flex-wrap: wrap; gap: var(--space-sm); margin: var(--space-md) 0; }
-.links a { display: inline-block; padding: 9px 15px; border: 1px solid var(--line-2); background: var(--surface); text-decoration: none; font-size: 0.88rem; font-weight: 500; white-space: nowrap; }
-.links a:hover { border-color: var(--accent); color: var(--accent); }
-.colophon { font-family: var(--font-mono); font-size: 0.75rem; color: var(--faint); }
-
-@media (max-width: 640px) {
-  body { font-size: 16px; }
-  .wrap { padding: 0 18px var(--space-xl); }
-  .masthead .right { margin-left: 0; width: 100%; }
-  section { margin-top: var(--space-xl); }
-}
+__STYLE__
 </style>
 
 <div class="wrap">
@@ -218,21 +26,21 @@ footer p { font-size: 0.9rem; color: var(--muted); max-width: 40rem; }
   <span class="sep">/</span>
   <span>__GENERATED__</span>
   <span class="right">
-    <a href="explorer/">Explorer</a>
-    <a href="https://github.com/sameerhimati/sourcery">Source</a>
+    <a href="__BASE__explorer/">Explorer</a>
+    <a href="__REPO__">Source</a>
   </span>
 </nav>
 
 <header class="lead">
   <h1>Search APIs, graded on their sources</h1>
-  <p class="standfirst">Every published benchmark of a search API grades the answer a language model writes after reading the results. That number is mostly a score of the model. <strong>This one never looks at an answer.</strong> Eight providers, the same __N_QUESTIONS__ questions on one day, and three judges reading the __N_RATINGS__ pages that actually came back.</p>
+  <p class="standfirst">Every published benchmark of a search API grades the answer a language model writes after reading the results. That number is mostly a score of the model. <strong>This one never looks at an answer.</strong> Eight providers, the same __N_QUESTIONS__ questions on one day, and __N_JUDGES__ judges reading every one of the __UNIQUE_PAIRS__ pages that actually came back — __N_RATINGS__ ratings in all.</p>
   <div class="tiles">__STATS__</div>
 </header>
 
 <section>
   <h2>Two ways to grade a search API</h2>
   <p>The usual way is end to end. Give an agent a hard question and a search tool, let it run, and score the answer it produces against a known one. It is a real measurement and it has an obvious appeal: the answer is the thing you wanted.</p>
-  <p>The problem is what else is in that number. A capable model answers a lot of questions from what it already knows. When a benchmark of this kind publishes its no-search baseline — the same model, same questions, no search tool at all — that baseline lands around a third of the winning score. So a third of the result was never about retrieval. The search provider is being graded through a filter that is itself doing much of the work, and a provider that returns nothing useful can still ride a confident model to a passing answer.</p>
+  <p>The problem is what else is in that number. A capable model answers a lot of questions from what it already knows. When a benchmark of this kind publishes its no-search baseline — the same model, same questions, no search tool at all — that baseline can land near half the winning score. <a href="https://artificialanalysis.ai/methodology/search-api">Artificial Analysis’s search index</a>, published the day before this page, scores 33 for the model alone against 75 for its top-ranked provider. So a third of the result was never about retrieval. The search provider is being graded through a filter that is itself doing much of the work, and a provider that returns nothing useful can still ride a confident model to a passing answer.</p>
   <p>An earlier version of this project measured both sides on the same queries and found they barely move together — the correlation between how good the fetched sources were and how good the final answer scored was 0.16. Ranking providers by answer quality mostly ranks your own model.</p>
   <p>So this measures the other half. A judge sees one question and one page and answers a single question: does this page help? Nothing else. It is never asked what the answer is, never shown a draft, and never allowed to fill a gap from memory, because it has no gap to fill. What comes out is a score for the retrieval layer on its own.</p>
   <p><strong>Neither number replaces the other.</strong> An answer-graded benchmark tells you what an agent built on a provider ends up producing, with real reference answers behind it. This tells you what the provider actually handed over. If you are choosing a search API and you only look at the first kind, you cannot tell a good index from a good guesser.</p>
@@ -275,7 +83,7 @@ footer p { font-size: 0.9rem; color: var(--muted); max-width: 40rem; }
     <div class="scroller">__CHART_PRICE__</div>
     <figcaption>A hollow ring marks a price taken from a published rate card rather than a settled invoice. All prices are pay-as-you-go list rates from the author's own billing pages, not out-of-pocket cost — free credits are a fact about one account, not about a product.</figcaption>
   </figure>
-  <p>The three cheapest arms take three of the top four places. Serper matches Tavily's score at a fifty-fourth of the price, which is less surprising than it sounds once you know what Serper does: it returns links and snippets and never page content. If you already run a scraper, that is the whole product you were paying extra for.</p>
+  <p>The three arms sharing the cheapest per-query tier take three of the top four places, and the outright cheapest provider of all places sixth — price predicts nothing in either direction. Serper matches Tavily's score at a fifty-fourth of the price, which is less surprising than it sounds once you know what Serper does: it returns links and snippets and never page content. If you already run a scraper, that is the whole product you were paying extra for.</p>
 </section>
 
 <section>
@@ -329,7 +137,7 @@ footer p { font-size: 0.9rem; color: var(--muted); max-width: 40rem; }
     </div>
     <div class="limit">
       <h3>Plan limits shaped the run, not just the bill</h3>
-      <p>Bright Data throttles above one concurrent request, so its pass ran slowly enough to cross midnight and needed a repair round. Tavily's plan ran out around question 150 and also needed a second pass. Firecrawl consumed 3,493 credits — about seventy per cent of a 5,000-credit month — in a single day, for $25. A keyless control arm was dropped entirely after eight consecutive captcha failures and no successes. The retrieval bill was $__COST_TOTAL__ in total, and the ceiling on a run like this is a rate limit long before it is money.</p>
+      <p>Bright Data throttles above one concurrent request, so its pass ran slowly enough to cross midnight and needed a repair round. Tavily's plan ran out around question 150 and also needed a second pass. Firecrawl consumed 3,493 credits in a single day, about seventy per cent of a 5,000-credit month, bought for $25 — against the $17.47 list-rate figure in the table above, which is what the run would cost at the published per-query price rather than what was actually paid for the credits. A keyless control arm was dropped entirely after eight consecutive captcha failures and no successes. The retrieval bill was $__COST_TOTAL__ in total, and the ceiling on a run like this is a rate limit long before it is money.</p>
     </div>
     <div class="limit">
       <h3>Providers overlap, and a page is graded once</h3>
@@ -378,9 +186,9 @@ footer p { font-size: 0.9rem; color: var(--muted); max-width: 40rem; }
   <p>Sourcery is an open-source harness, not a leaderboard service. The questions here are frozen so these numbers stay comparable, but the point of shipping it is that you can run the same comparison on the queries you actually care about, with your own keys and your own judge.</p>
   <p>Every rating on this page is published with the sentence the judge wrote to justify it, and every figure is generated from a derived data file that is committed alongside the raw verdicts. Any number here can be traced back to the verdict that produced it without taking anyone's word for it.</p>
   <div class="links">
-    <a href="explorer/">Open the explorer</a>
-    <a href="https://github.com/sameerhimati/sourcery">Read the code</a>
-    <a href="https://github.com/sameerhimati/sourcery/blob/main/docs/run-2-findings.md">Full method notes</a>
+    <a href="__BASE__explorer/">Open the explorer</a>
+    <a href="__REPO__">Read the code</a>
+    <a href="__BASE__methodology.html">How this was measured</a>
   </div>
   <p class="colophon">Run 2 &middot; fetched and judged __GENERATED__ &middot; MIT licensed</p>
 </footer>

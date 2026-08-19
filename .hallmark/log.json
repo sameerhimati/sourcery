@@ -5,8 +5,8 @@
     "theme": "custom",
     "theme_axes": "light / classical-serif / warm",
     "vibe": "technical editorial, paper and ink",
-    "nav": "N6 masthead",
-    "footer": "Ft5 statement",
+    "nav": "N9 edge-aligned",
+    "footer": "Ft4 dense colophon",
     "enrichment": "none — typography and charts only",
     "brief": "sourcery run 2 — search API results report"
   }

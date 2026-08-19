@@ -5,113 +5,55 @@
 <title>Sourcery Run 2</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Instrument+Sans:wght@400;500;600;700&family=Instrument+Serif&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&family=Spline+Sans+Mono:wght@400;500&display=swap">
 
 <style>
-  /* Light is the base set. Every colour used anywhere is defined here, so the
-     un-stamped "system" state always resolves to a complete palette. */
+  /* Grid, the same palette docs/report-style.css uses, so the explorer and the
+     report read as one site rather than two. Values are copied rather than
+     imported because this page is published as a single self-contained file and
+     a second stylesheet request would be one more thing to fail.
+
+     Light-only, matching the report. The explorer used to carry a full dark
+     theme; a reader crossing from a light report into a dark explorer read it
+     as a different product, which is the thing this change exists to fix. */
   :root {
-    --ground: #f4f6f8;
-    --surface: #ffffff;
-    --surface-2: #eef1f5;
-    --ink: #131722;
-    --ink-2: #39424f;
-    --muted: #5c6675;
-    --faint: #8b95a4;
-    --line: #dde2e9;
-    --line-2: #c9d0da;
+    --ground:    #f4f6f8;
+    --surface:   #fafcfe;
+    --surface-2: #ebedef;
+    --ink:       #0a0e12;
+    --ink-2:     #212428;
+    --muted:     #5b5e61;
+    --faint:     #5b5e61;
+    --line:      #d6d8da;
+    --line-2:    #a2a5a8;
 
-    --accent: #9a6c1f;
-    --accent-2: #b5822e;
-    --accent-wash: #f7f0e1;
+    /* The one signal red. It marks a failure, a disagreement, or a value that
+       dropped — never decoration. */
+    --accent:      #d01e1c;
+    --accent-2:    #d01e1c;
+    --accent-wash: #fbeceb;
 
-    --rung-0: #c2c7d0;
-    --rung-1: #93a9c6;
-    --rung-2: #4e7cb5;
-    --rung-3: #1f4e87;
-    --rung-null: #e4e7ec;
-    --rung-ink: #ffffff;
-    --mark: #5f8ec9;
-    --mark-soft: #dbe6f4;
+    /* The rungs are four steps of one hue, not four different colours: they are
+       an ordered scale and a categorical palette would deny that. Same ramp as
+       the report's structure matrix. */
+    --rung-0: #e6f5ff;
+    --rung-1: #d1dff2;
+    --rung-2: #7a8798;
+    --rung-3: #424e5e;
+    --rung-null: #ebedef;
+    --rung-ink: #fafcfe;
+    --mark: #36383b;
+    --mark-soft: #d1dff2;
 
-    --bad: #a32b21;
-    --bad-wash: #fbeceb;
-    --warn: #8a6116;
-    --warn-wash: #fbf3e2;
-    --ok: #1f6b47;
-    --ok-wash: #e9f4ee;
+    --bad:  #d01e1c;
+    --bad-wash:  #fbeceb;
+    --warn: #5b5e61;
+    --warn-wash: #ebedef;
+    --ok:   #36383b;
+    --ok-wash:   #ebedef;
 
-    --shadow: 0 1px 2px rgba(19,23,34,.06), 0 8px 24px -12px rgba(19,23,34,.14);
-  }
-
-  @media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) {
-      --ground: #0e1116;
-      --surface: #161b22;
-      --surface-2: #1d232c;
-      --ink: #e8ecf2;
-      --ink-2: #c4ccd6;
-      --muted: #96a1b0;
-      --faint: #6c7684;
-      --line: #262d37;
-      --line-2: #38414d;
-
-      --accent: #d9a441;
-      --accent-2: #e8bc6a;
-      --accent-wash: #2a2213;
-
-      --rung-0: #454d59;
-      --rung-1: #5d7a9c;
-      --rung-2: #4a80c0;
-      --rung-3: #7fb0e8;
-      --rung-null: #232932;
-      --rung-ink: #0e1116;
-      --mark: #4f93dd;
-      --mark-soft: #1d2a3a;
-
-      --bad: #e8837a;
-      --bad-wash: #2c1917;
-      --warn: #d9a441;
-      --warn-wash: #2a2213;
-      --ok: #63b58d;
-      --ok-wash: #14251d;
-
-      --shadow: 0 1px 2px rgba(0,0,0,.4), 0 8px 24px -12px rgba(0,0,0,.6);
-    }
-  }
-
-  :root[data-theme="dark"] {
-    --ground: #0e1116;
-    --surface: #161b22;
-    --surface-2: #1d232c;
-    --ink: #e8ecf2;
-    --ink-2: #c4ccd6;
-    --muted: #96a1b0;
-    --faint: #6c7684;
-    --line: #262d37;
-    --line-2: #38414d;
-
-    --accent: #d9a441;
-    --accent-2: #e8bc6a;
-    --accent-wash: #2a2213;
-
-    --rung-0: #454d59;
-    --rung-1: #5d7a9c;
-    --rung-2: #4a80c0;
-    --rung-3: #7fb0e8;
-    --rung-null: #232932;
-    --rung-ink: #0e1116;
-    --mark: #4f93dd;
-    --mark-soft: #1d2a3a;
-
-    --bad: #e8837a;
-    --bad-wash: #2c1917;
-    --warn: #d9a441;
-    --warn-wash: #2a2213;
-    --ok: #63b58d;
-    --ok-wash: #14251d;
-
-    --shadow: 0 1px 2px rgba(0,0,0,.4), 0 8px 24px -12px rgba(0,0,0,.6);
+    /* Grid has no shadows. Kept as a token because rules reference it. */
+    --shadow: none;
   }
 
   * { box-sizing: border-box; }
@@ -120,14 +62,14 @@
     margin: 0;
     background: var(--ground);
     color: var(--ink);
-    font-family: "Instrument Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    font-family: "Archivo", "Helvetica Neue", ui-sans-serif, system-ui, sans-serif;
     font-size: 15px;
     line-height: 1.5;
     -webkit-font-smoothing: antialiased;
   }
 
   .mono, .num {
-    font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-family: "Spline Sans Mono", "Geist Mono", ui-monospace, SFMono-Regular, monospace;
     font-variant-numeric: tabular-nums;
   }
 
@@ -135,7 +77,6 @@
   a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible, summary:focus-visible {
     outline: 2px solid var(--accent-2);
     outline-offset: 2px;
-    border-radius: 3px;
   }
 
   .wrap { max-width: 1440px; margin: 0 auto; padding: 0 24px 96px; }
@@ -151,12 +92,12 @@
     border-bottom: 1px solid var(--line);
   }
   .masthead h1 {
-    font-family: "Instrument Serif", Georgia, serif;
-    font-weight: 400;
+    font-family: "Archivo", "Helvetica Neue", ui-sans-serif, system-ui, sans-serif;
+    font-weight: 800;
     font-size: clamp(34px, 4.6vw, 52px);
-    line-height: 1.02;
+    line-height: .98;
     margin: 0;
-    letter-spacing: -.012em;
+    letter-spacing: -.045em;
     text-wrap: balance;
   }
   .masthead .sub {
@@ -176,14 +117,13 @@
   .loadstate p { margin: 0 0 8px; color: var(--ink-2); font-size: 14.5px; }
   .loadstate p.sub { color: var(--muted); font-size: 13px; }
   .loadstate code {
-    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-family: "Spline Sans Mono", "Geist Mono", ui-monospace, SFMono-Regular, monospace;
     font-size: 12.5px;
     background: var(--surface-2);
     border: 1px solid var(--line);
-    border-radius: 3px;
     padding: 1px 5px;
   }
-  .loadbar { height: 3px; width: 100%; max-width: 340px; margin-top: 14px; background: var(--surface-2); border-radius: 2px; overflow: hidden; }
+  .loadbar { height: 3px; width: 100%; max-width: 340px; margin-top: 14px; background: var(--surface-2); overflow: hidden; }
   .loadbar i { display: block; height: 100%; width: 0; background: var(--accent-2); transition: width .12s linear; }
   .wrap[data-state="error"] .loadbar { display: none; }
   .wrap[data-state="error"] .loadstate p:first-child { color: var(--bad); font-weight: 600; }
@@ -209,7 +149,7 @@
   .panel[hidden] { display: none; }
 
   /* ── tables ───────────────────────────────────────────────────── */
-  .tablewrap { overflow-x: auto; background: var(--surface); border: 1px solid var(--line); border-radius: 4px; box-shadow: var(--shadow); }
+  .tablewrap { overflow-x: auto; background: var(--surface); border: 1px solid var(--line); }
   table { border-collapse: collapse; width: 100%; font-size: 13.5px; }
   th, td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--line); white-space: nowrap; }
   thead th {
@@ -221,7 +161,7 @@
   }
   tbody tr:last-child td { border-bottom: 0; }
   tbody tr:hover { background: var(--surface-2); }
-  td.n, th.n { text-align: right; font-family: "IBM Plex Mono", ui-monospace, monospace; font-variant-numeric: tabular-nums; }
+  td.n, th.n { text-align: right; font-family: "Spline Sans Mono", "Geist Mono", ui-monospace, SFMono-Regular, monospace; font-variant-numeric: tabular-nums; }
   .provname { font-weight: 600; }
   th.tight, td.tight { padding-right: 8px; }
   th.barcol, td.barcol { width: 124px; padding-left: 0; }
@@ -231,27 +171,28 @@
   .rung {
     display: inline-flex; align-items: center; justify-content: center;
     min-width: 22px; height: 20px; padding: 0 5px;
-    border-radius: 3px;
-    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-family: "Spline Sans Mono", "Geist Mono", ui-monospace, SFMono-Regular, monospace;
     font-size: 11.5px; font-weight: 600;
     font-variant-numeric: tabular-nums;
     color: var(--rung-ink);
   }
-  .rung.r0 { background: var(--rung-0); }
-  .rung.r1 { background: var(--rung-1); }
-  .rung.r2 { background: var(--rung-2); }
-  .rung.r3 { background: var(--rung-3); }
+  /* Ink reads on every step of the ramp but the last, which takes the paper as
+     its text — the same contrast rule the report's structure matrix uses. Light
+     ink on the pale steps would be invisible. */
+  .rung.r0 { background: var(--rung-0); color: var(--ink); }
+  .rung.r1 { background: var(--rung-1); color: var(--ink); }
+  .rung.r2 { background: var(--rung-2); color: var(--ink); }
+  .rung.r3 { background: var(--rung-3); color: var(--rung-ink); }
   .rung.rnull { background: var(--rung-null); color: var(--faint); }
 
   /* A bar is easier to compare down a column than a number is. */
-  .bar { display: inline-block; vertical-align: middle; width: 108px; height: 7px; border-radius: 4px; background: var(--surface-2); overflow: hidden; border: 1px solid var(--line); }
+  .bar { display: inline-block; vertical-align: middle; width: 108px; height: 7px; background: var(--surface-2); overflow: hidden; border: 1px solid var(--line); }
   .bar span { display: block; height: 100%; background: var(--rung-2); }
 
   /* ── chips ────────────────────────────────────────────────────── */
   .chip {
     display: inline-block;
     padding: 2px 7px;
-    border-radius: 3px;
     font-size: 10.5px;
     font-weight: 600;
     letter-spacing: .04em;
@@ -267,14 +208,14 @@
 
   /* ── charts ───────────────────────────────────────────────────── */
   .charts { display: grid; grid-template-columns: repeat(auto-fit, minmax(390px, 1fr)); gap: 12px; margin-bottom: 18px; }
-  .chart { background: var(--surface); border: 1px solid var(--line); border-radius: 4px; padding: 16px 18px 12px; box-shadow: var(--shadow); }
+  .chart { background: var(--surface); border: 1px solid var(--line); padding: 16px 18px 12px; }
   .chart h3 { margin: 0 0 3px; font-size: 14.5px; font-weight: 600; }
   .chart .sub { margin: 0 0 12px; font-size: 12.5px; color: var(--muted); max-width: 52ch; }
   .chart svg { display: block; width: 100%; height: auto; overflow: visible; }
   .ax { stroke: var(--line); stroke-width: 1; }
-  .axlabel { fill: var(--faint); font-size: 10px; font-family: "IBM Plex Mono", monospace; }
+  .axlabel { fill: var(--faint); font-size: 10px; font-family: "Spline Sans Mono", "Geist Mono", ui-monospace, SFMono-Regular, monospace; }
   .plabel { fill: var(--ink-2); font-size: 11.5px; }
-  .vlabel { fill: var(--muted); font-size: 10.5px; font-family: "IBM Plex Mono", monospace; }
+  .vlabel { fill: var(--muted); font-size: 10.5px; font-family: "Spline Sans Mono", "Geist Mono", ui-monospace, SFMono-Regular, monospace; }
   .ci { stroke: var(--mark); stroke-width: 2; opacity: .45; stroke-linecap: round; }
   .dot { fill: var(--mark); }
   .dot-open { fill: var(--surface); stroke: var(--mark); stroke-width: 2; }
@@ -282,7 +223,7 @@
   .bandline { stroke: var(--warn); stroke-width: 1; stroke-dasharray: 3 3; opacity: .7; }
   .bandtext { fill: var(--warn); font-size: 10.5px; font-weight: 600; }
   .legend { display: flex; gap: 16px; margin-top: 8px; font-size: 11.5px; color: var(--muted); align-items: center; }
-  .legend i { display: inline-block; width: 11px; height: 11px; border-radius: 50%; vertical-align: -1px; margin-right: 5px; }
+  .legend i { display: inline-block; width: 11px; height: 11px; vertical-align: -1px; margin-right: 5px; }
   .legend i.f { background: var(--mark); }
   .legend i.o { background: var(--surface); border: 2px solid var(--mark); }
 
@@ -290,7 +231,7 @@
   .explorer { display: grid; grid-template-columns: 340px minmax(0, 1fr); gap: 20px; align-items: start; }
   @media (max-width: 900px) { .explorer { grid-template-columns: 1fr; } }
 
-  .rail { position: sticky; top: 12px; background: var(--surface); border: 1px solid var(--line); border-radius: 4px; box-shadow: var(--shadow); overflow: hidden; }
+  .rail { position: sticky; top: 12px; background: var(--surface); border: 1px solid var(--line); overflow: hidden; }
   .rail .controls { padding: 14px; display: grid; gap: 10px; border-bottom: 1px solid var(--line); }
   .rail input[type="search"], .rail select {
     width: 100%; padding: 8px 10px;
@@ -298,7 +239,6 @@
     color: var(--ink);
     background: var(--ground);
     border: 1px solid var(--line-2);
-    border-radius: 3px;
   }
   .rail label { font-size: 10.5px; text-transform: uppercase; letter-spacing: .07em; color: var(--faint); font-weight: 600; }
   .rail .count { padding: 8px 14px; font-size: 12px; color: var(--muted); background: var(--surface-2); border-bottom: 1px solid var(--line); }
@@ -310,17 +250,17 @@
     font: inherit; color: var(--ink); cursor: pointer;
   }
   .qitem:hover { background: var(--surface-2); }
-  .qitem[aria-current="true"] { background: var(--accent-wash); box-shadow: inset 3px 0 0 var(--accent-2); }
-  .qitem .qid { font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: 10.5px; color: var(--faint); }
+  .qitem[aria-current="true"] { background: var(--accent-wash); }
+  .qitem .qid { font-family: "Spline Sans Mono", "Geist Mono", ui-monospace, SFMono-Regular, monospace; font-size: 10.5px; color: var(--faint); }
   .qitem .qtext { display: block; font-size: 13px; line-height: 1.35; margin-top: 2px; color: var(--ink-2); }
 
   /* ── question detail ──────────────────────────────────────────── */
-  .detail { background: var(--surface); border: 1px solid var(--line); border-radius: 4px; box-shadow: var(--shadow); padding: 22px 24px 8px; }
+  .detail { background: var(--surface); border: 1px solid var(--line); padding: 22px 24px 8px; }
   .detail .qhead { border-bottom: 1px solid var(--line); padding-bottom: 16px; }
   .detail h2 { margin: 6px 0 0; font-size: 21px; line-height: 1.28; font-weight: 600; text-wrap: balance; max-width: 70ch; }
   .taglist { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
 
-  .baseline { margin: 16px 0 0; padding: 12px 14px; border-radius: 4px; font-size: 13px; border: 1px solid var(--line); background: var(--surface-2); color: var(--ink-2); }
+  .baseline { margin: 16px 0 0; padding: 12px 14px; font-size: 13px; border: 1px solid var(--line); background: var(--surface-2); color: var(--ink-2); }
   .baseline.knew { background: var(--warn-wash); border-color: var(--warn); color: var(--warn); }
   .baseline strong { font-weight: 600; }
 
@@ -341,7 +281,7 @@
   .summarystats { display: flex; align-items: center; gap: 16px; font-size: 12.5px; color: var(--muted); flex-wrap: wrap; }
 
   .pages { padding: 4px 0 18px 30px; display: grid; gap: 2px; }
-  details.page { border: 1px solid var(--line); border-radius: 3px; background: var(--ground); }
+  details.page { border: 1px solid var(--line); background: var(--ground); }
   details.page > summary {
     display: grid;
     grid-template-columns: auto 1fr auto;
@@ -353,12 +293,12 @@
   }
   details.page > summary::-webkit-details-marker { display: none; }
   .pagetitle { font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .pagedomain { font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: 11px; color: var(--faint); }
+  .pagedomain { font-family: "Spline Sans Mono", "Geist Mono", ui-monospace, SFMono-Regular, monospace; font-size: 11px; color: var(--faint); }
   .rungset { display: flex; gap: 3px; }
 
   .rationales { padding: 4px 12px 14px 12px; display: grid; gap: 8px; border-top: 1px solid var(--line); }
   .rationale { display: grid; grid-template-columns: 26px 130px 1fr; gap: 10px; align-items: start; font-size: 12.5px; }
-  .rationale .jname { font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: 11px; color: var(--muted); }
+  .rationale .jname { font-family: "Spline Sans Mono", "Geist Mono", ui-monospace, SFMono-Regular, monospace; font-size: 11px; color: var(--muted); }
   .rationale .jtext { color: var(--ink-2); max-width: 84ch; }
   .pagemeta { padding: 8px 12px 0; font-size: 11.5px; color: var(--faint); }
   .pagemeta a { word-break: break-all; }
@@ -404,7 +344,7 @@
         <h3>What happens when the questions get harder</h3>
         <p class="sub">Half the questions were written to be hard on purpose. The spread between best and worst gets wider, not narrower.</p>
         <svg id="chart-hard" role="img" aria-label="Base versus hard question ratings by provider"></svg>
-        <div class="legend"><span><i class="o"></i>base questions</span><span><i class="f"></i>hard questions</span></div>
+        <div class="legend"><span><i class="f"></i>base questions</span><span><i class="o"></i>hard questions</span></div>
       </div>
     </div>
     <div class="tablewrap">
@@ -492,7 +432,13 @@ function boot(DATA) {
     if (text !== undefined && text !== null) n.textContent = String(text);
     return n;
   }
-  function label(p) { return p.replace(/_/g, " "); }
+  // The names the vendors use, matching LABEL in scripts/build-report.mjs. The
+  // package name is what the run log keys on; a reader should never see it.
+  var LABELS = {
+    perplexity: "Perplexity", brave: "Brave", parallel: "Parallel", exa: "Exa",
+    tavily: "Tavily", serper: "Serper", firecrawl: "Firecrawl", bright_data: "Bright Data"
+  };
+  function label(p) { return LABELS[p] || p.replace(/_/g, " "); }
   function fmt(x, d) { return x === null || x === undefined ? "—" : Number(x).toFixed(d === undefined ? 2 : d); }
 
   // A rung is a named step, not a score out of three, so it is drawn as a step.
@@ -1004,10 +950,10 @@ function boot(DATA) {
       var y = CH.top + i * CH.rowH + CH.rowH / 2 - 4;
       svg.appendChild(svgText(CH.left - 10, y + 4, "plabel", label(r.p), "end"));
       svg.appendChild(svgEl("line", { x1: xScale(r.hard), y1: y, x2: xScale(r.base), y2: y, class: "ci" }));
-      var o = svgEl("circle", { cx: xScale(r.base), cy: y, r: 4.5, class: "dot-open" });
+      var o = svgEl("circle", { cx: xScale(r.base), cy: y, r: 5, class: "dot" });
       o.appendChild(svgEl("title")).textContent = label(r.p) + " on the base questions: " + r.base.toFixed(3);
       svg.appendChild(o);
-      var f = svgEl("circle", { cx: xScale(r.hard), cy: y, r: 5, class: "dot" });
+      var f = svgEl("circle", { cx: xScale(r.hard), cy: y, r: 4.5, class: "dot-open" });
       f.appendChild(svgEl("title")).textContent = label(r.p) + " on the hard questions: " + r.hard.toFixed(3);
       svg.appendChild(f);
       svg.appendChild(svgText(CH.w - CH.right + 6, y + 4, "vlabel", r.hard.toFixed(2)));

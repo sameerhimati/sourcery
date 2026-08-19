@@ -1,0 +1,290 @@
+<!-- Rendered by scripts/build-report.mjs into docs/index.html. Every double-underscored
+     token below is filled from docs/report-data.json, which is derived from the run
+     itself — so no number on this page was typed by a person. Edit this file for
+     wording and layout; edit the data pipeline for figures. -->
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Search APIs, graded on what they return</title>
+<meta name="description" content="Eight web-search APIs asked the same __N_QUESTIONS__ questions on one day. Three judges graded the pages that came back, never the answer built on them.">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Instrument+Sans:wght@400;500;600;700&family=Instrument+Serif&display=swap">
+
+<style>
+  /* Light is the base set, so the un-stamped "system" state always resolves to a
+     complete palette. Same tokens as the explorer — the two pages are siblings. */
+  :root {
+    --ground: #f4f6f8; --surface: #ffffff; --surface-2: #eef1f5;
+    --ink: #131722; --ink-2: #39424f; --muted: #5c6675; --faint: #8b95a4;
+    --line: #dde2e9; --line-2: #c9d0da;
+    --accent: #9a6c1f; --accent-wash: #f7f0e1;
+    /* data marks: validated as a two-slot categorical set on this surface */
+    --mark: #5f8ec9; --mark-2: #9a6c1f;
+    --s0: #eef1f5; --s1: #cfdcec; --s2: #93a9c6; --s3: #4e7cb5; --s4: #1f4e87;
+    --on-deep: #ffffff;
+    --shadow: 0 1px 2px rgba(19,23,34,.06), 0 8px 24px -12px rgba(19,23,34,.14);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #0e1116; --surface: #161b22; --surface-2: #1d232c;
+      --ink: #e8ecf2; --ink-2: #c4ccd6; --muted: #96a1b0; --faint: #6c7684;
+      --line: #262d37; --line-2: #38414d;
+      --accent: #d9a441; --accent-wash: #2a2213;
+      --mark: #4f93dd; --mark-2: #c98500;
+      --s0: #1d232c; --s1: #2b3a4d; --s2: #3f6291; --s3: #4a80c0; --s4: #7fb0e8;
+      --on-deep: #0e1116;
+      --shadow: 0 1px 2px rgba(0,0,0,.4), 0 8px 24px -12px rgba(0,0,0,.6);
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground: #0e1116; --surface: #161b22; --surface-2: #1d232c;
+    --ink: #e8ecf2; --ink-2: #c4ccd6; --muted: #96a1b0; --faint: #6c7684;
+    --line: #262d37; --line-2: #38414d;
+    --accent: #d9a441; --accent-wash: #2a2213;
+    --mark: #4f93dd; --mark-2: #c98500;
+    --s0: #1d232c; --s1: #2b3a4d; --s2: #3f6291; --s3: #4a80c0; --s4: #7fb0e8;
+    --on-deep: #0e1116;
+    --shadow: 0 1px 2px rgba(0,0,0,.4), 0 8px 24px -12px rgba(0,0,0,.6);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--ground); color: var(--ink);
+    font-family: "Instrument Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    font-size: 16px; line-height: 1.62; -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 940px; margin: 0 auto; padding: 0 22px 88px; }
+  section { margin: 60px 0; }
+  h1, h2, h3 { font-family: "Instrument Serif", Georgia, serif; font-weight: 400; letter-spacing: -.01em; }
+  h1 { font-size: clamp(2.3rem, 6vw, 3.5rem); line-height: 1.06; margin: 0 0 14px; }
+  h2 { font-size: clamp(1.5rem, 3.4vw, 2rem); line-height: 1.15; margin: 0 0 6px; }
+  h3 { font-size: 1.16rem; margin: 0 0 4px; }
+  p { margin: 0 0 16px; max-width: 68ch; color: var(--ink-2); }
+  .lede { font-size: 1.12rem; color: var(--ink-2); max-width: 62ch; }
+  .kicker {
+    font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: .72rem;
+    letter-spacing: .13em; text-transform: uppercase; color: var(--accent);
+    margin: 0 0 12px;
+  }
+  a { color: var(--ink); text-decoration-color: var(--line-2); text-underline-offset: 3px; }
+  a:hover { text-decoration-color: var(--accent); }
+  strong { color: var(--ink); font-weight: 600; }
+
+  header.top { padding: 68px 0 8px; border-bottom: 1px solid var(--line); }
+  .runline {
+    font-family: "IBM Plex Mono", monospace; font-size: .8rem; color: var(--muted);
+    margin: 22px 0 30px; display: flex; flex-wrap: wrap; gap: 6px 18px;
+  }
+  .runline b { color: var(--ink); font-weight: 600; }
+
+  .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; margin: 30px 0 0; }
+  .tile { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; }
+  .tnum { font-size: 1.85rem; font-weight: 600; letter-spacing: -.02em; line-height: 1.1; font-variant-numeric: tabular-nums; }
+  .tlab { font-size: .9rem; color: var(--ink-2); margin-top: 2px; }
+  .tsub { font-size: .78rem; color: var(--faint); margin-top: 5px; line-height: 1.45; }
+
+  figure { margin: 26px 0 0; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 20px 20px 12px; box-shadow: var(--shadow); }
+  .scroller { overflow-x: auto; }
+  .scroller > svg { min-width: 620px; }
+  figcaption { font-size: .84rem; color: var(--muted); margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--line); max-width: 74ch; }
+
+  /* chart marks */
+  .viz { display: block; height: auto; overflow: visible; }
+  .grid { stroke: var(--line); stroke-width: 1; }
+  .bar { fill: var(--mark); opacity: .32; }
+  .ci { stroke: var(--mark); stroke-width: 2.5; stroke-linecap: round; }
+  .dot { fill: var(--mark); stroke: var(--surface); stroke-width: 2; }
+  .dot.alt { fill: var(--mark-2); }
+  .dot.est { fill: var(--surface); stroke: var(--mark); stroke-width: 2.5; }
+  .dumb { stroke: var(--line-2); stroke-width: 2.5; stroke-linecap: round; }
+  .brace { fill: none; stroke: var(--accent); stroke-width: 1.5; }
+  .cell { fill: var(--s0); }
+  .cell.s0 { fill: var(--s0); } .cell.s1 { fill: var(--s1); } .cell.s2 { fill: var(--s2); }
+  .cell.s3 { fill: var(--s3); } .cell.s4 { fill: var(--s4); }
+  .cell.na { fill: var(--surface-2); stroke: var(--line); }
+  text { font-family: "Instrument Sans", system-ui, sans-serif; }
+  .rowlab { fill: var(--ink); font-size: 13px; font-weight: 500; }
+  .tick, .axlab, .legend, .collab { fill: var(--muted); font-size: 11.5px; font-family: "IBM Plex Mono", monospace; }
+  .legend { font-size: 12px; }
+  .axtitle { fill: var(--ink); font-size: 14px; font-weight: 600; }
+  .sub { fill: var(--muted); font-size: 12px; }
+  .val { fill: var(--ink); font-size: 13px; font-weight: 600; font-family: "IBM Plex Mono", monospace; font-variant-numeric: tabular-nums; }
+  .valdim { fill: var(--faint); font-size: 12px; font-family: "IBM Plex Mono", monospace; }
+  .val.drop { fill: var(--accent); }
+  .ptlab { fill: var(--ink); font-size: 12.5px; font-weight: 500; }
+  .bracelab { fill: var(--accent); font-size: 11.5px; font-family: "IBM Plex Mono", monospace; }
+  .cellv { font-size: 12px; font-family: "IBM Plex Mono", monospace; fill: var(--ink-2); }
+  .cellv.i1 { fill: var(--on-deep); }
+  .cellna { fill: var(--muted); font-size: 12px; }
+  .foot { fill: var(--faint); font-size: 11.5px; }
+
+  .picks { display: grid; grid-template-columns: repeat(auto-fit, minmax(232px, 1fr)); gap: 12px; margin-top: 26px; }
+  .pick { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 18px; }
+  .pick .role { font-family: "IBM Plex Mono", monospace; font-size: .7rem; letter-spacing: .1em; text-transform: uppercase; color: var(--accent); }
+  .pick .who { font-family: "Instrument Serif", Georgia, serif; font-size: 1.5rem; margin: 4px 0 6px; }
+  .pick p { font-size: .9rem; margin: 0; color: var(--muted); }
+  .pick.warn { background: var(--accent-wash); border-color: var(--accent); }
+
+  table { width: 100%; border-collapse: collapse; font-size: .9rem; }
+  thead th { text-align: left; font-weight: 600; font-size: .74rem; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); border-bottom: 1px solid var(--line-2); padding: 0 10px 9px; white-space: nowrap; }
+  thead th.n, td.n { text-align: right; }
+  tbody th { text-align: left; font-weight: 600; padding: 10px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+  td { padding: 10px; border-bottom: 1px solid var(--line); font-family: "IBM Plex Mono", monospace; font-variant-numeric: tabular-nums; color: var(--ink-2); }
+  td.strong { color: var(--ink); font-weight: 600; }
+  td .ci { color: var(--faint); font-size: .78rem; margin-left: 5px; }
+  td .est { color: var(--accent); }
+  td .dim { color: var(--faint); font-family: "Instrument Sans", sans-serif; }
+  tbody tr:hover { background: var(--surface); }
+
+  .note { background: var(--surface); border-left: 2px solid var(--accent); border-radius: 0 10px 10px 0; padding: 16px 20px; margin: 24px 0; }
+  .note p:last-child { margin-bottom: 0; }
+  .note h3 { margin-bottom: 6px; }
+
+  footer { border-top: 1px solid var(--line); margin-top: 70px; padding-top: 26px; font-size: .86rem; color: var(--muted); }
+  footer a { color: var(--ink-2); }
+  .cta { display: inline-block; margin: 6px 12px 6px 0; padding: 10px 16px; background: var(--surface); border: 1px solid var(--line-2); border-radius: 9px; font-size: .9rem; text-decoration: none; font-weight: 500; }
+  .cta:hover { border-color: var(--accent); }
+  @media (max-width: 620px) { .runline { gap: 4px 14px; } figure { padding: 14px 12px 10px; } }
+</style>
+
+<div class="wrap">
+
+<header class="top">
+  <p class="kicker">sourcery &middot; run 2 &middot; __GENERATED__</p>
+  <h1>Search APIs, graded on<br>what they actually return</h1>
+  <p class="lede">Eight web-search APIs got the same __N_QUESTIONS__ questions on one day. Three judges read every page that came back and scored it. None of them was ever shown an answer, because an answer mostly grades your own model.</p>
+  <div class="runline">
+    <span><b>__N_QUESTIONS__</b> questions</span>
+    <span><b>__N_PROVIDERS__</b> providers</span>
+    <span><b>__N_JUDGES__</b> judges</span>
+    <span><b>__N_RATINGS__</b> page ratings</span>
+    <span><b>__N_SETS__</b> set verdicts</span>
+    <span><b>$__COST_TOTAL__</b> of retrieval</span>
+  </div>
+  <div class="tiles">__STATS__</div>
+</header>
+
+<section>
+  <h2>The ranking, and the part rankings hide</h2>
+  <p>Each provider returned eight pages per question. A judge saw all eight and answered one question: could someone answer from these alone? That is the score below, on a scale where 0 is nothing useful and 3 is a full answer.</p>
+  <p>Three of these providers cannot be told apart. Their intervals overlap, which means the ordering between them is noise — run it again next week and they may swap. That is drawn rather than footnoted, because it is the single most useful thing on the page.</p>
+  <figure>
+    <div class="scroller">__CHART_LEADERBOARD__</div>
+    <figcaption>The whisker is the 95% confidence interval — the range the true score is likely to sit in given __N_QUESTIONS__ questions. Where two whiskers overlap, the gap between those providers is not measurable.</figcaption>
+  </figure>
+</section>
+
+<section>
+  <h2>What to actually use</h2>
+  <div class="picks">
+    <div class="pick">
+      <div class="role">Best overall</div>
+      <div class="who">Perplexity</div>
+      <p>Clear of the field, and the cheapest tier of all. Returns a page that fully answers the question about half the time — roughly 1.4&times; anyone else.</p>
+    </div>
+    <div class="pick">
+      <div class="role">Best value</div>
+      <div class="who">Serper</div>
+      <p>Matches Tavily's score at a fifty-fourth of the price. It returns links and snippets, never page content — so pair it with your own fetch and skip paying for bundled extraction.</p>
+    </div>
+    <div class="pick">
+      <div class="role">Hardest to fool</div>
+      <div class="who">Firecrawl</div>
+      <p>On the __N_UNANS__ questions with no answer anywhere, it produced the fewest convincing near-misses — beating Perplexity on all __N_UNANS__ of them. For an agent, nothing downstream catches that mistake.</p>
+    </div>
+    <div class="pick warn">
+      <div class="role">Not what you think it is</div>
+      <div class="who">Brave</div>
+      <p>Scores well, but it is not returning pages. Its content is search snippets joined together, with the entities undecoded. Fine for grounding a summary, no use to an agent that must read a document.</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>Easy questions make everyone look alike</h2>
+  <p>Half the set was written to be hard: multi-hop, ambiguous, or needing a source that is not the first result. The leaders barely notice. The bottom falls out.</p>
+  <figure>
+    <div class="scroller">__CHART_DIFFICULTY__</div>
+    <figcaption>Best-to-worst spread goes from __SPREAD_BASE__ on the base half to __SPREAD_HARD__ on the hard half, __SPREAD_PCT__% wider. If you benchmark search on easy questions you will conclude, wrongly, that the choice does not matter.</figcaption>
+  </figure>
+</section>
+
+<section>
+  <h2>Price buys nothing</h2>
+  <p>The same __N_QUESTIONS__ questions cost between twenty cents and seventeen dollars depending on who you asked. The three cheapest providers take three of the top four places.</p>
+  <figure>
+    <div class="scroller">__CHART_PRICE__</div>
+    <figcaption>Prices are pay-as-you-go list rates from the author's own billing pages, not out-of-pocket — free credits are a fact about one account, not about a product. A hollow ring marks a rate taken from a price list rather than a settled invoice.</figcaption>
+  </figure>
+</section>
+
+<section>
+  <h2>&ldquo;Page text&rdquo; means something different to every one of them</h2>
+  <p>None of this shows up in a relevance score, and it decides what you can build. A provider that strips every link cannot support a crawler. One that returns no tables cannot answer from a spec sheet.</p>
+  <figure>
+    <div class="scroller">__CHART_STRUCTURE__</div>
+    <figcaption>Share of each provider's returned pages containing the element. Nobody returns video: three to six per cent of Bright Data and Firecrawl pages mention a YouTube link, with no transcript or caption behind it.</figcaption>
+  </figure>
+</section>
+
+<section>
+  <h2>Every number, in one table</h2>
+  <div class="scroller">
+    <table>
+      <thead>
+        <tr>
+          <th>Provider</th>
+          <th class="n">Set rating</th>
+          <th class="n">Per page</th>
+          <th class="n">Hard half</th>
+          <th class="n">Fully answers</th>
+          <th class="n">$ / query</th>
+          <th class="n">This run</th>
+          <th class="n">Truncated</th>
+        </tr>
+      </thead>
+      <tbody>__TABLE_ROWS__</tbody>
+    </table>
+  </div>
+  <p style="font-size:.84rem;color:var(--faint);margin-top:14px">
+    Set rating and per-page rating are 0&ndash;3. &ldquo;Fully answers&rdquo; is the share of pages the judges put on the top rung. &ldquo;Truncated&rdquo; is how often a page hit the 1,600-character cut before a judge saw it. <span class="est">*</span> marks a price taken from a list rather than an invoice.
+  </p>
+</section>
+
+<section>
+  <h2>What this cannot see</h2>
+  <div class="note">
+    <h3>Every source was cut to 1,600 characters</h3>
+    <p>That cut bound on 98% of Firecrawl's pages and 40% of Perplexity's. A provider returning a 40KB article and one returning 1,600 characters of stitched snippets reached the judge the same size. So this measures <strong>which pages you get back</strong>, and is blind to how deeply a provider extracts them. For Firecrawl that is the result rather than a caveat beside it — extraction is what it sells, and this run does not test it.</p>
+  </div>
+  <div class="note">
+    <h3>Providers overlap, and a page is rated once</h3>
+    <p>The same page often comes back from several providers. It is judged once and the rating counts for everyone who returned it, using the longest version anyone returned. __OVERLAP_ONE__% of the __UNIQUE_PAIRS__ unique pages came from exactly one provider, and only __OVERLAP_ALL__ came from all eight. These indexes overlap far less than you would guess.</p>
+  </div>
+  <div class="note">
+    <h3>Nobody abstains</h3>
+    <p>All eight returned a full set of results on the questions that have no answer, exactly as they do everywhere else. Zero empty results across the run. Deciding there is nothing to find is the caller's job, and none of these products will do it for you.</p>
+  </div>
+  <div class="note">
+    <h3>The judges agree on the order, not the numbers</h3>
+    <p>Which judge you pick explains __VAR_JUDGE__% of what varies; the provider explains __VAR_PROVIDER__%. Pairwise agreement is kappa __KAPPA_LO__ to __KAPPA_HI__ — moderate. Every absolute number here moves if you swap the judge. The ranking does not, except within the tie.</p>
+  </div>
+</section>
+
+<section>
+  <h2>How it was run</h2>
+  <p>__N_QUESTIONS__ questions: __N_BASE__ base, __N_HARD__ written to be harder, __N_UNANS__ with no answer at all as an honesty check. Frozen before the run. Every provider was asked for eight results, once each, caching off, on one day. Only the search provider varied — same prompts, same settings, same three judges throughout.</p>
+  <p>Judges were calibrated against human-settled pairs first, and none of them rated a keyword-stuffed page above zero. A failure that cannot be attributed to a specific step is recorded as unknown and charged to nobody, because every single-digit failure count this project has published turned out to be its own bug rather than a vendor's.</p>
+  <p>
+    <a class="cta" href="explorer/">Open the results explorer &mdash; every rating, with the judge's own words</a>
+    <a class="cta" href="https://github.com/sameerhimati/sourcery">Read the code</a>
+  </p>
+</section>
+
+<footer>
+  <p>sourcery is an open-source eval harness: bring your own questions and keys, and it runs this comparison on the queries you actually care about. Every rating, every rationale and the derived figures behind this page are in the repository, so any number here can be checked against the run that produced it.</p>
+  <p>Run 2, fetched and judged __GENERATED__. MIT licensed.</p>
+</footer>
+
+</div>

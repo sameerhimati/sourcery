@@ -165,16 +165,6 @@
     color: var(--muted);
     font-size: 15px;
   }
-  .runmeta {
-    display: grid;
-    grid-template-columns: repeat(2, auto);
-    gap: 4px 28px;
-    font-size: 12.5px;
-    color: var(--muted);
-  }
-  .runmeta dt { color: var(--faint); text-transform: uppercase; letter-spacing: .07em; font-size: 10.5px; }
-  .runmeta dd { margin: 0 0 6px; }
-
   /* ── waiting for the data ─────────────────────────────────────── */
   /* Everything below the masthead is drawn from a twelve-megabyte file that
      arrives after the page does, so the page hides the empty shells of those
@@ -197,26 +187,6 @@
   .loadbar i { display: block; height: 100%; width: 0; background: var(--accent-2); transition: width .12s linear; }
   .wrap[data-state="error"] .loadbar { display: none; }
   .wrap[data-state="error"] .loadstate p:first-child { color: var(--bad); font-weight: 600; }
-
-  /* ── method note ──────────────────────────────────────────────── */
-  .method {
-    margin: 22px 0 0;
-    padding: 18px 20px;
-    background: var(--surface);
-    border: 1px solid var(--line);
-    border-left: 3px solid var(--accent-2);
-    border-radius: 4px;
-    box-shadow: var(--shadow);
-  }
-  .method h2 {
-    margin: 0 0 10px;
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: .1em;
-    color: var(--accent);
-  }
-  .method ul { margin: 0; padding-left: 18px; display: grid; gap: 7px; }
-  .method li { color: var(--ink-2); font-size: 13.5px; max-width: 88ch; }
 
   /* ── tabs ─────────────────────────────────────────────────────── */
   nav.tabs { display: flex; gap: 4px; margin: 26px 0 20px; border-bottom: 1px solid var(--line); }
@@ -409,7 +379,6 @@
         the same judges, and every rating kept so you can check it. Only the search provider varies.
       </p>
     </div>
-    <dl class="runmeta" id="runmeta"></dl>
   </header>
 
   <div class="loadstate" id="load-state">
@@ -418,11 +387,6 @@
     <div class="loadbar"><i id="load-fill"></i></div>
     <noscript><p class="sub">Every table and chart here is drawn in the browser, so the page needs JavaScript switched on.</p></noscript>
   </div>
-
-  <section class="method">
-    <h2>Read this before the numbers</h2>
-    <ul id="method-list"></ul>
-  </section>
 
   <nav class="tabs" role="tablist">
     <button role="tab" id="tab-providers" aria-selected="true" aria-controls="panel-providers">Providers</button>
@@ -537,65 +501,6 @@ function boot(DATA) {
     n.title = r === null || r === undefined ? "no usable verdict from this judge" : "rung " + r;
     return n;
   }
-
-  // ── masthead ────────────────────────────────────────────────────
-  (function () {
-    var dl = $("runmeta");
-    var rows = [
-      ["Questions", DATA.n_questions],
-      ["Providers", DATA.providers.length],
-      ["Judges", DATA.judges.length || "—"],
-      ["Unique pages", DATA.n_pairs.toLocaleString()],
-      ["Page ratings", DATA.n_ratings.toLocaleString()],
-      ["Set verdicts", DATA.n_set_verdicts.toLocaleString()],
-      ["Fetched", DATA.fetch_dates.join(" / ") || "—"],
-      ["Built", (DATA.generated_at || "").slice(0, 16).replace("T", " ")]
-    ];
-    rows.forEach(function (r) {
-      dl.appendChild(el("dt", null, r[0]));
-      dl.appendChild(el("dd", "num", r[1]));
-    });
-  })();
-
-  // ── method note ─────────────────────────────────────────────────
-  // These are the caveats that have to travel with the numbers. Each one is a
-  // thing that would otherwise be read off this page incorrectly.
-  (function () {
-    var ul = $("method-list");
-    var unpriced = DATA.providers.filter(function (p) {
-      return !DATA.costs[p] || DATA.costs[p].usd_per_query === null;
-    });
-    var items = [
-      "Every source is cut to 1,600 characters before any judge sees it. A provider that returned a " +
-      "40KB article and one that returned 1,600 characters of stitched-together snippets look identical " +
-      "here, so this page cannot tell you how deeply a provider extracts.",
-
-      "Providers overlap: the same page often comes back from several of them. Each page is rated once " +
-      "and the rating counts for every provider that returned it, using the longest version anyone returned. " +
-      "So a provider is credited for finding a page, and the ranking is about which pages you get back.",
-
-      "A failure is attributed to whichever step actually threw. Anything we cannot place is recorded as " +
-      "unknown and charged to nobody.",
-
-      "Keyless search is not on this page. It is captcha-blocked after a handful of queries — eight " +
-      "consecutive failures and no successes — so it is a demonstration of the free floor, never a " +
-      "measured provider."
-    ];
-    if (unpriced.length) {
-      items.push(
-        "Cost per query is not one kind of number. Tavily's came off our own invoice. " +
-        "The rest are quoted from pricing pages or estimated from third-party write-ups, and are marked " +
-        "as such in the table — check them against a bill before quoting them."
-      );
-    }
-    if (DATA.fetch_dates.length > 1) {
-      items.push(
-        "The fetch spans " + DATA.fetch_dates.join(" and ") + ". One arm throttles above a single concurrent " +
-        "request and needed its own slower repair pass, which crossed midnight."
-      );
-    }
-    items.forEach(function (t) { ul.appendChild(el("li", null, t)); });
-  })();
 
   // ── per-provider rollup ─────────────────────────────────────────
   var provStats = (function () {

@@ -122,13 +122,14 @@ header.lead { padding: var(--space-xl) 0 var(--space-lg); }
 }
 .tabs label:hover { color: var(--ink); }
 #tab-results:checked ~ .tabs label[for="tab-results"],
+#tab-pick:checked    ~ .tabs label[for="tab-pick"],
 #tab-method:checked  ~ .tabs label[for="tab-method"] {
   color: var(--ink); background: var(--paper); border-color: var(--ink); border-bottom-color: var(--paper);
 }
-.tabin:focus-visible ~ .tabs label[for="tab-results"],
-.tabin:focus-visible ~ .tabs label[for="tab-method"] { outline: 2px solid var(--accent); outline-offset: -2px; }
+.tabin:focus-visible ~ .tabs label { outline: 2px solid var(--accent); outline-offset: -2px; }
 .panel { display: none; }
 #tab-results:checked ~ #panel-results,
+#tab-pick:checked    ~ #panel-pick,
 #tab-method:checked  ~ #panel-method { display: block; }
 
 section { margin: 0 0 var(--space-2xl); }
@@ -187,7 +188,7 @@ td .na { color: var(--muted); font-family: var(--font-body); }
 
 /* ── the picks: a definition list, not a card grid ──────────────────────── */
 .picks { margin-top: var(--space-md); border-top: 1px solid var(--ink); }
-.pickrow { display: grid; grid-template-columns: 12rem 1fr; gap: var(--space-md); padding: var(--space-sm) 0; border-bottom: 1px solid var(--rule); align-items: baseline; }
+.pickrow { display: grid; grid-template-columns: 15rem 1fr; gap: var(--space-md); padding: var(--space-sm) 0; border-bottom: 1px solid var(--rule); align-items: baseline; }
 .pickrow .who { font-weight: 700; color: var(--ink); font-size: 1rem; letter-spacing: -0.015em; }
 .pickrow .who span { display: block; font-weight: 500; font-size: 0.75rem; color: var(--muted); letter-spacing: 0; margin-top: 1px; }
 .pickrow p { margin: 0; font-size: 0.9rem; color: var(--ink-2); max-width: none; }

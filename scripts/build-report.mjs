@@ -144,7 +144,11 @@ function chartLeaderboard() {
 
 // ── 2. base against hard ──────────────────────────────────────────────────────
 function chartDifficulty() {
-  const rows = ORDER.map((k) => ({ k, ...P[k].difficulty }));
+  // Sorted by its own metric rather than borrowing the leaderboard's. This chart
+  // plots per-page scores, and on those Exa beats Parallel while the set rating
+  // puts Parallel first — so the leaderboard's order left the dots not
+  // descending, which reads as a plotting error instead of as the finding it is.
+  const rows = ORDER.map((k) => ({ k, ...P[k].difficulty })).sort((a, b) => b.base - a.base);
   const top = 46;
   const baseY = top + rows.length * ROW;
   const h = baseY + 40;
@@ -358,6 +362,11 @@ const REPL = {
   __TABLE_ROWS__: tableRows(),
   __PROVIDER_SETTINGS__: SETTINGS,
   __PPX_RUNG3__: String(P.perplexity.binary.rung3_pct),
+  __SERPER_PRICE__: money(P.serper.cost.per_query_usd),
+  __TAVILY_MD__: String(Math.round(P.tavily.structure.markdown_pct)),
+  __EXA_HEADINGS__: String(Math.round(P.exa.structure.headings_pct)),
+  __EXA_LINKS__: String(Math.round(P.exa.structure.links_pct)),
+  __BRAVE_MD__: String(Math.round(P.brave.structure.markdown_pct)),
   __BD_RUNG3__: String(P.bright_data.binary.rung3_pct),
   __N_QUESTIONS__: String(d.counts.questions),
   __N_RATINGS__: d.counts.page_ratings_scored.toLocaleString("en-US"),

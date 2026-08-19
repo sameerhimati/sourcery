@@ -7,7 +7,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Search APIs, graded on their sources</title>
-<meta name="description" content="Eight web-search APIs, the same __N_QUESTIONS__ questions, three judges reading every page that came back — and never an answer. Results and full method.">
+<meta name="description" content="Eight web-search APIs, the same __N_QUESTIONS__ questions, three judges reading every page that came back, and never an answer. Results and full method.">
 <link rel="canonical" href="__BASE__">
 
 <!-- Social preview. The card is a checked-in file rather than a render at
@@ -89,9 +89,9 @@ __NAV__
 <section class="why">
   <h2 class="dhead">Why it is built this way</h2>
   <p>Some of what follows is a principled choice and some of it is my budget. They are worth telling apart, so here is which is which.</p>
-  <p><strong>Pooling was a cost decision first.</strong> Every page is graded once and that rating counts for every provider that returned it. There is a real methodological argument for it — a page is detached from whoever returned it before anyone grades it, so there is no provider name for a judge to be swayed by — and I would make that argument honestly. But I picked it because the eight arms returned __N_PAIRS__ question-page pairs that collapse to __UNIQUE_PAIRS__ unique ones, and grading the unique set meant __POOL_SAVED_PCT__% fewer judge calls. I could not have afforded the run otherwise. What it costs is real and I would rather you hear it from me: where several arms returned the same URL, the longest extraction anyone returned is the one that got graded, so extraction quality is averaged away on those pages.</p>
+  <p><strong>Pooling was a cost decision first.</strong> Every page is graded once and that rating counts for every provider that returned it. There is a real methodological argument for it, and I would make it honestly: a page is detached from whoever returned it before anyone grades it, so there is no provider name for a judge to be swayed by. But I picked it because the eight arms returned __N_PAIRS__ question-page pairs that collapse to __UNIQUE_PAIRS__ unique ones, and grading the unique set meant __POOL_SAVED_PCT__% fewer judge calls. I could not have afforded the run otherwise. What it costs is real and I would rather you hear it from me: where several arms returned the same URL, the longest extraction anyone returned is the one that got graded, so extraction quality is averaged away on those pages.</p>
   <p><strong>The __TRUNC_LIMIT__-character cut on each source is the same story.</strong> It is a realistic slice of an agent's context budget, which is true, and it is also the cheapest way to make __N_RATINGS__ ratings affordable. A bigger budget would have cost more and might have reordered the bottom of the table.</p>
-  <p><strong>Three judges, not five.</strong> Five models passed calibration against human-settled pairs and none of them rated a keyword-stuffed page above zero. I ran three of them, because three was what I could pay for. And this is one run on one set of questions — nothing here is measured twice, so no number on this page carries an estimate of how much it would move if I ran it again.</p>
+  <p><strong>Three judges, not five.</strong> Five models passed calibration against human-settled pairs and none of them rated a keyword-stuffed page above zero. I ran three of them, because three was what I could pay for. And this is one run on one set of questions: nothing here is measured twice, so no number on this page carries an estimate of how much it would move if I ran it again.</p>
 </section>
 
 <nav class="toc" aria-label="On this page">
@@ -109,19 +109,19 @@ __NAV__
 
 <section id="results">
   <h2>Results</h2>
-  <p>Each provider gave back eight pages per question, and a judge saw all eight together and answered one question: could you answer from these alone? Zero means nothing useful, three means a full answer. That is the <strong>set rating</strong>, and it is the headline on this page — it grades the eight results as a set, not one page at a time.</p>
+  <p>Each provider gave back eight pages per question, and a judge saw all eight together and answered one question: could you answer from these alone? Zero means nothing useful, three means a full answer. That is the <strong>set rating</strong>, and it is the headline on this page: it grades the eight results as a set, not one page at a time.</p>
   <figure>
     <div class="scroller">__CHART_LEADERBOARD__</div>
     <figcaption>The dot is the measured average over __N_QUESTIONS__ questions. Where two of those lines overlap, the order between the providers is noise rather than a finding, and the bracket marks each run of providers that cannot be separated.</figcaption>
   </figure>
-  <p>Perplexity is clear of everyone else. Below it there are two groups, and inside either one the order doesn't mean anything — ask again next week and they could come back in a different sequence. The gap between the two groups is the actual result: Exa to Tavily is four tenths of a point on the 0&ndash;3 scale, bigger than anything inside either cluster.</p>
-  <p>Throw the scale out entirely and you get the same thing. <strong>Perplexity returns a page that fully answers the question __PPX_RUNG3__% of the time, Bright Data manages __BD_RUNG3__%</strong>, and the ordering doesn't move — so none of this rests on the 0&ndash;3 rubric being right.</p>
+  <p>Perplexity is clear of everyone else. Below it there are two groups, and inside either one the order doesn't mean anything. Ask again next week and they could come back in a different sequence. The gap between the two groups is the actual result: Exa to Tavily is four tenths of a point on the 0&ndash;3 scale, bigger than anything inside either cluster.</p>
+  <p>The ordering holds without the 0&ndash;3 scale. <strong>Perplexity returns a page that fully answers the question __PPX_RUNG3__% of the time, Bright Data manages __BD_RUNG3__%</strong>, and the ranking comes back the same, so none of this rests on the rubric being right.</p>
 </section>
 
 <section id="difficulty">
   <h2>Base vs. hard questions</h2>
   <p>I wrote half the set to be hard: multi-hop, ambiguous, or needing a source that isn't the first result.</p>
-  <p class="scopenote">This chart is the <strong>page rating</strong>, not the set rating above — it scores each page on its own rather than the eight together. That is why the order is different: Exa's individual pages beat Parallel's, while Parallel's eight fit together better and win on the set.</p>
+  <p class="scopenote">This chart is the <strong>page rating</strong>, not the set rating above: it scores each page on its own rather than the eight together. That is why the order is different: Exa's individual pages beat Parallel's, while Parallel's eight fit together better and win on the set.</p>
   <figure>
     <div class="scroller">__CHART_DIFFICULTY__</div>
     <figcaption>Best-to-worst spread goes from __SPREAD_BASE__ on the base half to __SPREAD_HARD__ on the hard half, __SPREAD_PCT__% wider. The leaders do not improve; the bottom drops away. The chart is ordered by its own numbers, so Exa sits above Parallel here; on the set score the two are inside each other's confidence intervals and tie either way.</figcaption>
@@ -154,7 +154,7 @@ __NAV__
     <figcaption>Share of each provider's returned pages containing the element. Every provider was set to its highest-quality tier, so this is each one at its best.</figcaption>
   </figure>
   <p>Brave returns real page text on __BRAVE_MD__% of results, which is why <a href="#picking">the picking section</a> lists it as summaries-only. Exa keeps headings and drops links. Bright Data keeps nearly every image and no tables.</p>
-  <p>The other axis is volume. An agent gives each source a slice of its context, and this run allows __TRUNC_LIMIT__ characters, which is a realistic budget. <strong>__TRUNC_FIRECRAWL__% of Firecrawl's pages run past it; __TRUNC_PERPLEXITY__% of Perplexity's do.</strong> Firecrawl returns whole documents and Perplexity returns excerpts, and past the budget that difference stops reaching the model.</p>
+  <p>The other axis is volume: an agent gives each source a slice of its context, and this run allows __TRUNC_LIMIT__ characters, which is a realistic budget. <strong>__TRUNC_FIRECRAWL__% of Firecrawl's pages run past it; __TRUNC_PERPLEXITY__% of Perplexity's do.</strong> Firecrawl returns whole documents and Perplexity returns excerpts, and past the budget that difference stops reaching the model.</p>
 </section>
 
 <section id="vs-answer-graded">
@@ -190,14 +190,14 @@ __NAV__
 
 <section id="notes">
   <h2>Notes from the run</h2>
-  <p>The numbers above are tidy. Getting them was not, and the parts that went wrong say as much about these products as the ranking does.</p>
-  <p>Bright Data throttles above one concurrent request, so its arm ran at a crawl and needed a second repair pass that went past midnight — which is why this run is stamped across two days instead of one. Tavily's plan ran out around question __TAVILY_QUOTA_Q__ and the rest of its questions had to wait. Firecrawl went through __FC_CREDITS__ credits in a day, __FC_CREDIT_PCT__% of a month's allowance and $__FC_CREDIT_USD__ of prepaid credit, because it bills web and news results separately and only the web half ends up as sources; the news half buys publish dates I never used. I also tried a keyless arm as a free-floor control and dropped it after __KEYLESS_FAILS__ consecutive captcha failures and no successes at all.</p>
-  <p>One thing I would tell anyone repeating this: run it before you read it. A batching bug cost about $19 of retrieval that produced nothing usable, and no amount of staring at the code had turned it up — it only showed itself when the requests actually went out. Of __N_QUESTIONS__ questions across eight providers, __SEARCH_CLEAN__ of __SEARCH_TOTAL__ fetches came back clean; the single miss is Firecrawl timing out at 300 seconds, which I checked against their API by hand before recording it. The whole thing cost $__COST_TOTAL__, and what capped it was rate limits rather than the bill.</p>
+  <p>Getting these numbers was messier than the table makes it look, and the parts that went wrong say as much about these products as the ranking does.</p>
+  <p>Bright Data throttles above one concurrent request, so its arm ran at a crawl and needed a second repair pass that went past midnight, which is why this run is stamped across two days instead of one. Tavily's plan ran out around question __TAVILY_QUOTA_Q__ and the rest of its questions had to wait. Firecrawl went through __FC_CREDITS__ credits in a day, __FC_CREDIT_PCT__% of a month's allowance and $__FC_CREDIT_USD__ of prepaid credit, because it bills web and news results separately and only the web half ends up as sources; the news half buys publish dates I never used. I also tried a keyless arm as a free-floor control and dropped it after __KEYLESS_FAILS__ consecutive captcha failures and no successes at all.</p>
+  <p>One thing I would tell anyone repeating this: run it before you read it. A batching bug cost about $19 of retrieval that produced nothing usable, and no amount of staring at the code had turned it up; it only showed itself when the requests actually went out. Of __N_QUESTIONS__ questions across eight providers, __SEARCH_CLEAN__ of __SEARCH_TOTAL__ fetches came back clean; the single miss is Firecrawl timing out at 300 seconds, which I checked against their API by hand before recording it. The whole thing cost $__COST_TOTAL__, and what capped it was rate limits rather than the bill.</p>
 </section>
 
 <section id="picking">
   <h2>Six providers, six jobs</h2>
-  <p>What you're building decides this more than the ranking does. Three of these eight are tied on the headline and they still aren't interchangeable — one returns whole documents, one returns snippets, one returns prose with the links stripped out. So pick on the job. And weigh what your code can check: it can see an empty result and handle it; it cannot see a confident near-miss.</p>
+  <p>What you're building decides this more than the ranking does. Three of these eight are tied on the headline and they still aren't interchangeable: one returns whole documents, one returns snippets, one returns prose with the links stripped out. So pick on the job. And weigh what your code can check: it can see an empty result and handle it; it cannot see a confident near-miss.</p>
   <div class="picks">
     <div class="pickrow">
       <div class="who">Perplexity<span>best overall</span></div>

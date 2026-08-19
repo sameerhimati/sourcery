@@ -135,7 +135,7 @@ function chartLeaderboard() {
   s += axisFooter(baseY + 30, "set rating, 0–3", "higher is better");
   // This is the first chart on the page and the first place a confidence
   // interval appears, so it says what one is here rather than in the method tab.
-  s += txt(GUT, baseY + 50, "note", "Each line is the 95% confidence interval — the range the true rating probably sits in.");
+  s += txt(GUT, baseY + 50, "note", "Each line is the 95% confidence interval: the range the true rating probably sits in.");
 
   rows.forEach((r, i) => {
     const cy = top + i * ROW + ROW / 2 - 4;
@@ -351,7 +351,7 @@ function chartStructure() {
     const yy = top + (rows.length + i) * ROW;
     s += txt(GUT - 16, yy + ROW / 2 + 4, "name", LABEL[k], "end");
     s += `<rect x="${GUT + 1}" y="${yy + 2}" width="${COLS.length * cw - 4}" height="${ROW - 5}" rx="2" class="cell na"/>`;
-    s += txt(GUT + 12, yy + ROW / 2 + 4, "cellna", "returns links and snippets only — never page content");
+    s += txt(GUT + 12, yy + ROW / 2 + 4, "cellna", "returns links and snippets only; never page content");
   });
   // The one chart where neither direction is the good one. A page full of links
   // is not a better page, it is a different product, and stamping "higher is
@@ -441,12 +441,12 @@ function tableRows() {
 // and every knob here is turned up. Serper is the single deliberate exception
 // and says so in its own row.
 const SETTINGS = [
-  ["perplexity", "Search API /search", "search_context_size: high", "Excerpts — their maximum; there is no full-page mode"],
-  ["brave", "Search API, web endpoint", "extra_snippets: true", "Snippets only, by architecture — never a page body"],
+  ["perplexity", "Search API /search", "search_context_size: high", "Excerpts, their maximum; there is no full-page mode"],
+  ["brave", "Search API, web endpoint", "extra_snippets: true", "Snippets only, by architecture; never a page body"],
   ["parallel", "Search API, advanced tier", "mode: advanced, 6,000-char excerpts", "Dense excerpts; cannot be turned off"],
   ["exa", "/search with inline contents", "contents: { text: true }", "Page text at Exa's own default length"],
   ["tavily", "Search API /search", "search_depth: advanced, include_raw_content: markdown", "Full page markdown"],
-  ["serper", "Google Search API /search", "none — their scrape endpoint was not called", "Links and snippets only. The one deliberate downgrade"],
+  ["serper", "Google Search API /search", "none; their scrape endpoint was not called", "Links and snippets only. The one deliberate downgrade"],
   ["firecrawl", "v2 /search with scrape", 'scrapeOptions: { formats: ["markdown"] }', "Full page markdown"],
   ["bright_data", "SERP API + Web Unlocker", "data_format: markdown, via a second paid product", `Full page markdown, on the ${Math.round(d.cited.extraction_yield_pct.bright_data)}% of URLs the unlocker returned`],
 ]

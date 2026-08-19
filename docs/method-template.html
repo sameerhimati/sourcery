@@ -50,7 +50,7 @@ __NAV__
 
 <section id="varies">
   <h2>What varies</h2>
-  <p>One question goes to all eight providers. Each returns up to __NUM_SOURCES__ results. Nothing else differs between arms: same prompt, same judges, same number of results requested, caching off. Of the eight arms, __ARMS_DAY1__ finished inside a single day. Tavily and Bright Data ran into their own rate limits and finished in the early hours of the next morning, and that is the one respect in which the arms were not treated identically — a page that changed overnight would have been seen differently by those two.</p>
+  <p>One question goes to all eight providers. Each returns up to __NUM_SOURCES__ results. Nothing else differs between arms: same prompt, same judges, same number of results requested, caching off. Of the eight arms, __ARMS_DAY1__ finished inside a single day. Tavily and Bright Data ran into their own rate limits and finished in the early hours of the next morning, and that is the one respect in which the arms were not treated identically: a page that changed overnight would have been seen differently by those two.</p>
   <p>The settings live in one file, <span class="mono">core/controls.ts</span>, and every stage imports from it, so there is only ever one value of anything for a stage to read. Every provider was set to the highest-quality tier it offers; where a depth or content knob existed it was turned up.</p>
   <div class="scroller">
     <table>
@@ -86,7 +86,7 @@ __NAV__
   <div class="limits">
     <div class="limit"><h3>Confidence interval</h3><p>Where the real value probably sits, given that __N_QUESTIONS__ questions is a sample. Two overlapping intervals mean the order between those providers is not a finding.</p></div>
     <div class="limit"><h3>Variance shares</h3><p>How much of everything that varies is explained by each thing that could explain it. The provider explains __VAR_PROVIDER__%; which judge you picked explains __VAR_JUDGE__%.</p></div>
-    <div class="limit"><h3>Kappa</h3><p>Agreement between two judges after subtracting the agreement you would get by chance. These three run __KAPPA_LO__ to __KAPPA_HI__ — they agree on the order and argue about the decimals.</p></div>
+    <div class="limit"><h3>Kappa</h3><p>Agreement between two judges after subtracting the agreement you would get by chance. These three run __KAPPA_LO__ to __KAPPA_HI__: they agree on the order and argue about the decimals.</p></div>
     <div class="limit"><h3>Sign test</h3><p>Comparing two providers across the same small set of questions by counting wins, then asking how often a split that lopsided would happen by luck. Used on the __N_UNANS__ unanswerable questions, where eight providers cannot be ranked but two can be compared.</p></div>
   </div>
 </section>
@@ -104,11 +104,11 @@ __NAV__
     </div>
     <div class="limit">
       <h3>How any of this behaves at scale</h3>
-      <p>Every arm was run once, at whatever concurrency it tolerated, so nothing here measures throughput, quota behaviour, or what any of these costs at volume. What this run did collide with — a provider that throttles at one request, a plan that ran out mid-way, a day that ate most of a month's credits — is written up in <a href="__BASE__#notes">notes from the run</a>. Those are things that happened once; none of them is a measurement.</p>
+      <p>Every arm was run once, at whatever concurrency it tolerated, so nothing here measures throughput, quota behaviour, or what any of these costs at volume. What this run did collide with is written up in <a href="__BASE__#notes">notes from the run</a>: a provider that throttles at one request, a plan that ran out mid-way, a day that ate most of a month's credits. Those are things that happened once; none of them is a measurement.</p>
     </div>
     <div class="limit">
       <h3>Whether the questions look like yours</h3>
-      <p>__N_QUESTIONS__ questions written to probe retrieval, not collected from real traffic: __N_BASE__ ordinary, __N_HARD__ deliberately hard, __N_UNANS__ with no answer at all. I wrote all of them, so whatever I find interesting is in the sample and whatever I did not think to ask is not. Frozen and public, so you can judge the resemblance — and the harness exists so you can run your own instead.</p>
+      <p>__N_QUESTIONS__ questions written to probe retrieval, not collected from real traffic: __N_BASE__ ordinary, __N_HARD__ deliberately hard, __N_UNANS__ with no answer at all. I wrote all of them, so whatever I find interesting is in the sample and whatever I did not think to ask is not. Frozen and public, so you can judge the resemblance. The harness exists so you can run your own instead.</p>
     </div>
     <div class="limit">
       <h3>Whether tomorrow would come out the same</h3>
@@ -116,11 +116,11 @@ __NAV__
     </div>
     <div class="limit">
       <h3>Whether the judges are right</h3>
-      <p>Three large language models grade every page, and they agree with each other well enough to trust the ranking — kappa __KAPPA_LO__ to __KAPPA_HI__, moderate on a four-point scale. That is agreement among themselves, not agreement with a person. They were calibrated against human-settled pairs before the run, but three models trained on overlapping text can share a blind spot and agree anyway, and the __N_UNANS__ unanswerable questions show one: a plausible near-miss fools some of them.</p>
+      <p>Three large language models grade every page, and they agree with each other well enough to trust the ranking, kappa __KAPPA_LO__ to __KAPPA_HI__, moderate on a four-point scale. That is agreement among themselves, not agreement with a person. They were calibrated against human-settled pairs before the run, but three models trained on overlapping text can share a blind spot and agree anyway, and the __N_UNANS__ unanswerable questions show one: a plausible near-miss fools some of them.</p>
     </div>
     <div class="limit">
       <h3>How fast any of them are for you</h3>
-      <p>The table has a median latency column, so timing is measured — but it is measured from one machine on one network over two days, and a provider that is quick from my connection may not be quick from your region. Take the ordering seriously and the absolute numbers loosely.</p>
+      <p>The table has a median latency column, so timing is measured, but it is measured from one machine on one network over two days, and a provider that is quick from my connection may not be quick from your region. Take the ordering seriously and the absolute numbers loosely.</p>
     </div>
   </div>
 </section>

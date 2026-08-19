@@ -294,29 +294,33 @@ footer p { font-size: 0.86rem; color: var(--muted); }
 }
 
 /* ── site navigation (from scripts/nav.mjs) ─────────────────────────────── */
+/* Two deliberate rows: brand and run stamp on the first, the link strip on the
+   second, sitting directly on the bar's bottom rule. The current page's link
+   punches through that rule by taking the page background, and the trick only
+   works if nothing can ever wrap in between the links and the rule. */
 .sitenav {
   --nav-bg: #fafcfe;
-  display: flex; flex-wrap: wrap; align-items: flex-end; column-gap: 20px;
+  display: flex; flex-wrap: wrap; align-items: baseline; column-gap: 20px; row-gap: 2px;
   padding-top: 20px; border-bottom: 1px solid #0a0e12;
   font-size: 0.78rem; letter-spacing: 0.02em; color: #5b5e61;
 }
-.sitenav .brand { font-weight: 800; text-transform: uppercase; color: #0a0e12; padding-bottom: 12px; white-space: nowrap; }
+.sitenav .brand { font-weight: 800; text-transform: uppercase; color: #0a0e12; white-space: nowrap; }
 .sitenav .brand a { font-weight: 500; text-transform: none; letter-spacing: 0; color: #5b5e61; text-decoration: none; margin-left: 8px; }
 .sitenav .brand a:hover { color: #d01e1c; }
-.sitenav .navlinks { display: flex; flex-wrap: wrap; }
+.sitenav .meta { margin-left: auto; display: flex; column-gap: 20px; white-space: nowrap; }
+.sitenav .meta a { color: #5b5e61; text-decoration: none; }
+.sitenav .meta a:hover { color: #d01e1c; }
+.sitenav .stamp .mono { font-size: 0.85em; }
+.sitenav .navlinks { width: 100%; display: flex; flex-wrap: wrap; margin-top: 6px; }
 .sitenav .navlinks a {
-  padding: 12px 14px; font-weight: 700; font-size: 0.84rem; letter-spacing: 0.01em;
+  padding: 10px 14px; font-weight: 700; font-size: 0.84rem; letter-spacing: 0.01em;
   color: #5b5e61; text-decoration: none;
   border: 1px solid transparent; border-bottom: 0; margin-bottom: -1px;
 }
 .sitenav .navlinks a:hover { color: #0a0e12; }
 .sitenav .navlinks a[aria-current="page"] { color: #0a0e12; background: var(--nav-bg); border-color: #0a0e12; }
-.sitenav .meta { margin-left: auto; display: flex; column-gap: 20px; padding-bottom: 12px; white-space: nowrap; }
-.sitenav .meta a { color: #5b5e61; text-decoration: none; }
-.sitenav .meta a:hover { color: #d01e1c; }
-.sitenav .stamp .mono { font-size: 0.85em; }
 @media (max-width: 760px) {
-  .sitenav .meta { margin-left: 0; width: 100%; padding: 4px 0 12px; white-space: normal; }
+  .sitenav .meta { margin-left: 0; white-space: normal; }
 }
 </style>
 
@@ -324,15 +328,15 @@ footer p { font-size: 0.86rem; color: var(--muted); }
 
 <nav class="sitenav" aria-label="Site">
   <span class="brand">Sourcery<a href="https://sameerhimati.com">by Sameer Himati</a></span>
+  <span class="meta">
+    <span class="stamp">Run 2 &middot; fetched 17–18 August 2026 &middot; <span class="mono">1ca6432-dirty</span></span>
+    <a href="https://github.com/sameerhimati/sourcery">Source</a>
+  </span>
   <span class="navlinks">
     <a href="https://sameerhimati.com/sourcery/">Results</a>
     <a href="https://sameerhimati.com/sourcery/#picking">How to pick</a>
     <a href="https://sameerhimati.com/sourcery/method/" aria-current="page">Method</a>
     <a href="https://sameerhimati.com/sourcery/explorer/">Explorer</a>
-  </span>
-  <span class="meta">
-    <span class="stamp">Run 2 &middot; fetched 17–18 August 2026 &middot; <span class="mono">1ca6432-dirty</span></span>
-    <a href="https://github.com/sameerhimati/sourcery">Source</a>
   </span>
 </nav>
 
@@ -352,19 +356,19 @@ footer p { font-size: 0.86rem; color: var(--muted); }
 
 <section id="varies">
   <h2>What varies</h2>
-  <p>One question goes to all eight providers. Each returns up to 8 results. Nothing else differs between arms: same prompt, same judges, same number of results requested, caching off. Of the eight arms, six finished inside a single day. Tavily and Bright Data ran into their own rate limits and finished in the early hours of the next morning, and that is the one respect in which the arms were not treated identically — a page that changed overnight would have been seen differently by those two.</p>
+  <p>One question goes to all eight providers. Each returns up to 8 results. Nothing else differs between arms: same prompt, same judges, same number of results requested, caching off. Of the eight arms, six finished inside a single day. Tavily and Bright Data ran into their own rate limits and finished in the early hours of the next morning, and that is the one respect in which the arms were not treated identically: a page that changed overnight would have been seen differently by those two.</p>
   <p>The settings live in one file, <span class="mono">core/controls.ts</span>, and every stage imports from it, so there is only ever one value of anything for a stage to read. Every provider was set to the highest-quality tier it offers; where a depth or content knob existed it was turned up.</p>
   <div class="scroller">
     <table>
       <thead>
         <tr><th>Provider</th><th>Product</th><th>Content setting</th><th>What comes back</th></tr>
       </thead>
-      <tbody><tr><th scope="row">Perplexity</th><td class="prose">Search API /search</td><td>search_context_size: high</td><td class="prose">Excerpts — their maximum; there is no full-page mode</td></tr>
-<tr><th scope="row">Brave</th><td class="prose">Search API, web endpoint</td><td>extra_snippets: true</td><td class="prose">Snippets only, by architecture — never a page body</td></tr>
+      <tbody><tr><th scope="row">Perplexity</th><td class="prose">Search API /search</td><td>search_context_size: high</td><td class="prose">Excerpts, their maximum; there is no full-page mode</td></tr>
+<tr><th scope="row">Brave</th><td class="prose">Search API, web endpoint</td><td>extra_snippets: true</td><td class="prose">Snippets only, by architecture; never a page body</td></tr>
 <tr><th scope="row">Parallel</th><td class="prose">Search API, advanced tier</td><td>mode: advanced, 6,000-char excerpts</td><td class="prose">Dense excerpts; cannot be turned off</td></tr>
 <tr><th scope="row">Exa</th><td class="prose">/search with inline contents</td><td>contents: { text: true }</td><td class="prose">Page text at Exa's own default length</td></tr>
 <tr><th scope="row">Tavily</th><td class="prose">Search API /search</td><td>search_depth: advanced, include_raw_content: markdown</td><td class="prose">Full page markdown</td></tr>
-<tr><th scope="row">Serper</th><td class="prose">Google Search API /search</td><td>none — their scrape endpoint was not called</td><td class="prose">Links and snippets only. The one deliberate downgrade</td></tr>
+<tr><th scope="row">Serper</th><td class="prose">Google Search API /search</td><td>none; their scrape endpoint was not called</td><td class="prose">Links and snippets only. The one deliberate downgrade</td></tr>
 <tr><th scope="row">Firecrawl</th><td class="prose">v2 /search with scrape</td><td>scrapeOptions: { formats: [&quot;markdown&quot;] }</td><td class="prose">Full page markdown</td></tr>
 <tr><th scope="row">Bright Data</th><td class="prose">SERP API + Web Unlocker</td><td>data_format: markdown, via a second paid product</td><td class="prose">Full page markdown, on the 47% of URLs the unlocker returned</td></tr></tbody>
     </table>
@@ -401,7 +405,7 @@ footer p { font-size: 0.86rem; color: var(--muted); }
   <div class="limits">
     <div class="limit"><h3>Confidence interval</h3><p>Where the real value probably sits, given that 204 questions is a sample. Two overlapping intervals mean the order between those providers is not a finding.</p></div>
     <div class="limit"><h3>Variance shares</h3><p>How much of everything that varies is explained by each thing that could explain it. The provider explains 23.1%; which judge you picked explains 2.2%.</p></div>
-    <div class="limit"><h3>Kappa</h3><p>Agreement between two judges after subtracting the agreement you would get by chance. These three run 0.51 to 0.55 — they agree on the order and argue about the decimals.</p></div>
+    <div class="limit"><h3>Kappa</h3><p>Agreement between two judges after subtracting the agreement you would get by chance. These three run 0.51 to 0.55: they agree on the order and argue about the decimals.</p></div>
     <div class="limit"><h3>Sign test</h3><p>Comparing two providers across the same small set of questions by counting wins, then asking how often a split that lopsided would happen by luck. Used on the 12 unanswerable questions, where eight providers cannot be ranked but two can be compared.</p></div>
   </div>
 </section>
@@ -419,11 +423,11 @@ footer p { font-size: 0.86rem; color: var(--muted); }
     </div>
     <div class="limit">
       <h3>How any of this behaves at scale</h3>
-      <p>Every arm was run once, at whatever concurrency it tolerated, so nothing here measures throughput, quota behaviour, or what any of these costs at volume. What this run did collide with — a provider that throttles at one request, a plan that ran out mid-way, a day that ate most of a month's credits — is written up in <a href="https://sameerhimati.com/sourcery/#notes">notes from the run</a>. Those are things that happened once; none of them is a measurement.</p>
+      <p>Every arm was run once, at whatever concurrency it tolerated, so nothing here measures throughput, quota behaviour, or what any of these costs at volume. What this run did collide with is written up in <a href="https://sameerhimati.com/sourcery/#notes">notes from the run</a>: a provider that throttles at one request, a plan that ran out mid-way, a day that ate most of a month's credits. Those are things that happened once; none of them is a measurement.</p>
     </div>
     <div class="limit">
       <h3>Whether the questions look like yours</h3>
-      <p>204 questions written to probe retrieval, not collected from real traffic: 96 ordinary, 96 deliberately hard, 12 with no answer at all. I wrote all of them, so whatever I find interesting is in the sample and whatever I did not think to ask is not. Frozen and public, so you can judge the resemblance — and the harness exists so you can run your own instead.</p>
+      <p>204 questions written to probe retrieval, not collected from real traffic: 96 ordinary, 96 deliberately hard, 12 with no answer at all. I wrote all of them, so whatever I find interesting is in the sample and whatever I did not think to ask is not. Frozen and public, so you can judge the resemblance. The harness exists so you can run your own instead.</p>
     </div>
     <div class="limit">
       <h3>Whether tomorrow would come out the same</h3>
@@ -431,11 +435,11 @@ footer p { font-size: 0.86rem; color: var(--muted); }
     </div>
     <div class="limit">
       <h3>Whether the judges are right</h3>
-      <p>Three large language models grade every page, and they agree with each other well enough to trust the ranking — kappa 0.51 to 0.55, moderate on a four-point scale. That is agreement among themselves, not agreement with a person. They were calibrated against human-settled pairs before the run, but three models trained on overlapping text can share a blind spot and agree anyway, and the 12 unanswerable questions show one: a plausible near-miss fools some of them.</p>
+      <p>Three large language models grade every page, and they agree with each other well enough to trust the ranking, kappa 0.51 to 0.55, moderate on a four-point scale. That is agreement among themselves, not agreement with a person. They were calibrated against human-settled pairs before the run, but three models trained on overlapping text can share a blind spot and agree anyway, and the 12 unanswerable questions show one: a plausible near-miss fools some of them.</p>
     </div>
     <div class="limit">
       <h3>How fast any of them are for you</h3>
-      <p>The table has a median latency column, so timing is measured — but it is measured from one machine on one network over two days, and a provider that is quick from my connection may not be quick from your region. Take the ordering seriously and the absolute numbers loosely.</p>
+      <p>The table has a median latency column, so timing is measured, but it is measured from one machine on one network over two days, and a provider that is quick from my connection may not be quick from your region. Take the ordering seriously and the absolute numbers loosely.</p>
     </div>
   </div>
 </section>

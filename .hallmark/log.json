@@ -2,12 +2,12 @@
   {
     "date": "2026-08-19",
     "macrostructure": "Long Document",
-    "theme": "custom",
-    "theme_axes": "light / classical-serif / warm",
-    "vibe": "technical editorial, paper and ink",
+    "theme": "Grid",
+    "theme_axes": "light / grotesk-sans / signal-red",
+    "vibe": "technical instrument, paper and rule",
     "nav": "N9 edge-aligned",
     "footer": "Ft4 dense colophon",
-    "enrichment": "none — typography and charts only",
-    "brief": "sourcery run 2 — search API results report"
+    "enrichment": "none \u2014 typography and charts only",
+    "brief": "sourcery run 2 \u2014 search API results report"
   }
 ]

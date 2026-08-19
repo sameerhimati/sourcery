@@ -27,15 +27,7 @@
 import fs from "node:fs";
 // Imported, not transcribed: the rubrics and rung names the methodology page
 // publishes are the ones the run actually used. A copy would drift.
-import {
-  RELEVANCE_RUNGS,
-  SET_RUNGS,
-  RELEVANCE_JUDGE_SYSTEM,
-  SET_JUDGE_SYSTEM,
-  RELEVANCE_JUDGE_TEMP,
-  SET_JUDGE_TEMP,
-  NUM_SOURCES,
-} from "../core/controls.ts";
+import { RELEVANCE_RUNGS, SET_RUNGS, NUM_SOURCES } from "../core/controls.ts";
 
 const DATA = process.argv[2] ?? "docs/report-data.json";
 
@@ -164,7 +156,7 @@ function chartDifficulty() {
   let s =
     `<circle cx="${GUT + 5}" cy="18" r="5" class="est"/>` +
     txt(GUT + 16, 22, "legend", `${d.counts.base} base questions`) +
-    `<circle cx="${GUT + 178}" cy="18" r="5" class="est alt"/>` +
+    `<circle cx="${GUT + 178}" cy="18" r="5" class="est hollow"/>` +
     txt(GUT + 189, 22, "legend", `${d.counts.hard} written to be hard`);
 
   for (const t of [1.25, 1.5, 1.75, 2.0, 2.25]) {
@@ -186,7 +178,7 @@ function chartDifficulty() {
     }
     s += `<line x1="${hx}" y1="${cy}" x2="${bx2}" y2="${cy}" class="join"/>`;
     s += `<circle cx="${bx2}" cy="${cy}" r="5" class="est"/>`;
-    s += `<circle cx="${hx}" cy="${cy}" r="5" class="est alt"/>`;
+    s += `<circle cx="${hx}" cy="${cy}" r="5" class="est hollow"/>`;
     const drop = r.base - r.hard;
     s += txt(PLOT + 28, cy + 4, drop > 0.15 ? "num hot" : "num dim", drop > 0.005 ? `− ${drop.toFixed(3)}` : "no drop");
   });
@@ -241,7 +233,7 @@ function chartPrice() {
     const px = x(c.per_query_usd);
     const py = y(P[k].set.mean);
     // a hollow ring means the price is a published rate, not a settled bill
-    s += `<circle cx="${px}" cy="${py}" r="5.5" class="${c.is_estimate ? "est ring" : "est"}"/>`;
+    s += `<circle cx="${px}" cy="${py}" r="5.5" class="${c.is_estimate ? "est hollow" : "est"}"/>`;
     const [dx, dy] = nudge[k];
     s += txt(px + dx, py + dy, "ptname", LABEL[k], dx < 0 ? "end" : "start");
   }
@@ -314,9 +306,9 @@ function tableRows() {
       `<tr>` +
       `<th scope="row">${esc(LABEL[k])}</th>` +
       `<td class="n lead">${f3(v.set.mean)}<span class="pm">± ${v.set.ci95.toFixed(3)}</span></td>` +
+      `<td class="n lead">${v.binary.rung3_pct}%</td>` +
       `<td class="n">${f3(v.page.mean)}</td>` +
       `<td class="n">${f3(v.difficulty.hard)}</td>` +
-      `<td class="n">${v.binary.rung3_pct}%</td>` +
       `<td class="n">${money(v.cost.per_query_usd)}${v.cost.is_estimate ? '<span class="star" title="published rate, not a settled invoice">*</span>' : ""}</td>` +
       `<td class="n">$${v.cost.run_total_usd.toFixed(2)}</td>` +
       `<td class="n">${noText ? '<span class="na">n/a</span>' : `${Math.round(v.truncation.pct)}%`}</td>` +
@@ -325,24 +317,29 @@ function tableRows() {
   }).join("\n");
 }
 
-function stats() {
-  const cheap = ORDER.reduce((a, k) => (P[k].cost.per_query_usd < P[a].cost.per_query_usd ? k : a), ORDER[0]);
-  const dear = ORDER.reduce((a, k) => (P[k].cost.per_query_usd > P[a].cost.per_query_usd ? k : a), ORDER[0]);
-  const ratio = Math.round(P[dear].cost.per_query_usd / P[cheap].cost.per_query_usd);
-  return [
-    [d.counts.page_ratings_scored.toLocaleString("en-US"), "page ratings", `${d.counts.unique_pairs.toLocaleString("en-US")} pages, each read by ${d.counts.judges} judges`],
-    [`${ratio}×`, "price spread", `${money(P[cheap].cost.per_query_usd)} to ${money(P[dear].cost.per_query_usd)}, same question`],
-    [`${(d.variance_shares.judge * 100).toFixed(1)}%`, "down to the judge", `the provider accounts for ${(d.variance_shares.provider * 100).toFixed(1)}%`],
-    [`$${d.cost_total_usd.toFixed(2)}`, "total retrieval bill", "eight providers, one day, no caching"],
-  ]
-    .map(
-      ([n, l, sub]) =>
-        `<div class="tile"><div class="tn">${esc(n)}</div><div class="tl">${esc(l)}</div><div class="ts">${esc(sub)}</div></div>`,
-    )
-    .join("\n");
-}
 
-// ── the methodology page ──────────────────────────────────────────────────────
+// ── what each provider was actually asked for ────────────────────────────────
+// Read off core/adapters/. Published because "we tested provider X" means
+// nothing without the tier: a cheap default would make a good product look bad,
+// and every knob here is turned up. Serper is the single deliberate exception
+// and says so in its own row.
+const SETTINGS = [
+  ["perplexity", "Search API /search", "search_context_size: high", "Excerpts — their maximum; there is no full-page mode"],
+  ["brave", "Search API, web endpoint", "extra_snippets: true", "Snippets only, by architecture — never a page body"],
+  ["parallel", "Search API, advanced tier", "mode: advanced, 6,000-char excerpts", "Dense excerpts; cannot be turned off"],
+  ["exa", "/search with inline contents", "contents: { text: true }", "Page text at Exa's own default length"],
+  ["tavily", "Search API /search", "search_depth: advanced, include_raw_content: markdown", "Full page markdown"],
+  ["serper", "Google Search API /search", "none — their scrape endpoint was not called", "Links and snippets only. The one deliberate downgrade"],
+  ["firecrawl", "v2 /search with scrape", 'scrapeOptions: { formats: ["markdown"] }', "Full page markdown"],
+  ["bright_data", "SERP API + Web Unlocker", "data_format: markdown, via a second paid product", "Full page markdown, on the ~47% of URLs the unlocker returned"],
+]
+  .map(
+    ([k, product, setting, out]) =>
+      `<tr><th scope="row">${esc(LABEL[k])}</th><td class="prose">${esc(product)}</td><td>${esc(setting)}</td><td class="prose">${esc(out)}</td></tr>`,
+  )
+  .join("\n");
+
+// ── the methodology tab ───────────────────────────────────────────────────────
 const rungRows = (rungs) =>
   rungs
     .map(
@@ -351,20 +348,6 @@ const rungRows = (rungs) =>
     )
     .join("\n");
 
-// Every row is a value the run held identical across all eight arms. The "why"
-// column matters more than the value: a constant without a reason is a constant
-// somebody will change.
-const CONSTANTS = [
-  ["Results requested", String(NUM_SOURCES.default), "the same number from every provider, so nobody wins by returning more"],
-  ["Judges", d.judges.join(", "), "three labs, so no single vendor's model decides the ranking"],
-  ["Judge temperature", String(RELEVANCE_JUDGE_TEMP === SET_JUDGE_TEMP ? RELEVANCE_JUDGE_TEMP : `${RELEVANCE_JUDGE_TEMP} / ${SET_JUDGE_TEMP}`), "grading should not wander between two identical pages"],
-  ["Text per page", `${P.firecrawl.truncation.limit_chars} chars`, "the same cut an answer step would apply, and the run's largest blind spot"],
-  ["Caching", "off", "a cached page is yesterday's index answering today's question"],
-  ["Requests per question", "1", "what a caller gets in production, and the reason the intervals are as wide as they are"],
-  ["Fetched", d.run + ", " + new Date(d.generated_at).toISOString().slice(0, 10), "one day, so no provider is compared against another's different week"],
-]
-  .map(([k, v, why]) => `<tr><th>${esc(k)}</th><td class="v">${esc(v)}</td><td class="why">${esc(why)}</td></tr>`)
-  .join("\n");
 
 // ── assemble ──────────────────────────────────────────────────────────────────
 const REPL = {
@@ -373,16 +356,14 @@ const REPL = {
   __CHART_PRICE__: chartPrice(),
   __CHART_STRUCTURE__: chartStructure(),
   __TABLE_ROWS__: tableRows(),
-  __STATS__: stats(),
+  __PROVIDER_SETTINGS__: SETTINGS,
+  __PPX_RUNG3__: String(P.perplexity.binary.rung3_pct),
+  __BD_RUNG3__: String(P.bright_data.binary.rung3_pct),
   __N_QUESTIONS__: String(d.counts.questions),
-  __N_PROVIDERS__: String(d.counts.providers),
-  __N_JUDGES__: String(d.counts.judges),
   __N_RATINGS__: d.counts.page_ratings_scored.toLocaleString("en-US"),
-  __N_SETS__: d.counts.set_verdicts_scored.toLocaleString("en-US"),
   __N_BASE__: String(d.counts.base),
   __N_HARD__: String(d.counts.hard),
   __N_UNANS__: String(d.counts.unanswerable),
-  __N_SEARCHES__: d.counts.searches.toLocaleString("en-US"),
   __SPREAD_BASE__: String(d.spread.base),
   __SPREAD_HARD__: String(d.spread.hard),
   __SPREAD_PCT__: String(d.spread.widened_pct),
@@ -403,16 +384,12 @@ const REPL = {
   __NUM_SOURCES__: String(NUM_SOURCES.default),
   __PAGE_RUNGS__: rungRows(RELEVANCE_RUNGS),
   __SET_RUNGS__: rungRows(SET_RUNGS),
-  __PAGE_PROMPT__: esc(RELEVANCE_JUDGE_SYSTEM),
-  __SET_PROMPT__: esc(SET_JUDGE_SYSTEM),
-  __CONSTANTS__: CONSTANTS,
   __STYLE__: fs.readFileSync("docs/report-style.css", "utf8").trimEnd(),
 };
 
-const PAGES = [
-  ["docs/report-template.html", "docs/index.html"],
-  ["docs/methodology-template.html", "docs/methodology.html"],
-];
+// One page, two tabs. The method used to be a second file; splitting a report
+// from its method means most readers only ever see one of them.
+const PAGES = [["docs/report-template.html", "docs/index.html"]];
 
 const usedSomewhere = new Set();
 for (const [tpl, out] of PAGES) {

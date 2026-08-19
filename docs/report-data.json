@@ -1,0 +1,514 @@
+{
+ "generated_at": "2026-08-19T16:02:59.622Z",
+ "run": "run 2",
+ "source": "derived by scripts/build-report-data.mjs from .sourcery/pooled-*.jsonl and pooled-summary.json",
+ "judges": [
+  "claude-sonnet-5",
+  "gpt-5.6-terra",
+  "glm-5p2"
+ ],
+ "provider_order": [
+  "perplexity",
+  "brave",
+  "parallel",
+  "exa",
+  "tavily",
+  "serper",
+  "firecrawl",
+  "bright_data"
+ ],
+ "counts": {
+  "questions": 204,
+  "base": 96,
+  "hard": 96,
+  "unanswerable": 12,
+  "providers": 8,
+  "judges": 3,
+  "searches": 1631,
+  "pairs": 12954,
+  "unique_pairs": 7496,
+  "page_ratings": 22488,
+  "set_verdicts": 4891,
+  "page_ratings_scored": 22457,
+  "set_verdicts_scored": 4886,
+  "unjudged_pairs": 0
+ },
+ "spread": {
+  "base": 0.879,
+  "hard": 1.07,
+  "widened_pct": 22,
+  "best": "perplexity",
+  "worst": "bright_data"
+ },
+ "variance_shares": {
+  "provider": 0.231,
+  "query": 0.457,
+  "judge": 0.022,
+  "provider_by_query": 0.214,
+  "residual": 0.076,
+  "n_cells": 4893
+ },
+ "agreement": [
+  {
+   "judge_a": "claude-sonnet-5",
+   "judge_b": "gpt-5.6-terra",
+   "raw_agreement": 0.642,
+   "kappa": 0.509,
+   "n": 7465
+  },
+  {
+   "judge_a": "claude-sonnet-5",
+   "judge_b": "glm-5p2",
+   "raw_agreement": 0.666,
+   "kappa": 0.55,
+   "n": 7465
+  },
+  {
+   "judge_a": "gpt-5.6-terra",
+   "judge_b": "glm-5p2",
+   "raw_agreement": 0.654,
+   "kappa": 0.535,
+   "n": 7496
+  }
+ ],
+ "rung_distribution": [
+  {
+   "judge": "claude-sonnet-5",
+   "counts": [
+    1158,
+    1762,
+    2177,
+    2368
+   ],
+   "n_null": 31
+  },
+  {
+   "judge": "gpt-5.6-terra",
+   "counts": [
+    925,
+    1633,
+    2734,
+    2204
+   ],
+   "n_null": 0
+  },
+  {
+   "judge": "glm-5p2",
+   "counts": [
+    1793,
+    1473,
+    2010,
+    2220
+   ],
+   "n_null": 0
+  }
+ ],
+ "overlap": {
+  "n_pages": 7496,
+  "from_one_provider": 5011,
+  "from_one_provider_pct": 66.8,
+  "from_two_or_more": 2485,
+  "from_all_providers": 24,
+  "by_provider_count": {
+   "1": 5011,
+   "2": 1080,
+   "3": 666,
+   "4": 304,
+   "5": 181,
+   "6": 146,
+   "7": 84,
+   "8": 24
+  },
+  "grouped_by": "pooled url — the same page under two urls counts once, matching how it was judged"
+ },
+ "overlap_by_raw_url": {
+  "n_pages": 7877,
+  "from_one_provider": 5471,
+  "from_one_provider_pct": 69.5,
+  "from_two_or_more": 2406,
+  "from_all_providers": 15,
+  "by_provider_count": {
+   "1": 5471,
+   "2": 1086,
+   "3": 653,
+   "4": 282,
+   "5": 178,
+   "6": 132,
+   "7": 60,
+   "8": 15
+  },
+  "grouped_by": "the url as each provider returned it — a page under two urls counts twice"
+ },
+ "cost_total_usd": 40.08,
+ "providers": {
+  "perplexity": {
+   "set": {
+    "mean": 2.768,
+    "ci95": 0.068,
+    "n_queries": 204
+   },
+   "page": {
+    "mean": 2.259,
+    "lift": 0.509,
+    "n_pages": 1630,
+    "join_match_pct": 100
+   },
+   "difficulty": {
+    "base": 2.367,
+    "hard": 2.332,
+    "delta": -0.034
+   },
+   "binary": {
+    "rung3_pct": 49.9,
+    "rung2_or_3_pct": 82.6
+   },
+   "unanswerable": {
+    "mean": 0.816,
+    "n_questions": 12
+   },
+   "structure": {
+    "n_pages_with_text": 1630,
+    "markdown_pct": 63.5,
+    "headings_pct": 24.5,
+    "links_pct": 0.6,
+    "images_pct": 0.2,
+    "tables_pct": 14.8
+   },
+   "truncation": {
+    "pct": 40.4,
+    "limit_chars": 1600
+   },
+   "cost": {
+    "per_query_usd": 0.005,
+    "run_total_usd": 1.02,
+    "calls": 204,
+    "confidence": "billed",
+    "is_estimate": false
+   }
+  },
+  "brave": {
+   "set": {
+    "mean": 2.611,
+    "ci95": 0.081,
+    "n_queries": 204
+   },
+   "page": {
+    "mean": 1.997,
+    "lift": 0.614,
+    "n_pages": 1630,
+    "join_match_pct": 100
+   },
+   "difficulty": {
+    "base": 2.117,
+    "hard": 2.037,
+    "delta": -0.08
+   },
+   "binary": {
+    "rung3_pct": 34.8,
+    "rung2_or_3_pct": 73.7
+   },
+   "unanswerable": {
+    "mean": 0.726,
+    "n_questions": 12
+   },
+   "structure": {
+    "n_pages_with_text": 1583,
+    "markdown_pct": 1.3,
+    "headings_pct": 1,
+    "links_pct": 0.1,
+    "images_pct": 0.2,
+    "tables_pct": 0
+   },
+   "truncation": {
+    "pct": 77.3,
+    "limit_chars": 1600
+   },
+   "cost": {
+    "per_query_usd": 0.005,
+    "run_total_usd": 1.02,
+    "calls": 204,
+    "confidence": "billed",
+    "is_estimate": false
+   }
+  },
+  "parallel": {
+   "set": {
+    "mean": 2.556,
+    "ci95": 0.088,
+    "n_queries": 204
+   },
+   "page": {
+    "mean": 1.86,
+    "lift": 0.696,
+    "n_pages": 1597,
+    "join_match_pct": 100
+   },
+   "difficulty": {
+    "base": 1.928,
+    "hard": 1.929,
+    "delta": 0.001
+   },
+   "binary": {
+    "rung3_pct": 29.3,
+    "rung2_or_3_pct": 67.3
+   },
+   "unanswerable": {
+    "mean": 0.643,
+    "n_questions": 12
+   },
+   "structure": {
+    "n_pages_with_text": 1600,
+    "markdown_pct": 90.8,
+    "headings_pct": 88.7,
+    "links_pct": 36.2,
+    "images_pct": 0.6,
+    "tables_pct": 2
+   },
+   "truncation": {
+    "pct": 42.8,
+    "limit_chars": 1600
+   },
+   "cost": {
+    "per_query_usd": 0.005,
+    "run_total_usd": 1.02,
+    "calls": 204,
+    "confidence": "billed",
+    "is_estimate": false
+   }
+  },
+  "exa": {
+   "set": {
+    "mean": 2.549,
+    "ci95": 0.086,
+    "n_queries": 204
+   },
+   "page": {
+    "mean": 1.966,
+    "lift": 0.583,
+    "n_pages": 1627,
+    "join_match_pct": 100
+   },
+   "difficulty": {
+    "base": 2.13,
+    "hard": 1.96,
+    "delta": -0.169
+   },
+   "binary": {
+    "rung3_pct": 32.2,
+    "rung2_or_3_pct": 71.7
+   },
+   "unanswerable": {
+    "mean": 0.681,
+    "n_questions": 12
+   },
+   "structure": {
+    "n_pages_with_text": 1632,
+    "markdown_pct": 90.7,
+    "headings_pct": 88.8,
+    "links_pct": 6.9,
+    "images_pct": 2.8,
+    "tables_pct": 14.4
+   },
+   "truncation": {
+    "pct": 93,
+    "limit_chars": 1600
+   },
+   "cost": {
+    "per_query_usd": 0.0141,
+    "run_total_usd": 2.88,
+    "calls": 204,
+    "confidence": "billed",
+    "is_estimate": false
+   }
+  },
+  "tavily": {
+   "set": {
+    "mean": 2.149,
+    "ci95": 0.109,
+    "n_queries": 204
+   },
+   "page": {
+    "mean": 1.487,
+    "lift": 0.662,
+    "n_pages": 1615,
+    "join_match_pct": 100
+   },
+   "difficulty": {
+    "base": 1.685,
+    "hard": 1.419,
+    "delta": -0.266
+   },
+   "binary": {
+    "rung3_pct": 20.2,
+    "rung2_or_3_pct": 50.5
+   },
+   "unanswerable": {
+    "mean": 0.447,
+    "n_questions": 12
+   },
+   "structure": {
+    "n_pages_with_text": 1631,
+    "markdown_pct": 98.4,
+    "headings_pct": 87.2,
+    "links_pct": 91.4,
+    "images_pct": 72.8,
+    "tables_pct": 7.5
+   },
+   "truncation": {
+    "pct": 98.9,
+    "limit_chars": 1600
+   },
+   "cost": {
+    "per_query_usd": 0.054,
+    "run_total_usd": 13.83,
+    "calls": 258,
+    "confidence": "rate",
+    "is_estimate": true
+   }
+  },
+  "serper": {
+   "set": {
+    "mean": 2.123,
+    "ci95": 0.104,
+    "n_queries": 204
+   },
+   "page": {
+    "mean": 1.45,
+    "lift": 0.673,
+    "n_pages": 1564,
+    "join_match_pct": 100
+   },
+   "difficulty": {
+    "base": 1.603,
+    "hard": 1.42,
+    "delta": -0.183
+   },
+   "binary": {
+    "rung3_pct": 17.8,
+    "rung2_or_3_pct": 48.6
+   },
+   "unanswerable": {
+    "mean": 0.454,
+    "n_questions": 12
+   },
+   "structure": {
+    "n_pages_with_text": 0,
+    "markdown_pct": null,
+    "headings_pct": null,
+    "links_pct": null,
+    "images_pct": null,
+    "tables_pct": null
+   },
+   "truncation": {
+    "pct": null,
+    "limit_chars": 1600
+   },
+   "cost": {
+    "per_query_usd": 0.001,
+    "run_total_usd": 0.2,
+    "calls": 204,
+    "confidence": "rate",
+    "is_estimate": true
+   }
+  },
+  "firecrawl": {
+   "set": {
+    "mean": 2.064,
+    "ci95": 0.112,
+    "n_queries": 203
+   },
+   "page": {
+    "mean": 1.348,
+    "lift": 0.716,
+    "n_pages": 1609,
+    "join_match_pct": 100
+   },
+   "difficulty": {
+    "base": 1.533,
+    "hard": 1.283,
+    "delta": -0.249
+   },
+   "binary": {
+    "rung3_pct": 15.6,
+    "rung2_or_3_pct": 43.8
+   },
+   "unanswerable": {
+    "mean": 0.404,
+    "n_questions": 12
+   },
+   "structure": {
+    "n_pages_with_text": 1353,
+    "markdown_pct": 98.7,
+    "headings_pct": 82.3,
+    "links_pct": 89.9,
+    "images_pct": 65,
+    "tables_pct": 9.1
+   },
+   "truncation": {
+    "pct": 97.6,
+    "limit_chars": 1600
+   },
+   "cost": {
+    "per_query_usd": 0.0856,
+    "run_total_usd": 17.47,
+    "calls": 205,
+    "confidence": "rate",
+    "is_estimate": true
+   }
+  },
+  "bright_data": {
+   "set": {
+    "mean": 1.95,
+    "ci95": 0.105,
+    "n_queries": 204
+   },
+   "page": {
+    "mean": 1.319,
+    "lift": 0.631,
+    "n_pages": 1617,
+    "join_match_pct": 100
+   },
+   "difficulty": {
+    "base": 1.488,
+    "hard": 1.262,
+    "delta": -0.226
+   },
+   "binary": {
+    "rung3_pct": 14.9,
+    "rung2_or_3_pct": 42.5
+   },
+   "unanswerable": {
+    "mean": 0.422,
+    "n_questions": 12
+   },
+   "structure": {
+    "n_pages_with_text": 960,
+    "markdown_pct": 91.6,
+    "headings_pct": 69.4,
+    "links_pct": 90.3,
+    "images_pct": 78.1,
+    "tables_pct": 0.1
+   },
+   "truncation": {
+    "pct": 92.5,
+    "limit_chars": 1600
+   },
+   "cost": {
+    "per_query_usd": 0.0129,
+    "run_total_usd": 2.64,
+    "calls": 405,
+    "confidence": "rate",
+    "is_estimate": true
+   }
+  }
+ },
+ "corrections": {
+  "page_join_rebuilt": "The draft's page-level tables attached a rating to a provider by matching the url the provider returned against the url the judgement log stores, which is the pooled one. A page whose url needed normalizing to pool — a trailing slash, a tracking parameter — therefore had no rating attached, and the arms lost between 1% and 43% of their pages to it. Everything downstream of that join has been rebuilt here with core/pool.ts's own normalizeUrl on both sides, which matches 100% of every arm's pages. The page averages, base and hard averages, both binary thresholds, lift, the spread and the unanswerable scores all moved; every one of them is now over the whole of what a provider returned rather than over the subset whose urls happened to need no cleaning. The draft's numbers should be replaced, not reconciled.",
+  "bright_data_double_count_gone": "Bright Data throttles above one concurrent request and needed a slower repair pass, which left some questions with two clean fetch rows, and the draft's page numbers counted both. Deduping pages by question and pooled url fixes this as a side effect — the same page under one key — so no arm needs special-casing any more.",
+  "ordering_held_except_two": "The ranking is unchanged on the set score, the page score, both binary thresholds, the base half and lift. Two orderings did move. On the hard half Serper and Tavily swapped, on a gap of 0.001 that was never a real ordering either way. On the twelve questions with no answer the ranking reshuffled substantially, and the change is described in `unanswerable_ranking_moved`.",
+  "unanswerable_ranking_moved": "Scoring low is the good outcome on the twelve questions with no answer, and the corrected join changes who is restrained. Perplexity moves from sixth to worst at 0.816, which sharpens the draft's point that the best finder is also the readiest to hand you a convincing near-miss. But Exa moves the other way, from 0.559 to 0.681, and is no longer the most restrained of the four arms that rank well — Parallel is, at 0.643. The draft's sentence naming Exa needs rewriting. Bright Data and Firecrawl also swap at the good end.",
+  "lift_recomputed": "Lift is the set score minus the page score and nothing else. The draft's lift table subtracted a set average of 2.548 for Exa and 2.063 for Firecrawl while its own headline table printed 2.549 and 2.064 for the same arms — the average over verdicts against the average over questions. This file uses the published headline figure throughout, and lift is recomputed from the corrected page score, so every value in that table changes.",
+  "text_tables_row_set": "The page text and truncation tables run over every clean fetch row, repair rows included, while the ratings run over one row per question per arm. They are answering different questions: an average must not weight one question twice, but a description of what an extractor emits treats every page it returned as another real observation. It shows only in Bright Data, whose headings and links read 69% and 90% here and 70% and 91% over the deduped rows.",
+  "counts_unchanged": "Structure, truncation, cost, the variance shares, the three kappas, the rung distribution and every count are untouched by the join and still reproduce the draft exactly."
+ }
+}

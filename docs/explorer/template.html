@@ -393,7 +393,7 @@
     <p class="unmeasured" style="margin-top:12px">
       Page rating is the mean of every judge's 0&ndash;3 rating of every page the provider returned.
       Set rating asks a different question of the whole returned set at once &mdash; could you answer
-      from this alone, without searching again &mdash; on the same rungs.
+      from this alone, without searching again &mdash; on the same 0&ndash;3 scale.
     </p>
   </section>
 
@@ -415,7 +415,7 @@
               <option value="all">every question</option>
               <option value="knew">the model already knew the answer</option>
               <option value="needs">retrieval was actually needed</option>
-              <option value="split">judges disagreed by 2+ rungs</option>
+              <option value="split">judges disagreed by 2+ points</option>
               <option value="failed">some provider failed</option>
             </select>
           </div>
@@ -466,7 +466,7 @@ function boot(DATA) {
   // A rung is a named step, not a score out of three, so it is drawn as a step.
   function rungChip(r) {
     var n = el("span", "rung " + (r === null || r === undefined ? "rnull" : "r" + r), r === null || r === undefined ? "·" : r);
-    n.title = r === null || r === undefined ? "no usable verdict from this judge" : "rung " + r;
+    n.title = r === null || r === undefined ? "no usable verdict from this judge" : "scored " + r;
     return n;
   }
 
@@ -713,7 +713,7 @@ function boot(DATA) {
     [q.genre, q.type, q.sharpness].forEach(function (t) {
       if (t) tags.appendChild(el("span", "chip mute", label(t)));
     });
-    if (row.maxSpread >= 2) tags.appendChild(el("span", "chip bad", "judges " + row.maxSpread + " rungs apart"));
+    if (row.maxSpread >= 2) tags.appendChild(el("span", "chip bad", "judges " + row.maxSpread + " points apart"));
     head.appendChild(tags);
     box.appendChild(head);
 
@@ -817,7 +817,7 @@ function boot(DATA) {
     var meanCell = el("span", "mono");
     if (pg.spread >= 2) meanCell.className = "mono split";
     meanCell.textContent = fmt(pg.mean_rung, 2);
-    meanCell.title = pg.spread >= 2 ? "judges " + pg.spread + " rungs apart on this page" : "";
+    meanCell.title = pg.spread >= 2 ? "judges " + pg.spread + " points apart on this page" : "";
     s.appendChild(meanCell);
     d.appendChild(s);
 
@@ -937,7 +937,7 @@ function boot(DATA) {
       svg.appendChild(c);
       svg.appendChild(svgText(CH.w - CH.right + 6, y + 4, "vlabel", r.mean_score.toFixed(2)));
     });
-    svg.appendChild(svgText(CH.left + 6, yTop - 7, "bandtext", "gap of " + gapSize.toFixed(2) + " rungs"));
+    svg.appendChild(svgText(CH.left + 6, yTop - 7, "bandtext", "gap of " + gapSize.toFixed(2) + " points"));
   })();
 
   // Base vs hard, as a dumbbell. The point is the fan: the hard ends spread

@@ -42,7 +42,7 @@
   "license": "https://opensource.org/licenses/MIT",
   "creator": { "@type": "Person", "name": "Sameer Himati", "url": "https://sameerhimati.com" },
   "isAccessibleForFree": true,
-  "measurementTechnique": "Blinded pooled relevance rating on a four-rung rubric, at page and result-set scope",
+  "measurementTechnique": "Blinded pooled relevance rating on a defined 0-3 scale, at page and result-set scope",
   "variableMeasured": "Set rating (0-3): whether the eight pages one search returned are enough to answer the question",
   "distribution": [{
     "@type": "DataDownload",
@@ -113,7 +113,7 @@ __NAV__
     <div class="scroller">__CHART_LEADERBOARD__</div>
     <figcaption>The dot is the measured average over __N_QUESTIONS__ questions. Where two of those lines overlap, the order between the providers is noise rather than a finding, and the bracket marks each run of providers that cannot be separated.</figcaption>
   </figure>
-  <p>Perplexity is clear of everyone else. Below it there are two groups, and inside either one the order doesn't mean anything — ask again next week and they could come back in a different sequence. The gap between the two groups is the actual result: Exa to Tavily is four tenths of a rung, bigger than anything inside either cluster.</p>
+  <p>Perplexity is clear of everyone else. Below it there are two groups, and inside either one the order doesn't mean anything — ask again next week and they could come back in a different sequence. The gap between the two groups is the actual result: Exa to Tavily is four tenths of a point on the 0&ndash;3 scale, bigger than anything inside either cluster.</p>
   <p>Throw the scale out entirely and you get the same thing. <strong>Perplexity returns a page that fully answers the question __PPX_RUNG3__% of the time, Bright Data manages __BD_RUNG3__%</strong>, and the ordering doesn't move — so none of this rests on the 0&ndash;3 rubric being right.</p>
 </section>
 
@@ -176,7 +176,7 @@ __NAV__
       <tbody>__TABLE_ROWS__</tbody>
     </table>
   </div>
-  <p class="tnote"><strong>Scope matters in this table.</strong> &ldquo;Set rating&rdquo; grades a provider's eight results together and is the headline. Every other quality column grades pages one at a time, which is why a provider can lead on one and not the other. Both scales are 0&ndash;3. &ldquo;Fully answers&rdquo; is the share of a provider's pages the judges put on the top rung. &ldquo;Over budget&rdquo; counts how often a page ran past the __TRUNC_LIMIT__-character per-source allowance, which measures how much text a provider returns. Serper is n/a because it returns no page text. &ldquo;Median latency&rdquo; is how long one search took, measured from my machine on the day. <span class="star">*</span> marks a rate card rather than an invoice.</p>
+  <p class="tnote"><strong>Scope matters in this table.</strong> &ldquo;Set rating&rdquo; grades a provider's eight results together and is the headline. Every other quality column grades pages one at a time, which is why a provider can lead on one and not the other. Both scales are 0&ndash;3. &ldquo;Fully answers&rdquo; is the share of a provider's pages the judges scored 3. &ldquo;Over budget&rdquo; counts how often a page ran past the __TRUNC_LIMIT__-character per-source allowance, which measures how much text a provider returns. Serper is n/a because it returns no page text. &ldquo;Median latency&rdquo; is how long one search took, measured from my machine on the day. <span class="star">*</span> marks a rate card rather than an invoice.</p>
 </section>
 
 <section id="notes">

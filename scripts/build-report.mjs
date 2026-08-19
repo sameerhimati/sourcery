@@ -232,7 +232,7 @@ function chartDifficulty() {
     h,
     { id: "df", text: "Base questions against hard questions, by provider" },
     `Perplexity and Parallel lose almost nothing between the base and hard halves. Tavily, Firecrawl and Bright Data ` +
-      `lose around a quarter of a rung, so the spread between best and worst widens by ${d.spread.widened_pct}%.`,
+      `lose about a quarter of a point on the 0–3 scale, so the spread between best and worst widens by ${d.spread.widened_pct}%.`,
     s,
   );
 }

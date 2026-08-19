@@ -31,10 +31,10 @@ const DATA = process.argv[3] ?? "docs/report-data.json";
 // Each one needs a reason. A number that cannot be given a reason here is
 // exactly the number this script exists to find.
 const ALLOWED = new Map([
-  ["0", "a rung on the 0–3 scale, defined in the rubric"],
-  ["1", "a rung on the 0–3 scale"],
-  ["2", "a rung on the 0–3 scale"],
-  ["3", "a rung on the 0–3 scale"],
+  ["0", "a point on the 0–3 scale, defined in the rubric"],
+  ["1", "a point on the 0–3 scale"],
+  ["2", "a point on the 0–3 scale"],
+  ["3", "a point on the 0–3 scale"],
   ["95", "the confidence level, a property of the method rather than the run"],
   ["100", "a percentage denominator in prose"],
   ["2026", "the year"],

@@ -34,7 +34,7 @@ const DATA = process.argv[2] ?? "docs/report-data.json";
 // Where the pages link to each other. Absolute, because these files are served
 // from Pages *and* published as standalone artifacts, and a relative link only
 // works in one of those.
-const BASE = "https://sameerhimati.github.io/sourcery/";
+const BASE = "https://sameerhimati.com/sourcery/";
 const REPO = "https://github.com/sameerhimati/sourcery";
 
 const d = JSON.parse(fs.readFileSync(DATA, "utf8"));

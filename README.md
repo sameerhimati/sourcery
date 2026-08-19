@@ -6,7 +6,7 @@ sourcery asks the same question of several web-search APIs with everything else 
 
 I built it because I could not get a straight answer to that question while building a research agent, and the answers I found were vendor benchmarks.
 
-**[Read the results →](https://sameerhimati.github.io/sourcery/)** — eight providers, 204 questions, 22,457 page ratings from three judges. One provider is clear of the field and most of the rest of the ranking is noise, which the page shows rather than hides.
+**[Read the results →](https://sameerhimati.com/sourcery/)** — eight providers, 204 questions, 22,457 page ratings from three judges. One provider is clear of the field and most of the rest of the ranking is noise, which the page shows rather than hides.
 
 ## Install
 
@@ -143,8 +143,8 @@ An eval of your retrieval stack only means something if it runs the model you sh
 
 | | |
 |---|---|
-| [Results](https://sameerhimati.github.io/sourcery/) | eight providers, 204 questions, with the method behind it |
-| [Explorer](https://sameerhimati.github.io/sourcery/explorer/) | every rating, with the sentence each judge wrote to justify it |
+| [Results](https://sameerhimati.com/sourcery/) | eight providers, 204 questions, with the method behind it |
+| [Explorer](https://sameerhimati.com/sourcery/explorer/) | every rating, with the sentence each judge wrote to justify it |
 | [`ARCHITECTURE.md`](ARCHITECTURE.md) | where everything lives, and one question's path through the code |
 | [`docs/run-2-findings.md`](docs/run-2-findings.md) | run 2 in full, including what it cannot measure |
 | [`docs/findings.md`](docs/findings.md) | run 1, kept because run 2 contradicts parts of it |

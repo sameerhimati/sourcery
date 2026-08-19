@@ -298,16 +298,6 @@ td .na { color: var(--muted); font-family: var(--font-body); }
 .pickrow p { margin: 0; font-size: 0.9rem; color: var(--ink-2); max-width: none; }
 @media (max-width: 620px) { .pickrow { grid-template-columns: 1fr; gap: var(--space-3xs); } }
 
-/* ── faq ────────────────────────────────────────────────────────────────── */
-/* Same ruled list as the picks and the limits. A page that answers questions in
-   three different visual idioms reads as three pages stapled together. */
-.faq { margin: var(--space-md) 0 0; border-top: 1px solid var(--ink); }
-.faq dt { font-weight: 700; color: var(--ink); font-size: 0.95rem; padding-top: var(--space-sm); letter-spacing: -0.01em; }
-.faq dd {
-  margin: var(--space-3xs) 0 0; padding-bottom: var(--space-sm);
-  border-bottom: 1px solid var(--rule); font-size: 0.9rem; color: var(--muted); max-width: var(--measure);
-}
-
 /* ── limits: a tight list ───────────────────────────────────────────────── */
 .limits { margin-top: var(--space-md); border-top: 1px solid var(--ink); }
 .limit { padding: var(--space-sm) 0; border-bottom: 1px solid var(--rule); }
@@ -415,9 +405,7 @@ footer p { font-size: 0.86rem; color: var(--muted); }
   <a href="#vs-answer-graded">vs. answer-graded indexes</a>
   <a href="#table">Every number</a>
   <a href="#notes">Notes from the run</a>
-  <a href="#faq">Questions</a>
   <a href="#picking">How to pick</a>
-  <a href="#false-positives">Hallucinated relevance</a>
 </nav>
 
 <section id="results">
@@ -437,10 +425,9 @@ footer p { font-size: 0.86rem; color: var(--muted); }
   <p class="scopenote">This chart is the <strong>page rating</strong>, not the set rating above — it scores each page on its own rather than the eight together. That is why the order is different: Exa's individual pages beat Parallel's, while Parallel's eight fit together better and win on the set.</p>
   <figure>
     <div class="scroller"><svg viewBox="0 0 720 360" width="100%" role="img" aria-labelledby="df-t df-d" class="viz"><title id="df-t">Base questions against hard questions, by provider</title><desc id="df-d">Perplexity and Parallel lose almost nothing between the base and hard halves. Tavily, Firecrawl and Bright Data lose around a quarter of a rung, so the spread between best and worst widens by 22%.</desc><circle cx="117" cy="18" r="5" class="est"/><text x="128" y="22" class="legend">96 base questions</text><circle cx="290" cy="18" r="5" class="est hollow"/><text x="301" y="22" class="legend">96 written to be hard</text><line x1="125.70967741935485" y1="38" x2="125.70967741935485" y2="308" class="grid"/><text x="125.70967741935485" y="326" class="tick" text-anchor="middle">1.25</text><line x1="194.25806451612902" y1="38" x2="194.25806451612902" y2="308" class="grid"/><text x="194.25806451612902" y="326" class="tick" text-anchor="middle">1.50</text><line x1="262.80645161290323" y1="38" x2="262.80645161290323" y2="308" class="grid"/><text x="262.80645161290323" y="326" class="tick" text-anchor="middle">1.75</text><line x1="331.35483870967744" y1="38" x2="331.35483870967744" y2="308" class="grid"/><text x="331.35483870967744" y="326" class="tick" text-anchor="middle">2.00</text><line x1="399.90322580645164" y1="38" x2="399.90322580645164" y2="308" class="grid"/><text x="399.90322580645164" y="326" class="tick" text-anchor="middle">2.25</text><text x="112" y="348" class="collab">page rating, 0–3</text><text x="452" y="348" class="collab" text-anchor="end">higher is better</text><text x="96" y="63" class="name" text-anchor="end">Perplexity</text><line x1="422.38709677419354" y1="59" x2="431.98387096774195" y2="59" class="join"/><circle cx="431.98387096774195" cy="59" r="5" class="est"/><circle cx="422.38709677419354" cy="59" r="5" class="est hollow"/><text x="480" y="63" class="num dim">− 0.035</text><text x="96" y="97" class="name" text-anchor="end">Exa</text><line x1="320.38709677419354" y1="93" x2="367" y2="93" class="join"/><circle cx="367" cy="93" r="5" class="est"/><circle cx="320.38709677419354" cy="93" r="5" class="est hollow"/><text x="480" y="97" class="num hot">− 0.170</text><text x="96" y="131" class="name" text-anchor="end">Brave</text><line x1="341.5" y1="127" x2="363.43548387096774" y2="127" class="join"/><circle cx="363.43548387096774" cy="127" r="5" class="est"/><circle cx="341.5" cy="127" r="5" class="est hollow"/><text x="480" y="131" class="num dim">− 0.080</text><text x="96" y="165" class="name" text-anchor="end">Parallel</text><line x1="308.25" y1="161" x2="315.25" y2="161" class="join"/><circle cx="315.25" cy="161" r="5" class="est"/><circle cx="308.25" cy="161" r="5" class="est hollow"/><text x="480" y="165" class="num dim">no drop</text><text x="96" y="199" class="name" text-anchor="end">Tavily</text><line x1="172.0483870967742" y1="195" x2="244.98387096774198" y2="195" class="join"/><circle cx="244.98387096774198" cy="195" r="5" class="est"/><circle cx="172.0483870967742" cy="195" r="5" class="est hollow"/><text x="480" y="199" class="num hot">− 0.266</text><text x="96" y="233" class="name" text-anchor="end">Serper</text><line x1="172.32258064516128" y1="229" x2="222.5" y2="229" class="join"/><circle cx="222.5" cy="229" r="5" class="est"/><circle cx="172.32258064516128" cy="229" r="5" class="est hollow"/><text x="480" y="233" class="num hot">− 0.183</text><text x="96" y="267" class="name" text-anchor="end">Firecrawl</text><line x1="134.75806451612902" y1="263" x2="203.3064516129032" y2="263" class="join"/><circle cx="203.3064516129032" cy="263" r="5" class="est"/><circle cx="134.75806451612902" cy="263" r="5" class="est hollow"/><text x="480" y="267" class="num hot">− 0.250</text><text x="96" y="301" class="name" text-anchor="end">Bright Data</text><line x1="129" y1="297" x2="190.9677419354839" y2="297" class="join"/><circle cx="190.9677419354839" cy="297" r="5" class="est"/><circle cx="129" cy="297" r="5" class="est hollow"/><text x="480" y="301" class="num hot">− 0.226</text><text x="480" y="14" class="collab">drop on the hard half</text><text x="480" y="30" class="collab">smaller is better</text></svg></div>
-    <figcaption>Best-to-worst spread goes from 0.879 on the base half to 1.07 on the hard half, 22% wider. The leaders do not improve; the bottom drops away.</figcaption>
+    <figcaption>Best-to-worst spread goes from 0.879 on the base half to 1.07 on the hard half, 22% wider. The leaders do not improve; the bottom drops away. The chart is ordered by its own numbers, so Exa sits above Parallel here; on the set score the two are inside each other's confidence intervals and tie either way.</figcaption>
   </figure>
   <p>Benchmark search on questions your model could nearly answer on its own and every provider looks fine. The difference only shows up on the ones you actually needed help with.</p>
-  <p>The chart is ordered by its own numbers, so Exa sits above Parallel here. Both orderings are real and they are measuring different things — and since the two are inside each other's confidence intervals on the set score, they tie on the headline either way.</p>
 </section>
 
 <section id="cost">
@@ -450,6 +437,7 @@ footer p { font-size: 0.86rem; color: var(--muted); }
     <figcaption>Prices are pay-as-you-go list rates off my own billing pages. A hollow ring marks one I took from a rate card; a filled dot was one I was actually billed.</figcaption>
   </figure>
   <p>The three providers on the cheapest tier take three of the top four places; the outright cheapest places sixth. Serper matches Tavily at a fifty-fourth of the cost. It returns links and snippets and never page content, so if you already run a scraper, that is the part you were paying extra for.</p>
+  <p>Speed is the other thing the price does not buy. Brave answers in a median of 0.6s per search against 34s for Bright Data, about 59 times the wait, and Bright Data's slowest one search in ten takes 75s or worse.</p>
 </section>
 
 <section id="content">
@@ -458,15 +446,14 @@ footer p { font-size: 0.86rem; color: var(--muted); }
     <div class="scroller"><svg viewBox="0 0 720 338" width="100%" role="img" aria-labelledby="st-t st-d" class="viz"><title id="st-t">Structural elements present in each provider's returned page text</title><desc id="st-d">Firecrawl and Tavily return full documents with links, images and headings. Exa and Parallel keep headings and drop links. Brave returns page text on 1% of results because its content is joined search snippets. Serper returns no page content at all.</desc><text x="160" y="22" class="collab" text-anchor="middle">markdown</text><text x="256" y="22" class="collab" text-anchor="middle">headings</text><text x="352" y="22" class="collab" text-anchor="middle">links</text><text x="448" y="22" class="collab" text-anchor="middle">images</text><text x="544" y="22" class="collab" text-anchor="middle">tables</text><text x="96" y="55" class="name" text-anchor="end">Perplexity</text><rect x="113" y="36" width="92" height="29" rx="2" class="cell s3"/><text x="160" y="55" class="cellv" text-anchor="middle">64%</text><rect x="209" y="36" width="92" height="29" rx="2" class="cell s1"/><text x="256" y="55" class="cellv" text-anchor="middle">25%</text><rect x="305" y="36" width="92" height="29" rx="2" class="cell s0"/><text x="352" y="55" class="cellv" text-anchor="middle">1%</text><rect x="401" y="36" width="92" height="29" rx="2" class="cell s0"/><text x="448" y="55" class="cellv" text-anchor="middle">0%</text><rect x="497" y="36" width="92" height="29" rx="2" class="cell s1"/><text x="544" y="55" class="cellv" text-anchor="middle">15%</text><text x="96" y="89" class="name" text-anchor="end">Brave</text><rect x="113" y="70" width="92" height="29" rx="2" class="cell s0"/><text x="160" y="89" class="cellv" text-anchor="middle">1%</text><rect x="209" y="70" width="92" height="29" rx="2" class="cell s0"/><text x="256" y="89" class="cellv" text-anchor="middle">1%</text><rect x="305" y="70" width="92" height="29" rx="2" class="cell s0"/><text x="352" y="89" class="cellv" text-anchor="middle">0%</text><rect x="401" y="70" width="92" height="29" rx="2" class="cell s0"/><text x="448" y="89" class="cellv" text-anchor="middle">0%</text><rect x="497" y="70" width="92" height="29" rx="2" class="cell s0"/><text x="544" y="89" class="cellv" text-anchor="middle">0%</text><text x="96" y="123" class="name" text-anchor="end">Parallel</text><rect x="113" y="104" width="92" height="29" rx="2" class="cell s4"/><text x="160" y="123" class="cellv on" text-anchor="middle">91%</text><rect x="209" y="104" width="92" height="29" rx="2" class="cell s4"/><text x="256" y="123" class="cellv on" text-anchor="middle">89%</text><rect x="305" y="104" width="92" height="29" rx="2" class="cell s2"/><text x="352" y="123" class="cellv" text-anchor="middle">36%</text><rect x="401" y="104" width="92" height="29" rx="2" class="cell s0"/><text x="448" y="123" class="cellv" text-anchor="middle">1%</text><rect x="497" y="104" width="92" height="29" rx="2" class="cell s0"/><text x="544" y="123" class="cellv" text-anchor="middle">2%</text><text x="96" y="157" class="name" text-anchor="end">Exa</text><rect x="113" y="138" width="92" height="29" rx="2" class="cell s4"/><text x="160" y="157" class="cellv on" text-anchor="middle">91%</text><rect x="209" y="138" width="92" height="29" rx="2" class="cell s4"/><text x="256" y="157" class="cellv on" text-anchor="middle">89%</text><rect x="305" y="138" width="92" height="29" rx="2" class="cell s0"/><text x="352" y="157" class="cellv" text-anchor="middle">7%</text><rect x="401" y="138" width="92" height="29" rx="2" class="cell s0"/><text x="448" y="157" class="cellv" text-anchor="middle">3%</text><rect x="497" y="138" width="92" height="29" rx="2" class="cell s1"/><text x="544" y="157" class="cellv" text-anchor="middle">14%</text><text x="96" y="191" class="name" text-anchor="end">Tavily</text><rect x="113" y="172" width="92" height="29" rx="2" class="cell s4"/><text x="160" y="191" class="cellv on" text-anchor="middle">98%</text><rect x="209" y="172" width="92" height="29" rx="2" class="cell s4"/><text x="256" y="191" class="cellv on" text-anchor="middle">87%</text><rect x="305" y="172" width="92" height="29" rx="2" class="cell s4"/><text x="352" y="191" class="cellv on" text-anchor="middle">91%</text><rect x="401" y="172" width="92" height="29" rx="2" class="cell s3"/><text x="448" y="191" class="cellv" text-anchor="middle">73%</text><rect x="497" y="172" width="92" height="29" rx="2" class="cell s0"/><text x="544" y="191" class="cellv" text-anchor="middle">8%</text><text x="96" y="225" class="name" text-anchor="end">Firecrawl</text><rect x="113" y="206" width="92" height="29" rx="2" class="cell s4"/><text x="160" y="225" class="cellv on" text-anchor="middle">99%</text><rect x="209" y="206" width="92" height="29" rx="2" class="cell s4"/><text x="256" y="225" class="cellv on" text-anchor="middle">82%</text><rect x="305" y="206" width="92" height="29" rx="2" class="cell s4"/><text x="352" y="225" class="cellv on" text-anchor="middle">90%</text><rect x="401" y="206" width="92" height="29" rx="2" class="cell s3"/><text x="448" y="225" class="cellv" text-anchor="middle">65%</text><rect x="497" y="206" width="92" height="29" rx="2" class="cell s1"/><text x="544" y="225" class="cellv" text-anchor="middle">9%</text><text x="96" y="259" class="name" text-anchor="end">Bright Data</text><rect x="113" y="240" width="92" height="29" rx="2" class="cell s4"/><text x="160" y="259" class="cellv on" text-anchor="middle">92%</text><rect x="209" y="240" width="92" height="29" rx="2" class="cell s3"/><text x="256" y="259" class="cellv" text-anchor="middle">69%</text><rect x="305" y="240" width="92" height="29" rx="2" class="cell s4"/><text x="352" y="259" class="cellv on" text-anchor="middle">90%</text><rect x="401" y="240" width="92" height="29" rx="2" class="cell s3"/><text x="448" y="259" class="cellv" text-anchor="middle">78%</text><rect x="497" y="240" width="92" height="29" rx="2" class="cell s0"/><text x="544" y="259" class="cellv" text-anchor="middle">0%</text><text x="96" y="293" class="name" text-anchor="end">Serper</text><rect x="113" y="274" width="476" height="29" rx="2" class="cell na"/><text x="124" y="293" class="cellna">returns links and snippets only — never page content</text><text x="112" y="326" class="collab">share of returned pages, percent</text><text x="592" y="326" class="collab" text-anchor="end">darker is more, not better</text></svg></div>
     <figcaption>Share of each provider's returned pages containing the element. Every provider was set to its highest-quality tier, so this is each one at its best.</figcaption>
   </figure>
-  <p>Brave is the one to look at. It ranks second and returns real page text on one per cent of results, and its content is search snippets joined together. Fine for grounding a summary, useless to an agent that has to read a document. Exa keeps headings and drops links. Bright Data keeps nearly every image and no tables.</p>
+  <p>Brave returns real page text on 1% of results, which is why <a href="#picking">the picking section</a> lists it as summaries-only. Exa keeps headings and drops links. Bright Data keeps nearly every image and no tables.</p>
   <p>The other axis is volume. An agent gives each source a slice of its context, and this run allows 1600 characters, which is a realistic budget. <strong>98% of Firecrawl's pages run past it; 40% of Perplexity's do.</strong> Firecrawl returns whole documents and Perplexity returns excerpts, and past the budget that difference stops reaching the model.</p>
 </section>
 
 <section id="vs-answer-graded">
   <h2>Why this disagrees with answer-graded indexes</h2>
-  <p>Artificial Analysis published a search index the day before this went out. It ranks Firecrawl third. This run puts it seventh. The two measure different things.</p>
-  <p>They grade what an agent eventually produces: up to 25 turns and roughly nine to thirteen searches per task, and then the final answer gets scored, so a weak first result set just gets repaired by searching again. Sourcery grades what one search hands back — eight results, one shot, no recovery. Their questions are static obscure facts, mine lean fresh.</p>
-  <p>Neither index rewards Firecrawl's extraction, for opposite reasons. Their settings disable its scraping by name and route everyone through one generic extractor. This run asked for full page markdown, got it, and then metered every source to the same context budget, which most of those pages exceed. The advantage is real and sits upstream of where either benchmark can see it.</p>
+  <p>Artificial Analysis published a search index the day before this went out. It ranks Firecrawl third and this run puts it seventh, because the two grade different things. They grade what an agent eventually produces: up to 25 turns and roughly nine to thirteen searches per task, and then the final answer gets scored, so a weak first result set just gets repaired by searching again. Sourcery grades what one search hands back: eight results, one shot, no recovery. Their questions are static obscure facts, mine lean fresh.</p>
+  <p>Neither index rewards Firecrawl's extraction, for opposite reasons. Their settings disable its scraping by name and route everyone through one generic extractor. This run asked for full page markdown, got it, and then metered every source to the same context budget, which most of those pages exceed.</p>
   <p>Their index carries no confidence intervals and their top five span two points. On their published sample sizes that gap is inside the noise, which is the same reason three providers here are drawn as a tie.</p>
 </section>
 
@@ -508,39 +495,13 @@ footer p { font-size: 0.86rem; color: var(--muted); }
   <p>One thing I would tell anyone repeating this: run it before you read it. A batching bug cost about $19 of retrieval that produced nothing usable, and no amount of staring at the code had turned it up — it only showed itself when the requests actually went out. Of 204 questions across eight providers, 1,631 of 1,632 fetches came back clean; the single miss is Firecrawl timing out at 300 seconds, which I checked against their API by hand before recording it. The whole thing cost $40.08, and what capped it was rate limits rather than the bill.</p>
 </section>
 
-<section id="faq">
-  <h2>Questions</h2>
-  <dl class="faq">
-    <dt>Which search API returned the best sources?</dt>
-    <dd>Perplexity. It is the only provider whose confidence interval clears every other one, and it returns a page that fully answers the question 49.9% of the time, against 14.9% for the last-placed arm.</dd>
-
-    <dt>Which is cheapest?</dt>
-    <dd>Serper at $0.001 a query, which buys the same set rating as Tavily for a fraction of the price, as long as you already have something to fetch pages with.</dd>
-
-    <dt>Which returns the best full-page content?</dt>
-    <dd>Tavily: full page markdown on 98% of results with headings, links and images kept, and it outscores the more expensive Firecrawl on relevance as well.</dd>
-
-    <dt>Which is fastest?</dt>
-    <dd>Brave, at a median of 0.6s per search against 34s for Bright Data — about 59 times the wait, and Bright Data's slowest one search in ten takes 75s or worse.</dd>
-
-    <dt>Why does this disagree with Artificial Analysis?</dt>
-    <dd>Because the two grade different things, and the disagreement is the useful part. They score the answer an agent writes after up to 25 turns of searching, so a weak first result set gets repaired by searching again and the score folds in the agent's recovery. This grades what a single search hands back: eight results, one shot, no second try. Firecrawl ranks third there and seventh here for exactly that reason, and neither number is wrong. <a href="#vs-answer-graded">The longer version is above.</a></dd>
-
-    <dt>Who ran this, and who paid for it?</dt>
-    <dd>I did, and I paid for it — $40.08 of retrieval at list rates, with no provider commissioning, reviewing or previewing any of it. <a href="#who">The full disclosure is at the top.</a></dd>
-
-    <dt>Can I run it myself?</dt>
-    <dd>Yes — the harness is published, not just the numbers. It is MIT licensed, you bring your own model, and you point it at your own questions. <a href="https://github.com/sameerhimati/sourcery">The code is here.</a></dd>
-  </dl>
-</section>
-
 <section id="picking">
   <h2>Six providers, six jobs</h2>
-  <p>What you're building decides this more than the ranking does. Three of these eight are tied on the headline and they still aren't interchangeable — one returns whole documents, one returns snippets, one returns prose with the links stripped out. So pick on the job.</p>
+  <p>What you're building decides this more than the ranking does. Three of these eight are tied on the headline and they still aren't interchangeable — one returns whole documents, one returns snippets, one returns prose with the links stripped out. So pick on the job. And weigh what your code can check: it can see an empty result and handle it; it cannot see a confident near-miss.</p>
   <div class="picks">
     <div class="pickrow">
       <div class="who">Perplexity<span>best overall</span></div>
-      <p>Clear of the field and on the cheapest tier. Fully answers 49.9% of the time, about 1.4&times; anyone else. Returns excerpts rather than whole pages, and it is the easiest of the eight to fool.</p>
+      <p>Clear of the field and on the cheapest tier. Fully answers 49.9% of the time, about 1.4&times; anyone else. Returns excerpts rather than whole pages, and it is the easiest of the eight to fool: asked for the default of <span class="mono">max_parallel_vacuum_workers</span>, a Postgres setting that does not exist, it came back with a page documenting <span class="mono">max_parallel_maintenance_workers</span>, a real setting with a real default, and two of the three judges read that as a direct answer.</p>
     </div>
     <div class="pickrow">
       <div class="who">Serper<span>best raw search</span></div>
@@ -563,11 +524,6 @@ footer p { font-size: 0.86rem; color: var(--muted); }
       <p>Ranks second on relevance and returns real page text on 1% of results, and its content is search snippets joined together. Fine for grounding a summary, wrong for anything that has to read a page.</p>
     </div>
   </div>
-</section>
-
-<section id="false-positives">
-  <h2>Hallucinated relevance</h2>
-  <p>Perplexity is the best of the eight at finding real answers and the worst at not manufacturing the appearance of one. Asked for the default of <span class="mono">max_parallel_vacuum_workers</span>, a Postgres setting that does not exist, one arm came back with a page documenting <span class="mono">max_parallel_maintenance_workers</span> — a real setting, with a real default — and a judge read that as a direct answer to the question. It indicts the judges as much as the provider: one of the three marked the page down and said the parameter name did not match, and the other two did not. Your code can see an empty result and handle it; it cannot see a confident near-miss. If your agent has no way to check what it is told, weigh that above the ranking.</p>
 </section>
 
 <footer>

@@ -103,9 +103,7 @@ __NAV__
   <a href="#vs-answer-graded">vs. answer-graded indexes</a>
   <a href="#table">Every number</a>
   <a href="#notes">Notes from the run</a>
-  <a href="#faq">Questions</a>
   <a href="#picking">How to pick</a>
-  <a href="#false-positives">Hallucinated relevance</a>
 </nav>
 
 <section id="results">
@@ -125,10 +123,9 @@ __NAV__
   <p class="scopenote">This chart is the <strong>page rating</strong>, not the set rating above — it scores each page on its own rather than the eight together. That is why the order is different: Exa's individual pages beat Parallel's, while Parallel's eight fit together better and win on the set.</p>
   <figure>
     <div class="scroller">__CHART_DIFFICULTY__</div>
-    <figcaption>Best-to-worst spread goes from __SPREAD_BASE__ on the base half to __SPREAD_HARD__ on the hard half, __SPREAD_PCT__% wider. The leaders do not improve; the bottom drops away.</figcaption>
+    <figcaption>Best-to-worst spread goes from __SPREAD_BASE__ on the base half to __SPREAD_HARD__ on the hard half, __SPREAD_PCT__% wider. The leaders do not improve; the bottom drops away. The chart is ordered by its own numbers, so Exa sits above Parallel here; on the set score the two are inside each other's confidence intervals and tie either way.</figcaption>
   </figure>
   <p>Benchmark search on questions your model could nearly answer on its own and every provider looks fine. The difference only shows up on the ones you actually needed help with.</p>
-  <p>The chart is ordered by its own numbers, so Exa sits above Parallel here. Both orderings are real and they are measuring different things — and since the two are inside each other's confidence intervals on the set score, they tie on the headline either way.</p>
 </section>
 
 <section id="cost">
@@ -138,6 +135,7 @@ __NAV__
     <figcaption>Prices are pay-as-you-go list rates off my own billing pages. A hollow ring marks one I took from a rate card; a filled dot was one I was actually billed.</figcaption>
   </figure>
   <p>The three providers on the cheapest tier take three of the top four places; the outright cheapest places sixth. Serper matches Tavily at a fifty-fourth of the cost. It returns links and snippets and never page content, so if you already run a scraper, that is the part you were paying extra for.</p>
+  <p>Speed is the other thing the price does not buy. __LAT_FAST__ answers in a median of __LAT_FAST_P50__ per search against __LAT_SLOW_P50__ for __LAT_SLOW__, about __LAT_RATIO__ times the wait, and __LAT_SLOW__'s slowest one search in ten takes __LAT_SLOW_P90__ or worse.</p>
 </section>
 
 <section id="content">
@@ -146,15 +144,14 @@ __NAV__
     <div class="scroller">__CHART_STRUCTURE__</div>
     <figcaption>Share of each provider's returned pages containing the element. Every provider was set to its highest-quality tier, so this is each one at its best.</figcaption>
   </figure>
-  <p>Brave is the one to look at. It ranks second and returns real page text on one per cent of results, and its content is search snippets joined together. Fine for grounding a summary, useless to an agent that has to read a document. Exa keeps headings and drops links. Bright Data keeps nearly every image and no tables.</p>
+  <p>Brave returns real page text on __BRAVE_MD__% of results, which is why <a href="#picking">the picking section</a> lists it as summaries-only. Exa keeps headings and drops links. Bright Data keeps nearly every image and no tables.</p>
   <p>The other axis is volume. An agent gives each source a slice of its context, and this run allows __TRUNC_LIMIT__ characters, which is a realistic budget. <strong>__TRUNC_FIRECRAWL__% of Firecrawl's pages run past it; __TRUNC_PERPLEXITY__% of Perplexity's do.</strong> Firecrawl returns whole documents and Perplexity returns excerpts, and past the budget that difference stops reaching the model.</p>
 </section>
 
 <section id="vs-answer-graded">
   <h2>Why this disagrees with answer-graded indexes</h2>
-  <p>Artificial Analysis published a search index the day before this went out. It ranks Firecrawl third. This run puts it seventh. The two measure different things.</p>
-  <p>They grade what an agent eventually produces: up to 25 turns and roughly nine to thirteen searches per task, and then the final answer gets scored, so a weak first result set just gets repaired by searching again. Sourcery grades what one search hands back — eight results, one shot, no recovery. Their questions are static obscure facts, mine lean fresh.</p>
-  <p>Neither index rewards Firecrawl's extraction, for opposite reasons. Their settings disable its scraping by name and route everyone through one generic extractor. This run asked for full page markdown, got it, and then metered every source to the same context budget, which most of those pages exceed. The advantage is real and sits upstream of where either benchmark can see it.</p>
+  <p>Artificial Analysis published a search index the day before this went out. It ranks Firecrawl third and this run puts it seventh, because the two grade different things. They grade what an agent eventually produces: up to 25 turns and roughly nine to thirteen searches per task, and then the final answer gets scored, so a weak first result set just gets repaired by searching again. Sourcery grades what one search hands back: eight results, one shot, no recovery. Their questions are static obscure facts, mine lean fresh.</p>
+  <p>Neither index rewards Firecrawl's extraction, for opposite reasons. Their settings disable its scraping by name and route everyone through one generic extractor. This run asked for full page markdown, got it, and then metered every source to the same context budget, which most of those pages exceed.</p>
   <p>Their index carries no confidence intervals and their top five span two points. On their published sample sizes that gap is inside the noise, which is the same reason three providers here are drawn as a tie.</p>
 </section>
 
@@ -189,39 +186,13 @@ __NAV__
   <p>One thing I would tell anyone repeating this: run it before you read it. A batching bug cost about $19 of retrieval that produced nothing usable, and no amount of staring at the code had turned it up — it only showed itself when the requests actually went out. Of __N_QUESTIONS__ questions across eight providers, __SEARCH_CLEAN__ of __SEARCH_TOTAL__ fetches came back clean; the single miss is Firecrawl timing out at 300 seconds, which I checked against their API by hand before recording it. The whole thing cost $__COST_TOTAL__, and what capped it was rate limits rather than the bill.</p>
 </section>
 
-<section id="faq">
-  <h2>Questions</h2>
-  <dl class="faq">
-    <dt>Which search API returned the best sources?</dt>
-    <dd>Perplexity. It is the only provider whose confidence interval clears every other one, and it returns a page that fully answers the question __PPX_RUNG3__% of the time, against __BD_RUNG3__% for the last-placed arm.</dd>
-
-    <dt>Which is cheapest?</dt>
-    <dd>Serper at __SERPER_PRICE__ a query, which buys the same set rating as Tavily for a fraction of the price, as long as you already have something to fetch pages with.</dd>
-
-    <dt>Which returns the best full-page content?</dt>
-    <dd>Tavily: full page markdown on __TAVILY_MD__% of results with headings, links and images kept, and it outscores the more expensive Firecrawl on relevance as well.</dd>
-
-    <dt>Which is fastest?</dt>
-    <dd>__LAT_FAST__, at a median of __LAT_FAST_P50__ per search against __LAT_SLOW_P50__ for __LAT_SLOW__ — about __LAT_RATIO__ times the wait, and __LAT_SLOW__'s slowest one search in ten takes __LAT_SLOW_P90__ or worse.</dd>
-
-    <dt>Why does this disagree with Artificial Analysis?</dt>
-    <dd>Because the two grade different things, and the disagreement is the useful part. They score the answer an agent writes after up to 25 turns of searching, so a weak first result set gets repaired by searching again and the score folds in the agent's recovery. This grades what a single search hands back: eight results, one shot, no second try. Firecrawl ranks third there and seventh here for exactly that reason, and neither number is wrong. <a href="#vs-answer-graded">The longer version is above.</a></dd>
-
-    <dt>Who ran this, and who paid for it?</dt>
-    <dd>I did, and I paid for it — $__COST_TOTAL__ of retrieval at list rates, with no provider commissioning, reviewing or previewing any of it. <a href="#who">The full disclosure is at the top.</a></dd>
-
-    <dt>Can I run it myself?</dt>
-    <dd>Yes — the harness is published, not just the numbers. It is MIT licensed, you bring your own model, and you point it at your own questions. <a href="__REPO__">The code is here.</a></dd>
-  </dl>
-</section>
-
 <section id="picking">
   <h2>Six providers, six jobs</h2>
-  <p>What you're building decides this more than the ranking does. Three of these eight are tied on the headline and they still aren't interchangeable — one returns whole documents, one returns snippets, one returns prose with the links stripped out. So pick on the job.</p>
+  <p>What you're building decides this more than the ranking does. Three of these eight are tied on the headline and they still aren't interchangeable — one returns whole documents, one returns snippets, one returns prose with the links stripped out. So pick on the job. And weigh what your code can check: it can see an empty result and handle it; it cannot see a confident near-miss.</p>
   <div class="picks">
     <div class="pickrow">
       <div class="who">Perplexity<span>best overall</span></div>
-      <p>Clear of the field and on the cheapest tier. Fully answers __PPX_RUNG3__% of the time, about 1.4&times; anyone else. Returns excerpts rather than whole pages, and it is the easiest of the eight to fool.</p>
+      <p>Clear of the field and on the cheapest tier. Fully answers __PPX_RUNG3__% of the time, about 1.4&times; anyone else. Returns excerpts rather than whole pages, and it is the easiest of the eight to fool: asked for the default of <span class="mono">max_parallel_vacuum_workers</span>, a Postgres setting that does not exist, it came back with a page documenting <span class="mono">max_parallel_maintenance_workers</span>, a real setting with a real default, and two of the three judges read that as a direct answer.</p>
     </div>
     <div class="pickrow">
       <div class="who">Serper<span>best raw search</span></div>
@@ -244,11 +215,6 @@ __NAV__
       <p>Ranks second on relevance and returns real page text on __BRAVE_MD__% of results, and its content is search snippets joined together. Fine for grounding a summary, wrong for anything that has to read a page.</p>
     </div>
   </div>
-</section>
-
-<section id="false-positives">
-  <h2>Hallucinated relevance</h2>
-  <p>Perplexity is the best of the eight at finding real answers and the worst at not manufacturing the appearance of one. Asked for the default of <span class="mono">max_parallel_vacuum_workers</span>, a Postgres setting that does not exist, one arm came back with a page documenting <span class="mono">max_parallel_maintenance_workers</span> — a real setting, with a real default — and a judge read that as a direct answer to the question. It indicts the judges as much as the provider: one of the three marked the page down and said the parameter name did not match, and the other two did not. Your code can see an empty result and handle it; it cannot see a confident near-miss. If your agent has no way to check what it is told, weigh that above the ranking.</p>
 </section>
 
 <footer>

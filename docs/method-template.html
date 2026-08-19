@@ -43,7 +43,6 @@ __NAV__
   <span class="toclab">On this page</span>
   <a href="#varies">What varies</a>
   <a href="#rubrics">The two rubrics</a>
-  <a href="#settings">Provider settings</a>
   <a href="#pooling">Pooling</a>
   <a href="#statistics">The statistics, in words</a>
   <a href="#limits">What this cannot tell you</a>
@@ -52,7 +51,16 @@ __NAV__
 <section id="varies">
   <h2>What varies</h2>
   <p>One question goes to all eight providers. Each returns up to __NUM_SOURCES__ results. Nothing else differs between arms: same prompt, same judges, same number of results requested, caching off. Of the eight arms, __ARMS_DAY1__ finished inside a single day. Tavily and Bright Data ran into their own rate limits and finished in the early hours of the next morning, and that is the one respect in which the arms were not treated identically — a page that changed overnight would have been seen differently by those two.</p>
-  <p>The settings live in one file, <span class="mono">core/controls.ts</span>, and every stage imports from it, so there is only ever one value of anything for a stage to read.</p>
+  <p>The settings live in one file, <span class="mono">core/controls.ts</span>, and every stage imports from it, so there is only ever one value of anything for a stage to read. Every provider was set to the highest-quality tier it offers; where a depth or content knob existed it was turned up.</p>
+  <div class="scroller">
+    <table>
+      <thead>
+        <tr><th>Provider</th><th>Product</th><th>Content setting</th><th>What comes back</th></tr>
+      </thead>
+      <tbody>__PROVIDER_SETTINGS__</tbody>
+    </table>
+  </div>
+  <p class="tnote">Serper is the one deliberate downgrade: it sells a separate scrape endpoint and this run does not call it, and that choice was pre-registered. Bright Data is the only provider needing a second paid product to get page text, and its extraction step missed roughly half the URLs it tried.</p>
 </section>
 
 <section id="rubrics">
@@ -65,20 +73,6 @@ __NAV__
   <p>The headline. A per-page average cannot answer this: eight pages each holding a third of the answer and eight holding nothing average out the same.</p>
   <div class="rungs">__SET_RUNGS__</div>
   <p class="sub">Both prompts are in <span class="mono">core/controls.ts</span> in full. The set prompt replaced an earlier one partway through the run, which graded whether sources <em>looked</em> good: fresh, authoritative, cleanly extracted. On a question with no answer anywhere it returned a passing score while the page judge rated every page 0 or 1. The sources were good, they just could not answer.</p>
-</section>
-
-<section id="settings">
-  <h2>Provider settings</h2>
-  <p>Every provider was set to the highest-quality tier it offers. Where a depth or content knob existed it was turned up.</p>
-  <div class="scroller">
-    <table>
-      <thead>
-        <tr><th>Provider</th><th>Product</th><th>Content setting</th><th>What comes back</th></tr>
-      </thead>
-      <tbody>__PROVIDER_SETTINGS__</tbody>
-    </table>
-  </div>
-  <p class="tnote">Serper is the one deliberate downgrade: it sells a separate scrape endpoint and this run does not call it, and that choice was pre-registered. Bright Data is the only provider needing a second paid product to get page text, and its extraction step missed roughly half the URLs it tried.</p>
 </section>
 
 <section id="pooling">
@@ -102,7 +96,7 @@ __NAV__
   <div class="limits">
     <div class="limit">
       <h3>Who extracts a page best</h3>
-      <p>Each source gets a __TRUNC_LIMIT__-character slice, which is what an agent with a real context budget would allow. Providers that return whole documents therefore have most of that document sitting past the line. Other budgets are just as defensible. A larger slice would let the providers returning whole documents show more of what they extract, and it could reorder the bottom of the table, though it would not close the gap at the top. <a href="#pooling">Pooling</a> costs the same measurement a second way — where several arms returned the same URL, the longest extraction anyone returned is the one that got graded, and that is __OVERLAP_MULTI_PCT__% of the pages. Measuring extraction properly means holding the URLs fixed and varying only the extractor, and that run has not happened.</p>
+      <p>Each source gets a __TRUNC_LIMIT__-character slice, which is what an agent with a real context budget would allow. A larger slice would let the providers that return whole documents show more of what they extract, and it could reorder the bottom of the table. <a href="#pooling">Pooling</a> costs the same measurement a second way: on the __OVERLAP_MULTI_PCT__% of pages that several arms returned, the longest extraction anyone returned is the one that got graded. Measuring extraction properly means holding the URLs fixed and varying only the extractor, and that run has not happened.</p>
     </div>
     <div class="limit">
       <h3>What your agent will answer</h3>
@@ -126,7 +120,7 @@ __NAV__
     </div>
     <div class="limit">
       <h3>How fast any of them are for you</h3>
-      <p>The table has a median latency column, so timing is measured — but it is measured from one machine on one network over two days, and a provider that is quick from my connection may not be quick from your region. Each arm ran at whatever concurrency it tolerated, which does not flatter the slow end: __LAT_SLOW__ throttles above a single concurrent request, so it ran with less contention than anyone and is still the slowest by a wide margin. Take the ordering seriously and the absolute numbers loosely.</p>
+      <p>The table has a median latency column, so timing is measured — but it is measured from one machine on one network over two days, and a provider that is quick from my connection may not be quick from your region. Take the ordering seriously and the absolute numbers loosely.</p>
     </div>
   </div>
 </section>

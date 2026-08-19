@@ -237,16 +237,6 @@ td .na { color: var(--muted); font-family: var(--font-body); }
 .pickrow p { margin: 0; font-size: 0.9rem; color: var(--ink-2); max-width: none; }
 @media (max-width: 620px) { .pickrow { grid-template-columns: 1fr; gap: var(--space-3xs); } }
 
-/* ── faq ────────────────────────────────────────────────────────────────── */
-/* Same ruled list as the picks and the limits. A page that answers questions in
-   three different visual idioms reads as three pages stapled together. */
-.faq { margin: var(--space-md) 0 0; border-top: 1px solid var(--ink); }
-.faq dt { font-weight: 700; color: var(--ink); font-size: 0.95rem; padding-top: var(--space-sm); letter-spacing: -0.01em; }
-.faq dd {
-  margin: var(--space-3xs) 0 0; padding-bottom: var(--space-sm);
-  border-bottom: 1px solid var(--rule); font-size: 0.9rem; color: var(--muted); max-width: var(--measure);
-}
-
 /* ── limits: a tight list ───────────────────────────────────────────────── */
 .limits { margin-top: var(--space-md); border-top: 1px solid var(--ink); }
 .limit { padding: var(--space-sm) 0; border-bottom: 1px solid var(--rule); }

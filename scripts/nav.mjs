@@ -41,12 +41,12 @@ export function navHtml(current, { fetched, sha }) {
   ).join("\n    ");
   return `<nav class="sitenav" aria-label="Site">
   <span class="brand">Sourcery<a href="https://sameerhimati.com">by Sameer Himati</a></span>
-  <span class="navlinks">
-    ${links}
-  </span>
   <span class="meta">
     <span class="stamp">Run 2 &middot; fetched ${fetched} &middot; <span class="mono">${sha}</span></span>
     <a href="${REPO}">Source</a>
+  </span>
+  <span class="navlinks">
+    ${links}
   </span>
 </nav>`;
 }
@@ -62,28 +62,32 @@ export function navHtml(current, { fetched, sha }) {
 // answer should not be at the bottom of the page.
 export const NAV_CSS = `
 /* ── site navigation (from scripts/nav.mjs) ─────────────────────────────── */
+/* Two deliberate rows: brand and run stamp on the first, the link strip on the
+   second, sitting directly on the bar's bottom rule. The current page's link
+   punches through that rule by taking the page background, and the trick only
+   works if nothing can ever wrap in between the links and the rule. */
 .sitenav {
   --nav-bg: #fafcfe;
-  display: flex; flex-wrap: wrap; align-items: flex-end; column-gap: 20px;
+  display: flex; flex-wrap: wrap; align-items: baseline; column-gap: 20px; row-gap: 2px;
   padding-top: 20px; border-bottom: 1px solid #0a0e12;
   font-size: 0.78rem; letter-spacing: 0.02em; color: #5b5e61;
 }
-.sitenav .brand { font-weight: 800; text-transform: uppercase; color: #0a0e12; padding-bottom: 12px; white-space: nowrap; }
+.sitenav .brand { font-weight: 800; text-transform: uppercase; color: #0a0e12; white-space: nowrap; }
 .sitenav .brand a { font-weight: 500; text-transform: none; letter-spacing: 0; color: #5b5e61; text-decoration: none; margin-left: 8px; }
 .sitenav .brand a:hover { color: #d01e1c; }
-.sitenav .navlinks { display: flex; flex-wrap: wrap; }
+.sitenav .meta { margin-left: auto; display: flex; column-gap: 20px; white-space: nowrap; }
+.sitenav .meta a { color: #5b5e61; text-decoration: none; }
+.sitenav .meta a:hover { color: #d01e1c; }
+.sitenav .stamp .mono { font-size: 0.85em; }
+.sitenav .navlinks { width: 100%; display: flex; flex-wrap: wrap; margin-top: 6px; }
 .sitenav .navlinks a {
-  padding: 12px 14px; font-weight: 700; font-size: 0.84rem; letter-spacing: 0.01em;
+  padding: 10px 14px; font-weight: 700; font-size: 0.84rem; letter-spacing: 0.01em;
   color: #5b5e61; text-decoration: none;
   border: 1px solid transparent; border-bottom: 0; margin-bottom: -1px;
 }
 .sitenav .navlinks a:hover { color: #0a0e12; }
 .sitenav .navlinks a[aria-current="page"] { color: #0a0e12; background: var(--nav-bg); border-color: #0a0e12; }
-.sitenav .meta { margin-left: auto; display: flex; column-gap: 20px; padding-bottom: 12px; white-space: nowrap; }
-.sitenav .meta a { color: #5b5e61; text-decoration: none; }
-.sitenav .meta a:hover { color: #d01e1c; }
-.sitenav .stamp .mono { font-size: 0.85em; }
 @media (max-width: 760px) {
-  .sitenav .meta { margin-left: 0; width: 100%; padding: 4px 0 12px; white-space: normal; }
+  .sitenav .meta { margin-left: 0; white-space: normal; }
 }
 `.trimEnd();

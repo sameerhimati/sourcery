@@ -366,6 +366,53 @@ function chartStructure() {
   );
 }
 
+// ── 5. how long one search takes ──────────────────────────────────────────────
+// The same dot-and-interval shape as the leaderboard, so the eye already knows
+// how to read it. Log x, like the price chart, because the arms span two orders
+// of magnitude: on a linear axis six providers pile onto the left edge to make
+// room for one.
+function chartLatency() {
+  const rows = ORDER.filter((k) => d.latency[k]).sort((a, b) => d.latency[a].p50_ms - d.latency[b].p50_ms);
+  const top = 46;
+  const baseY = top + rows.length * ROW;
+  const h = baseY + 80;
+  const lo = Math.log10(500);
+  const hi = Math.log10(90000);
+  const x = (ms) => GUT + ((Math.log10(ms) - lo) / (hi - lo)) * (PLOT - GUT);
+
+  let s = "";
+  for (const t of [1000, 3000, 10000, 30000]) {
+    s += `<line x1="${x(t)}" y1="${top - 8}" x2="${x(t)}" y2="${baseY - 10}" class="grid"/>`;
+    s += txt(x(t), baseY + 8, "tick", secs(t), "middle");
+  }
+  s += axisFooter(baseY + 30, "seconds per search, log scale", "lower is better");
+  s += txt(GUT, baseY + 50, "note", "The dot is the median search; the line runs out to the 90th percentile, the slowest one search in ten.");
+
+  rows.forEach((k, i) => {
+    const cy = top + i * ROW + ROW / 2 - 4;
+    const l = d.latency[k];
+    s += txt(GUT - 16, cy + 4, "name", LABEL[k], "end");
+    s += `<line x1="${x(l.p50_ms)}" y1="${cy}" x2="${x(l.p90_ms)}" y2="${cy}" class="iv"/>`;
+    s += `<line x1="${x(l.p90_ms)}" y1="${cy - 4}" x2="${x(l.p90_ms)}" y2="${cy + 4}" class="iv-cap"/>`;
+    s += dot(x(l.p50_ms), cy, 5);
+    s += txt(PLOT + 28, cy + 4, "num", secs(l.p50_ms));
+    s += txt(PLOT + 74, cy + 4, "num dim", secs(l.p90_ms));
+  });
+  // Two number columns, so both get named, in the same spot the difficulty
+  // chart names its drop column.
+  s += txt(PLOT + 28, 14, "collab", "median, then the");
+  s += txt(PLOT + 28, 30, "collab", "slowest 1 in 10");
+  return frame(
+    h,
+    { id: "lt", text: "Search time by provider, median and 90th percentile" },
+    `${LABEL[latFast]} is fastest at a median of ${secs(d.latency[latFast].p50_ms)} per search. ` +
+      `${LABEL[cheapest]}, the cheapest arm, takes ${secs(d.latency[cheapest].p50_ms)}. ` +
+      `${LABEL[latSlow]} is slowest at ${secs(d.latency[latSlow].p50_ms)}, with the slowest one search in ten at ` +
+      `${secs(d.latency[latSlow].p90_ms)} or worse, and its sample includes the repair pass its one-request throttle forced.`,
+    s,
+  );
+}
+
 // ── table & tiles ─────────────────────────────────────────────────────────────
 function tableRows() {
   return ORDER.map((k) => {
@@ -424,6 +471,10 @@ const rungRows = (rungs) =>
 const byLatency = ORDER.filter((k) => d.latency[k]).sort((a, b) => d.latency[a].p50_ms - d.latency[b].p50_ms);
 const latFast = byLatency[0];
 const latSlow = byLatency[byLatency.length - 1];
+// The cheapest arm, read off the data for the same reason: the speed section
+// points out that cheap and fast are different providers, and a re-run that
+// changed either should change the sentence with it.
+const cheapest = ORDER.reduce((a, b) => (P[a].cost.per_query_usd <= P[b].cost.per_query_usd ? a : b));
 
 // ── assemble ──────────────────────────────────────────────────────────────────
 const REPL = {
@@ -431,6 +482,7 @@ const REPL = {
   __CHART_DIFFICULTY__: chartDifficulty(),
   __CHART_PRICE__: chartPrice(),
   __CHART_STRUCTURE__: chartStructure(),
+  __CHART_LATENCY__: chartLatency(),
   __TABLE_ROWS__: tableRows(),
   __PROVIDER_SETTINGS__: SETTINGS,
   __PPX_RUNG3__: String(P.perplexity.binary.rung3_pct),
@@ -462,6 +514,8 @@ const REPL = {
   __LAT_SLOW_P50__: secs(d.latency[latSlow].p50_ms),
   __LAT_SLOW_P90__: secs(d.latency[latSlow].p90_ms),
   __LAT_RATIO__: String(Math.round(d.latency[latSlow].p50_ms / d.latency[latFast].p50_ms)),
+  __CHEAPEST__: LABEL[cheapest],
+  __CHEAPEST_P50__: secs(d.latency[cheapest].p50_ms),
   __POOL_SAVED_PCT__: String(Math.round(((d.counts.pairs - d.counts.unique_pairs) / d.counts.pairs) * 100)),
   // The complement of from_one_provider_pct: the share of pages more than one
   // arm returned, which is exactly the share pooling grades on somebody else's

@@ -99,6 +99,7 @@ __NAV__
   <a href="#results">Results</a>
   <a href="#difficulty">Base vs. hard</a>
   <a href="#cost">Cost</a>
+  <a href="#speed">Speed</a>
   <a href="#content">Returned content</a>
   <a href="#vs-answer-graded">vs. answer-graded indexes</a>
   <a href="#table">Every number</a>
@@ -135,7 +136,15 @@ __NAV__
     <figcaption>Prices are pay-as-you-go list rates off my own billing pages. A hollow ring marks one I took from a rate card; a filled dot was one I was actually billed.</figcaption>
   </figure>
   <p>The three providers on the cheapest tier take three of the top four places; the outright cheapest places sixth. Serper matches Tavily at a fifty-fourth of the cost. It returns links and snippets and never page content, so if you already run a scraper, that is the part you were paying extra for.</p>
-  <p>Speed is the other thing the price does not buy. __LAT_FAST__ answers in a median of __LAT_FAST_P50__ per search against __LAT_SLOW_P50__ for __LAT_SLOW__, about __LAT_RATIO__ times the wait, and __LAT_SLOW__'s slowest one search in ten takes __LAT_SLOW_P90__ or worse.</p>
+</section>
+
+<section id="speed">
+  <h2>Speed</h2>
+  <figure>
+    <div class="scroller">__CHART_LATENCY__</div>
+    <figcaption>Measured from one machine on one network over two days; <a href="__BASE__method/#limits">what this cannot tell you</a> says what that means. Bright Data's sample includes the repair pass its throttle forced.</figcaption>
+  </figure>
+  <p>Speed is the other thing the price does not buy. __LAT_FAST__ answers in a median of __LAT_FAST_P50__ per search; __CHEAPEST__, the cheapest arm, takes __CHEAPEST_P50__. __LAT_SLOW__ is the slowest at __LAT_SLOW_P50__, about __LAT_RATIO__ times the fastest, and its slowest one search in ten takes __LAT_SLOW_P90__ or worse.</p>
 </section>
 
 <section id="content">

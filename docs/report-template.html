@@ -1,11 +1,58 @@
 <!-- Rendered by scripts/build-report.mjs into docs/index.html. Charts, tables and
-     figures are generated from docs/report-data.json. A few numbers in the running
-     prose are transcribed from docs/run-2-findings.md and are marked as such in the
-     build script. Edit this file for wording; edit the data pipeline for figures. -->
+     every figure in the prose come from docs/report-data.json, via the
+     double-underscore placeholders the build script fills in.
+     Edit this file for wording; edit the data pipeline for figures. Typing a
+     number straight into a sentence fails the build — scripts/check-numbers.mjs
+     asserts every number on the page traces back to the data file. -->
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Search APIs, graded on their sources</title>
 <meta name="description" content="Eight web-search APIs, the same __N_QUESTIONS__ questions, three judges reading every page that came back — and never an answer. Results and full method.">
+<link rel="canonical" href="__BASE__">
+
+<!-- Social preview. The card is a checked-in file rather than a render at
+     request time, because a preview crawler fetches once, caches hard, and
+     never comes back to see that a generated one has finished. -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Sourcery">
+<meta property="og:url" content="__BASE__">
+<meta property="og:title" content="Search APIs, graded on their sources">
+<meta property="og:description" content="Eight providers, the same __N_QUESTIONS__ questions, one run. Three judges read every page that came back and none of them ever graded an answer.">
+<meta property="og:image" content="__BASE__media/og-card.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Sourcery — search APIs, graded on their sources. Run 2: __N_QUESTIONS__ questions, eight providers, three judges.">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Search APIs, graded on their sources">
+<meta name="twitter:description" content="Eight providers, the same __N_QUESTIONS__ questions, one run. Three judges read every page that came back and none of them ever graded an answer.">
+<meta name="twitter:image" content="__BASE__media/og-card.png">
+
+<!-- Dataset rather than FAQPage. FAQPage would mean writing every answer a
+     second time inside a script tag, and two copies of a sentence drift the
+     first time one of them is edited — the same reason the rubrics are imported
+     from core/controls.ts instead of retyped. Every value here is a token, so
+     it rebuilds from docs/report-data.json with the page. -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Dataset",
+  "name": "Sourcery run 2 — web-search APIs graded on their sources",
+  "description": "Eight web-search APIs asked the same __N_QUESTIONS__ questions in a single run. Three language models rated every page returned, __N_RATINGS__ ratings across __UNIQUE_PAIRS__ unique pages. No answer is written or graded.",
+  "url": "__BASE__",
+  "license": "https://opensource.org/licenses/MIT",
+  "creator": { "@type": "Person", "name": "Sameer Himati", "url": "https://sameerhimati.com" },
+  "isAccessibleForFree": true,
+  "measurementTechnique": "Blinded pooled relevance rating on a four-rung rubric, at page and result-set scope",
+  "variableMeasured": "Set rating (0-3): whether the eight pages one search returned are enough to answer the question",
+  "distribution": [{
+    "@type": "DataDownload",
+    "encodingFormat": "application/json",
+    "contentUrl": "__REPO__/blob/main/docs/report-data.json"
+  }],
+  "temporalCoverage": "__FETCHED__",
+  "codeRepository": "__REPO__"
+}
+</script>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -19,62 +66,105 @@ __STYLE__
 
 <nav class="masthead">
   <span class="brand">Sourcery</span>
-  <span>run 2 &middot; __GENERATED__</span>
+  <span class="stamp">Run 2 &middot; fetched __FETCHED__ &middot; <span class="mono">__CODE_SHA__</span></span>
   <span class="right">
-    <a href="__BASE__explorer/">Explorer</a>
     <a href="__REPO__">Source</a>
   </span>
 </nav>
 
 <header class="lead">
   <h1>Search APIs, graded on their sources</h1>
-  <p class="standfirst">Benchmarks of search APIs grade the answer a model writes afterwards. That number is mostly a score of the model. <strong>This one never sees an answer.</strong> Eight providers got the same __N_QUESTIONS__ questions on one day; Claude Sonnet 5, GPT-5.6 and GLM 5.2 read every page that came back and scored it, __N_RATINGS__ ratings across __UNIQUE_PAIRS__ pages.</p>
+  <p class="standfirst"><a href="https://artificialanalysis.ai/agents/search-api">Benchmarks of search APIs</a> grade the answer a model writes afterwards, a number that is mostly a score of the model. With Sourcery I wanted to control for the LLM and judge purely on the fetched results. All eight providers got the same __N_QUESTIONS__ questions in a single run, then 3 models — Claude Sonnet 5, GPT-5.6 and GLM 5.2 — read every page and scored it on a 0&ndash;3 scale. <label for="tab-method" class="tablink">The method has more on this.</label></p>
 </header>
+
+<div class="disclosure" id="who">
+  <h2 class="dhead">Who ran this</h2>
+  <dl>
+    <dt>Independent</dt>
+    <dd>I ran this on my own. No search provider commissioned it, reviewed it, or saw it before it went up, and there are no affiliate links on this page.</dd>
+    <dt>Self-funded</dt>
+    <dd>I paid for it: $__COST_TOTAL__ of retrieval. The prices here are each provider's pay-as-you-go list rate, off my own billing pages, so they are what you would pay rather than what my account happened to be charged after credits.</dd>
+    <dt>Checkable</dt>
+    <dd>Every rating is published with the sentence the judge wrote to justify it, so any number here opens onto the verdicts underneath it. <a href="__BASE__explorer/">Read them in the explorer.</a></dd>
+    <dt>Written down first</dt>
+    <dd>What would be measured, and what would count as the design failing, were <a href="__REPO__/blob/main/docs/preregistration-v3.md">registered before the run</a>. A method written after seeing the data cannot be told apart from one picked to flatter it.</dd>
+  </dl>
+  <!-- A label, not an <a href="#limits">. The limits live in the method panel,
+       which is display:none until its radio is checked, so an anchor would jump
+       the reader to an element that is not on screen. The label switches tabs. -->
+  <p class="dnote">Before quoting the ranking, read <label for="tab-method" class="tablink">what this cannot tell you</label>.</p>
+</div>
+
+<section class="why">
+  <h2 class="dhead">Why it is built this way</h2>
+  <p>Some of what follows is a principled choice and some of it is my budget. They are worth telling apart, so here is which is which.</p>
+  <p><strong>Pooling was a cost decision first.</strong> Every page is graded once and that rating counts for every provider that returned it. There is a real methodological argument for it — a page is detached from whoever returned it before anyone grades it, so there is no provider name for a judge to be swayed by — and I would make that argument honestly. But I picked it because the eight arms returned __N_PAIRS__ question-page pairs that collapse to __UNIQUE_PAIRS__ unique ones, and grading the unique set meant __POOL_SAVED_PCT__% fewer judge calls. I could not have afforded the run otherwise. What it costs is real and I would rather you hear it from me: where several arms returned the same URL, the longest extraction anyone returned is the one that got graded, so extraction quality is averaged away on those pages.</p>
+  <p><strong>The __TRUNC_LIMIT__-character cut on each source is the same story.</strong> It is a realistic slice of an agent's context budget, which is true, and it is also the cheapest way to make __N_RATINGS__ ratings affordable. A bigger budget would have cost more and might have reordered the bottom of the table.</p>
+  <p><strong>Three judges, not five.</strong> Five models passed calibration against human-settled pairs and none of them rated a keyword-stuffed page above zero. I ran three of them, because three was what I could pay for. And this is one run on one set of questions — nothing here is measured twice, so no number on this page carries an estimate of how much it would move if I ran it again.</p>
+</section>
 
 <input type="radio" name="tab" id="tab-results" class="tabin" checked>
 <input type="radio" name="tab" id="tab-pick" class="tabin">
 <input type="radio" name="tab" id="tab-method" class="tabin">
+<!-- Three of these switch a panel on this page; Explorer leaves for a separate
+     app that pulls 12 MB of verdicts and needs JavaScript to draw any of it.
+     It sits in the same strip because it is the same site to a reader, and it
+     carries an arrow so the one that navigates away says so. -->
 <div class="tabs">
   <label for="tab-results">Results</label>
   <label for="tab-pick">How to pick</label>
   <label for="tab-method">Method</label>
+  <a class="tabout" href="__BASE__explorer/">Explorer<span aria-hidden="true">&#8599;</span></a>
 </div>
 
 <div class="panel" id="panel-results">
 
-<section>
-  <h2>The ranking, and where it stops being one</h2>
-  <p>Each provider returned eight pages per question. A judge saw all eight and answered one thing: could someone answer from these alone? Zero is nothing useful, three is a full answer.</p>
+<nav class="toc" aria-label="On this page">
+  <span class="toclab">On this page</span>
+  <a href="#results">Results</a>
+  <a href="#difficulty">Base vs. hard</a>
+  <a href="#cost">Cost</a>
+  <a href="#content">Returned content</a>
+  <a href="#vs-answer-graded">vs. answer-graded indexes</a>
+  <a href="#table">Every number</a>
+  <a href="#notes">Notes from the run</a>
+  <a href="#faq">Questions</a>
+</nav>
+
+<section id="results">
+  <h2>Results</h2>
+  <p>Each provider gave back eight pages per question, and a judge saw all eight together and answered one question: could you answer from these alone? Zero means nothing useful, three means a full answer. That is the <strong>set rating</strong>, and it is the headline on this page — it grades the eight results as a set, not one page at a time.</p>
   <figure>
     <div class="scroller">__CHART_LEADERBOARD__</div>
-    <figcaption>The dot is the measured average. The line is the 95% confidence interval, where the real value probably sits given __N_QUESTIONS__ questions. Overlapping lines mean the order between those providers is noise.</figcaption>
+    <figcaption>The dot is the measured average over __N_QUESTIONS__ questions. Where two of those lines overlap, the order between the providers is noise rather than a finding, and the bracket marks each run of providers that cannot be separated.</figcaption>
   </figure>
-  <p>Perplexity is clear of everyone. Below it, two groups and no order inside either. Ask again next week and the members of each could come back in a different sequence. The step between the groups is the real result: Exa to Tavily is four tenths of a rung, bigger than anything inside either cluster.</p>
-  <p>Without the scale at all: <strong>Perplexity returns a page that fully answers the question __PPX_RUNG3__% of the time. Bright Data manages __BD_RUNG3__%.</strong> Same ordering, so none of this rests on the 0&ndash;3 rubric being right.</p>
+  <p>Perplexity is clear of everyone else. Below it there are two groups, and inside either one the order doesn't mean anything — ask again next week and they could come back in a different sequence. The gap between the two groups is the actual result: Exa to Tavily is four tenths of a rung, bigger than anything inside either cluster.</p>
+  <p>Throw the scale out entirely and you get the same thing. <strong>Perplexity returns a page that fully answers the question __PPX_RUNG3__% of the time, Bright Data manages __BD_RUNG3__%</strong>, and the ordering doesn't move — so none of this rests on the 0&ndash;3 rubric being right.</p>
 </section>
 
-<section>
-  <h2>Easy questions hide the difference</h2>
-  <p>Half the set was written to be hard: multi-hop, ambiguous, or needing a source that is not the first result.</p>
+<section id="difficulty">
+  <h2>Base vs. hard questions</h2>
+  <p>I wrote half the set to be hard: multi-hop, ambiguous, or needing a source that isn't the first result.</p>
+  <p class="scopenote">This chart is the <strong>page rating</strong>, not the set rating above — it scores each page on its own rather than the eight together. That is why the order is different: Exa's individual pages beat Parallel's, while Parallel's eight fit together better and win on the set.</p>
   <figure>
     <div class="scroller">__CHART_DIFFICULTY__</div>
     <figcaption>Best-to-worst spread goes from __SPREAD_BASE__ on the base half to __SPREAD_HARD__ on the hard half, __SPREAD_PCT__% wider. The leaders do not improve; the bottom drops away.</figcaption>
   </figure>
-  <p>Benchmark search on questions your model could nearly answer already and every provider looks fine. The difference only shows up on the ones you needed help with.</p>
-  <p>This chart is ordered by its own numbers, which puts Exa above Parallel where the ranking above does not. Both are right: Exa's individual pages score higher, Parallel's eight fit together better, and a judge asked about the whole set prefers Parallel. They tie on the headline either way.</p>
+  <p>Benchmark search on questions your model could nearly answer on its own and every provider looks fine. The difference only shows up on the ones you actually needed help with.</p>
+  <p>The chart is ordered by its own numbers, so Exa sits above Parallel here. Both orderings are real and they are measuring different things — and since the two are inside each other's confidence intervals on the set score, they tie on the headline either way.</p>
 </section>
 
-<section>
-  <h2>Price buys nothing</h2>
+<section id="cost">
+  <h2>Cost</h2>
   <figure>
     <div class="scroller">__CHART_PRICE__</div>
-    <figcaption>Prices are pay-as-you-go list rates from the author's own billing pages. A hollow ring marks one taken from a rate card; a filled dot was billed.</figcaption>
+    <figcaption>Prices are pay-as-you-go list rates off my own billing pages. A hollow ring marks one I took from a rate card; a filled dot was one I was actually billed.</figcaption>
   </figure>
   <p>The three providers on the cheapest tier take three of the top four places; the outright cheapest places sixth. Serper matches Tavily at a fifty-fourth of the cost. It returns links and snippets and never page content, so if you already run a scraper, that is the part you were paying extra for.</p>
 </section>
 
-<section>
-  <h2>&ldquo;Page text&rdquo; means something different to each of them</h2>
+<section id="content">
+  <h2>Returned content</h2>
   <figure>
     <div class="scroller">__CHART_STRUCTURE__</div>
     <figcaption>Share of each provider's returned pages containing the element. Every provider was set to its highest-quality tier, so this is each one at its best.</figcaption>
@@ -83,16 +173,16 @@ __STYLE__
   <p>The other axis is volume. An agent gives each source a slice of its context, and this run allows __TRUNC_LIMIT__ characters, which is a realistic budget. <strong>__TRUNC_FIRECRAWL__% of Firecrawl's pages run past it; __TRUNC_PERPLEXITY__% of Perplexity's do.</strong> Firecrawl returns whole documents and Perplexity returns excerpts, and past the budget that difference stops reaching the model.</p>
 </section>
 
-<section>
-  <h2>Why this disagrees with the answer-graded index</h2>
+<section id="vs-answer-graded">
+  <h2>Why this disagrees with answer-graded indexes</h2>
   <p>Artificial Analysis published a search index the day before this went out. It ranks Firecrawl third. This run puts it seventh. The two measure different things.</p>
-  <p><strong>They grade what an agent eventually produces.</strong> Up to 25 turns and roughly nine to thirteen searches per task, then the final answer is scored. A weak first result set gets repaired by searching again. <strong>This grades what one search hands back.</strong> Eight results, one shot, no recovery. Their questions are static obscure facts; these lean fresh.</p>
+  <p>They grade what an agent eventually produces: up to 25 turns and roughly nine to thirteen searches per task, and then the final answer gets scored, so a weak first result set just gets repaired by searching again. Sourcery grades what one search hands back — eight results, one shot, no recovery. Their questions are static obscure facts, mine lean fresh.</p>
   <p>Neither index rewards Firecrawl's extraction, for opposite reasons. Their settings disable its scraping by name and route everyone through one generic extractor. This run asked for full page markdown, got it, and then metered every source to the same context budget, which most of those pages exceed. The advantage is real and sits upstream of where either benchmark can see it.</p>
   <p>Their index carries no confidence intervals and their top five span two points. On their published sample sizes that gap is inside the noise, which is the same reason three providers here are drawn as a tie.</p>
 </section>
 
 
-<section>
+<section id="table">
   <h2>Every number</h2>
   <div class="scroller">
     <table>
@@ -101,26 +191,66 @@ __STYLE__
           <th>Provider</th>
           <th class="n">Set rating</th>
           <th class="n">Fully answers</th>
-          <th class="n">Per page</th>
-          <th class="n">Hard half</th>
+          <th class="n">Page rating</th>
+          <th class="n">Page, hard half</th>
           <th class="n">$ / query</th>
           <th class="n">This run</th>
           <th class="n">Over budget</th>
+          <th class="n">Median latency</th>
         </tr>
       </thead>
       <tbody>__TABLE_ROWS__</tbody>
     </table>
   </div>
-  <p class="tnote">Set rating and per-page rating are 0&ndash;3. &ldquo;Fully answers&rdquo; is the share of a provider's pages the judges put on the top rung. &ldquo;Over budget&rdquo; counts how often a page ran past the __TRUNC_LIMIT__-character per-source allowance, which measures how much text a provider returns. Serper is n/a because it returns no page text. <span class="star">*</span> marks a rate card rather than an invoice.</p>
+  <p class="tnote"><strong>Scope matters in this table.</strong> &ldquo;Set rating&rdquo; grades a provider's eight results together and is the headline. Every other quality column grades pages one at a time, which is why a provider can lead on one and not the other. Both scales are 0&ndash;3. &ldquo;Fully answers&rdquo; is the share of a provider's pages the judges put on the top rung. &ldquo;Over budget&rdquo; counts how often a page ran past the __TRUNC_LIMIT__-character per-source allowance, which measures how much text a provider returns. Serper is n/a because it returns no page text. &ldquo;Median latency&rdquo; is how long one search took, measured from my machine on the day. <span class="star">*</span> marks a rate card rather than an invoice.</p>
+</section>
+
+<section id="notes">
+  <h2>Notes from the run</h2>
+  <p>The numbers above are tidy. Getting them was not, and the parts that went wrong say as much about these products as the ranking does.</p>
+  <p>Bright Data throttles above one concurrent request, so its arm ran at a crawl and needed a second repair pass that went past midnight — which is why this run is stamped across two days instead of one. Tavily's plan ran out around question __TAVILY_QUOTA_Q__ and the rest of its questions had to wait. Firecrawl went through __FC_CREDITS__ credits in a day, __FC_CREDIT_PCT__% of a month's allowance and $__FC_CREDIT_USD__ of prepaid credit, because it bills web and news results separately and only the web half ends up as sources; the news half buys publish dates I never used. I also tried a keyless arm as a free-floor control and dropped it after __KEYLESS_FAILS__ consecutive captcha failures and no successes at all.</p>
+  <p>One thing I would tell anyone repeating this: run it before you read it. A batching bug cost about $19 of retrieval that produced nothing usable, and no amount of staring at the code had turned it up — it only showed itself when the requests actually went out. Of __N_QUESTIONS__ questions across eight providers, __SEARCH_CLEAN__ of __SEARCH_TOTAL__ fetches came back clean; the single miss is Firecrawl timing out at 300 seconds, which I checked against their API by hand before recording it. The whole thing cost $__COST_TOTAL__, and what capped it was rate limits rather than the bill.</p>
+</section>
+
+<section id="faq">
+  <h2>Questions</h2>
+  <dl class="faq">
+    <dt>Which search API returned the best sources?</dt>
+    <dd>Perplexity. It is the only provider whose confidence interval clears every other one, and it returns a page that fully answers the question __PPX_RUNG3__% of the time, against __BD_RUNG3__% for the last-placed arm.</dd>
+
+    <dt>Which is cheapest?</dt>
+    <dd>Serper at __SERPER_PRICE__ a query, which buys the same set rating as Tavily for a fraction of the price, as long as you already have something to fetch pages with.</dd>
+
+    <dt>Which returns the best full-page content?</dt>
+    <dd>Tavily: full page markdown on __TAVILY_MD__% of results with headings, links and images kept, and it outscores the more expensive Firecrawl on relevance as well.</dd>
+
+    <dt>Which is fastest?</dt>
+    <dd>__LAT_FAST__, at a median of __LAT_FAST_P50__ per search against __LAT_SLOW_P50__ for __LAT_SLOW__ — about __LAT_RATIO__ times the wait, and __LAT_SLOW__'s slowest one search in ten takes __LAT_SLOW_P90__ or worse.</dd>
+
+    <dt>Why does this disagree with Artificial Analysis?</dt>
+    <dd>Because the two grade different things, and the disagreement is the useful part. They score the answer an agent writes after up to 25 turns of searching, so a weak first result set gets repaired by searching again and the score folds in the agent's recovery. This grades what a single search hands back: eight results, one shot, no second try. Firecrawl ranks third there and seventh here for exactly that reason, and neither number is wrong. <a href="#vs-answer-graded">The longer version is above.</a></dd>
+
+    <dt>Who ran this, and who paid for it?</dt>
+    <dd>I did, and I paid for it — $__COST_TOTAL__ of retrieval at list rates, with no provider commissioning, reviewing or previewing any of it. <a href="#who">The full disclosure is at the top.</a></dd>
+
+    <dt>Can I run it myself?</dt>
+    <dd>Yes — the harness is published, not just the numbers. It is MIT licensed, you bring your own model, and you point it at your own questions. <a href="__REPO__">The code is here.</a></dd>
+  </dl>
 </section>
 
 </div>
 
 <div class="panel" id="panel-pick">
 
-<section>
-  <h2>How to pick a search provider</h2>
-  <p>What you are building decides this more than the ranking does. Three of these eight are statistically tied on the headline, and they are not interchangeable: one returns whole documents, one returns snippets, one returns prose with the links stripped out. Pick on the job.</p>
+<nav class="toc" aria-label="On this page">
+  <span class="toclab">On this page</span>
+  <a href="#picking">Six providers, six jobs</a>
+  <a href="#false-positives">Hallucinated relevance</a>
+</nav>
+
+<section id="picking">
+  <h2>Six providers, six jobs</h2>
+  <p>What you're building decides this more than the ranking does. Three of these eight are tied on the headline and they still aren't interchangeable — one returns whole documents, one returns snippets, one returns prose with the links stripped out. So pick on the job.</p>
   <div class="picks">
     <div class="pickrow">
       <div class="who">Perplexity<span>best overall</span></div>
@@ -140,7 +270,7 @@ __STYLE__
     </div>
     <div class="pickrow">
       <div class="who">Firecrawl<span>hardest to fool</span></div>
-      <p>On the __N_UNANS__ questions with no answer, it produced the fewest convincing near-misses, beating Perplexity on all __N_UNANS__. Read that next to its seventh place: a provider that finds less also invents less. Most expensive of the eight.</p>
+      <p>On the __N_UNANS__ questions with no answer, it produced the fewest convincing near-misses, beating Perplexity on all __N_UNANS__. That has to be read next to its seventh place overall, though, because it returns fewer good pages than the others and so has fewer chances to return a convincing wrong one. Most expensive of the eight.</p>
     </div>
     <div class="pickrow">
       <div class="who">Brave<span>summaries only</span></div>
@@ -149,23 +279,32 @@ __STYLE__
   </div>
 </section>
 
-<section>
-  <h2>The trade-off nobody advertises</h2>
-  <p>Perplexity is the best of the eight at finding real answers and the worst at not manufacturing the appearance of one. Asked for a Postgres setting that does not exist, one arm returned a page about a real setting with a similar name, and a judge called it a direct answer.</p>
-  <p>Your code can see a miss, it cannot see a confident near-miss, so if your agent has no way to check, weigh that above the ranking.</p>
+<section id="false-positives">
+  <h2>Hallucinated relevance</h2>
+  <p>Perplexity is the best of the eight at finding real answers and the worst at not manufacturing the appearance of one. Asked for the default of <span class="mono">max_parallel_vacuum_workers</span>, a Postgres setting that does not exist, one arm came back with a page documenting <span class="mono">max_parallel_maintenance_workers</span> — a real setting, with a real default — and a judge read that as a direct answer to the question. It indicts the judges as much as the provider: one of the three marked the page down and said the parameter name did not match, and the other two did not. Your code can see an empty result and handle it; it cannot see a confident near-miss. If your agent has no way to check what it is told, weigh that above the ranking.</p>
 </section>
 
 </div>
 
 <div class="panel" id="panel-method">
 
-<section>
+<nav class="toc" aria-label="On this page">
+  <span class="toclab">On this page</span>
+  <a href="#varies">What varies</a>
+  <a href="#rubrics">The two rubrics</a>
+  <a href="#settings">Provider settings</a>
+  <a href="#pooling">Pooling</a>
+  <a href="#statistics">The statistics, in words</a>
+  <a href="#limits">What this cannot tell you</a>
+</nav>
+
+<section id="varies">
   <h2>What varies</h2>
-  <p>One question goes to all eight providers. Each returns up to __NUM_SOURCES__ results. Nothing else differs between arms: same prompt, same judges, same number of results requested, same day, caching off.</p>
-  <p>The settings live in one file, <span class="mono">core/controls.ts</span>, and every stage imports from it. Two copies of a setting will eventually disagree.</p>
+  <p>One question goes to all eight providers. Each returns up to __NUM_SOURCES__ results. Nothing else differs between arms: same prompt, same judges, same number of results requested, caching off. Of the eight arms, __ARMS_DAY1__ finished inside a single day. Tavily and Bright Data ran into their own rate limits and finished in the early hours of the next morning, and that is the one respect in which the arms were not treated identically — a page that changed overnight would have been seen differently by those two.</p>
+  <p>The settings live in one file, <span class="mono">core/controls.ts</span>, and every stage imports from it, so there is only ever one value of anything for a stage to read.</p>
 </section>
 
-<section>
+<section id="rubrics">
   <h2>The two rubrics</h2>
   <p>Both ask the same question at two scopes, on the same four rungs. Two models can agree on a named rung; a bare number on a wide scale is something each one invents its own version of.</p>
   <h3 class="sub">Page rating &mdash; does this page help?</h3>
@@ -177,8 +316,8 @@ __STYLE__
   <p class="sub">Both prompts are in <span class="mono">core/controls.ts</span> in full. The set prompt replaced an earlier one partway through the run, which graded whether sources <em>looked</em> good: fresh, authoritative, cleanly extracted. On a question with no answer anywhere it returned a passing score while the page judge rated every page 0 or 1. The sources were good, they just could not answer.</p>
 </section>
 
-<section>
-  <h2>What each provider was asked for</h2>
+<section id="settings">
+  <h2>Provider settings</h2>
   <p>Every provider was set to the highest-quality tier it offers. Where a depth or content knob existed it was turned up.</p>
   <div class="scroller">
     <table>
@@ -191,13 +330,13 @@ __STYLE__
   <p class="tnote">Serper is the one deliberate downgrade: it sells a separate scrape endpoint and this run does not call it, and that choice was pre-registered. Bright Data is the only provider needing a second paid product to get page text, and its extraction step missed roughly half the URLs it tried.</p>
 </section>
 
-<section>
+<section id="pooling">
   <h2>Pooling</h2>
   <p>Providers overlap heavily. Every page from every arm is collapsed into one pool keyed by normalized URL and graded once; that rating counts for each provider that returned it. __OVERLAP_ONE__% of the __UNIQUE_PAIRS__ pages came from exactly one provider and __OVERLAP_ALL__ came from all eight.</p>
   <p>Pooling blinds the judge structurally: a page is detached from whoever returned it before grading, so there is no provider name to be swayed by. The cost is that where several arms returned the same URL, the longest extraction anyone returned is what gets graded, so extraction quality is averaged away on those pages.</p>
 </section>
 
-<section>
+<section id="statistics">
   <h2>The statistics, in words</h2>
   <div class="limits">
     <div class="limit"><h3>Confidence interval</h3><p>Where the real value probably sits, given that __N_QUESTIONS__ questions is a sample. Two overlapping intervals mean the order between those providers is not a finding.</p></div>
@@ -207,12 +346,12 @@ __STYLE__
   </div>
 </section>
 
-<section>
+<section id="limits">
   <h2>What this cannot tell you</h2>
   <div class="limits">
     <div class="limit">
       <h3>Who extracts a page best</h3>
-      <p>Each source gets a __TRUNC_LIMIT__-character slice, which is what an agent with a real context budget would allow. Providers that return whole documents therefore have most of that document sitting past the line. Measuring extraction properly means holding the URLs fixed and varying only the extractor, and that run has not happened.</p>
+      <p>Each source gets a __TRUNC_LIMIT__-character slice, which is what an agent with a real context budget would allow. Providers that return whole documents therefore have most of that document sitting past the line. Other budgets are just as defensible. A larger slice would let the providers returning whole documents show more of what they extract, and it could reorder the bottom of the table, though it would not close the gap at the top. <a href="#pooling">Pooling</a> costs the same measurement a second way — where several arms returned the same URL, the longest extraction anyone returned is the one that got graded, and that is __OVERLAP_MULTI_PCT__% of the pages. Measuring extraction properly means holding the URLs fixed and varying only the extractor, and that run has not happened.</p>
     </div>
     <div class="limit">
       <h3>What your agent will answer</h3>
@@ -220,11 +359,23 @@ __STYLE__
     </div>
     <div class="limit">
       <h3>How any of this behaves at scale</h3>
-      <p>Bright Data throttles above one concurrent request. Tavily's plan ran out around question 150. Firecrawl burned 3,493 credits in a day — it requests web and news results, which bills twice, and only the web half becomes sources; the news half buys publish dates. A keyless control arm was dropped after eight consecutive captcha failures. The run cost $__COST_TOTAL__ and the ceiling was a rate limit long before it was money.</p>
+      <p>Every arm was run once, at whatever concurrency it tolerated, so nothing here measures throughput, quota behaviour, or what any of these costs at volume. What this run did collide with — a provider that throttles at one request, a plan that ran out mid-way, a day that ate most of a month's credits — is written up in <label for="tab-results" class="tablink">notes from the run</label>. Those are things that happened once; none of them is a measurement.</p>
     </div>
     <div class="limit">
       <h3>Whether the questions look like yours</h3>
-      <p>__N_QUESTIONS__ questions written to probe retrieval, not collected from real traffic: __N_BASE__ ordinary, __N_HARD__ deliberately hard, __N_UNANS__ with no answer at all. Frozen and public, so you can judge the resemblance — and the harness exists so you can run your own instead.</p>
+      <p>__N_QUESTIONS__ questions written to probe retrieval, not collected from real traffic: __N_BASE__ ordinary, __N_HARD__ deliberately hard, __N_UNANS__ with no answer at all. I wrote all of them, so whatever I find interesting is in the sample and whatever I did not think to ask is not. Frozen and public, so you can judge the resemblance — and the harness exists so you can run your own instead.</p>
+    </div>
+    <div class="limit">
+      <h3>Whether tomorrow would come out the same</h3>
+      <p>This is one run, fetched __FETCHED__. Every provider is a moving target: indexes change, tiers change, and a model behind one of these can be swapped without telling you. Nothing here is measured twice, so none of these numbers carries an estimate of how much it would move on a re-run. The confidence intervals describe sampling across questions within this one run, which is a narrower claim than it looks.</p>
+    </div>
+    <div class="limit">
+      <h3>Whether the judges are right</h3>
+      <p>Three large language models grade every page, and they agree with each other well enough to trust the ranking — kappa __KAPPA_LO__ to __KAPPA_HI__, moderate on a four-point scale. That is agreement among themselves, not agreement with a person. They were calibrated against human-settled pairs before the run, but three models trained on overlapping text can share a blind spot and agree anyway, and the __N_UNANS__ unanswerable questions show one: a plausible near-miss fools some of them.</p>
+    </div>
+    <div class="limit">
+      <h3>How fast any of them are for you</h3>
+      <p>The table has a median latency column, so timing is measured — but it is measured from one machine on one network over two days, and a provider that is quick from my connection may not be quick from your region. Each arm ran at whatever concurrency it tolerated, which does not flatter the slow end: __LAT_SLOW__ throttles above a single concurrent request, so it ran with less contention than anyone and is still the slowest by a wide margin. Take the ordering seriously and the absolute numbers loosely.</p>
     </div>
   </div>
 </section>
@@ -237,7 +388,7 @@ __STYLE__
     <a href="__BASE__explorer/">Every rating, in the explorer</a>
     <a href="__REPO__">Read the code</a>
   </div>
-  <p class="colophon">Run 2 &middot; fetched and judged __GENERATED__ &middot; MIT licensed</p>
+  <p class="colophon">Run 2 &middot; fetched __FETCHED__ &middot; judged against <span class="mono">__CODE_SHA__</span> &middot; page rebuilt __GENERATED__ &middot; MIT licensed</p>
 </footer>
 
 </div>

@@ -106,9 +106,74 @@ a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .masthead a { text-decoration: none; color: var(--muted); }
 .masthead a:hover { color: var(--accent); }
 
+/* The run stamp sits in the masthead rather than only in the colophon. A reader
+   deciding whether to trust a benchmark asks how old it is first, and that
+   answer should not be at the bottom of the page. */
+.masthead .stamp { color: var(--muted); }
+.masthead .stamp .mono { font-size: 0.85em; }
+
 header.lead { padding: var(--space-xl) 0 var(--space-lg); }
 .standfirst { font-size: 1.14rem; line-height: 1.5; color: var(--ink-2); max-width: 54ch; }
 .standfirst strong { color: var(--ink); }
+
+/* ── who ran this ───────────────────────────────────────────────────────── */
+/* Above the tabs, so it is on screen whichever one is open. A reader deciding
+   whether to trust a benchmark wants the funding and the conflicts before the
+   numbers, and putting it here means they never have to go looking. Set in the
+   same ruled list as the limits and the picks rather than in a tinted callout —
+   a box that shouts would read as a disclaimer being got out of the way. */
+.disclosure { margin: 0 0 var(--space-xl); padding-top: var(--space-md); border-top: 1px solid var(--ink); }
+/* Not scoped to .disclosure. Every front-matter section above the tabs uses
+   this one label style, so two sections sitting next to each other cannot end
+   up with different-looking headings — which is exactly what happened when this
+   rule was a descendant selector. */
+.dhead {
+  font-family: var(--font-mono); font-size: 0.68rem; font-weight: 500;
+  letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted);
+  margin: 0 0 var(--space-sm);
+}
+.disclosure dl { margin: 0; display: grid; grid-template-columns: 11rem 1fr; gap: var(--space-2xs) var(--space-md); }
+.disclosure dt { font-weight: 700; color: var(--ink); font-size: 0.86rem; }
+.disclosure dd { margin: 0; font-size: 0.86rem; color: var(--muted); max-width: var(--measure); }
+.disclosure dd a { color: var(--ink-2); }
+.dnote { margin: var(--space-sm) 0 0; font-size: 0.86rem; color: var(--ink-2); }
+/* A tab switch dressed as a link, because the target is in a hidden panel. */
+.tablink { text-decoration: underline; text-decoration-color: var(--rule-2); text-underline-offset: 3px; cursor: pointer; color: var(--ink); font-weight: 600; }
+.tablink:hover { text-decoration-color: var(--accent); color: var(--accent); }
+/* At standfirst size the tab link is already large; bolding it too makes it
+   shout over the sentence it belongs to. */
+.standfirst .tablink { font-weight: 400; }
+@media (max-width: 620px) {
+  .disclosure dl { grid-template-columns: 1fr; gap: var(--space-3xs); }
+  .disclosure dd { margin-bottom: var(--space-xs); }
+}
+
+/* ── why it is built this way ───────────────────────────────────────────── */
+/* Sits with the disclosure, above the tabs. Which choices were principle and
+   which were budget is the sort of thing a benchmark normally buries, so it
+   gets running prose at reading size instead of a row of small print. */
+.why { margin: 0 0 var(--space-xl); padding-top: var(--space-md); border-top: 1px solid var(--rule); }
+.why p { font-size: 0.92rem; color: var(--ink-2); }
+.why p:first-of-type { color: var(--muted); }
+
+/* ── on this page ───────────────────────────────────────────────────────── */
+/* Reference material has a contents list; a blog post does not. It is one row
+   of links rather than a sidebar, because the page is a single column and a
+   floating rail would be furniture rather than navigation. */
+.toc {
+  display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--space-xs) var(--space-md);
+  margin: calc(var(--space-xl) * -1 + var(--space-md)) 0 var(--space-xl);
+  padding-bottom: var(--space-sm); border-bottom: 1px solid var(--rule);
+  font-size: 0.82rem;
+}
+.toc .toclab {
+  font-family: var(--font-mono); font-size: 0.68rem; letter-spacing: 0.06em;
+  text-transform: uppercase; color: var(--muted);
+}
+.toc a { text-decoration: none; color: var(--neutral); }
+.toc a:hover { color: var(--accent); text-decoration: underline; text-decoration-color: var(--accent); }
+/* An anchor jump inside a tab should not bury the heading under the masthead. */
+section[id] { scroll-margin-top: var(--space-md); }
 
 /* ── tabs, with no javascript ───────────────────────────────────────────── */
 /* Radio inputs rather than :target — :target scrolls the document to the panel
@@ -121,6 +186,18 @@ header.lead { padding: var(--space-xl) 0 var(--space-lg); }
   border: 1px solid transparent; border-bottom: 0; margin-bottom: -1px;
 }
 .tabs label:hover { color: var(--ink); }
+/* The one item in the strip that is a link out. Same type and rhythm as a tab,
+   pushed to the far end and given an arrow, so it reads as part of the same
+   navigation without ever looking like the selected panel. */
+.tabs .tabout {
+  margin-left: auto; padding: var(--space-sm) var(--space-md);
+  font-weight: 700; font-size: 0.86rem; letter-spacing: 0.01em;
+  color: var(--muted); text-decoration: none;
+  display: inline-flex; align-items: baseline; gap: var(--space-3xs);
+}
+.tabs .tabout span { font-size: 0.9em; }
+.tabs .tabout:hover { color: var(--accent); }
+@media (max-width: 620px) { .tabs .tabout { margin-left: 0; } }
 #tab-results:checked ~ .tabs label[for="tab-results"],
 #tab-pick:checked    ~ .tabs label[for="tab-pick"],
 #tab-method:checked  ~ .tabs label[for="tab-method"] {
@@ -136,8 +213,18 @@ section { margin: 0 0 var(--space-2xl); }
 section:last-child { margin-bottom: 0; }
 .sub { margin-top: var(--space-lg); }
 
+/* A warning that the next chart changes what is being measured. It sits above
+   the figure because a reader who meets it underneath has already read the
+   chart as the headline and drawn the wrong conclusion. */
+.scopenote {
+  border-left: 2px solid var(--accent); padding-left: var(--space-sm);
+  font-size: 0.9rem; color: var(--ink-2);
+}
+
 /* ── figures ────────────────────────────────────────────────────────────── */
-figure { margin: var(--space-md) 0 0; }
+/* A bottom margin as well as a top one. Without it the caption butts straight
+   into the paragraph after the figure and the two read as one block of text. */
+figure { margin: var(--space-md) 0 var(--space-lg); }
 .scroller { overflow-x: auto; }
 .scroller > svg { min-width: 600px; }
 figcaption { font-size: 0.8rem; line-height: 1.5; color: var(--muted); margin-top: var(--space-xs); max-width: var(--measure); }
@@ -160,6 +247,15 @@ figcaption { font-size: 0.8rem; line-height: 1.5; color: var(--muted); margin-to
 .num.dim { fill: var(--muted); }
 .num.hot { fill: var(--accent); }
 .bracelab { fill: var(--accent); font-size: 10.5px; font-family: var(--font-mono); text-transform: uppercase; letter-spacing: 0.04em; }
+/* A sentence inside the frame: what a whisker means, what the tint means. Set in
+   the body face rather than the label mono, because it is prose. */
+.note    { fill: var(--muted); font-size: 11px; }
+/* The efficient frontier on the price chart. Dashed and dimmed on purpose: it is
+   a line drawn through the points, not another measurement. */
+.front   { fill: none; stroke: var(--mark); stroke-width: 1.25; stroke-dasharray: 4 3; opacity: 0.5; }
+/* The cheap-and-well-rated corner. The faintest tint of the one mark colour that
+   still reads on this paper — a filled block here would outweigh the data. */
+.quad    { fill: var(--mark); opacity: 0.045; }
 .ptname  { fill: var(--ink); font-size: 12px; font-weight: 500; }
 .cell    { fill: var(--s0); }
 .cell.s0 { fill: var(--s0); } .cell.s1 { fill: var(--s1); } .cell.s2 { fill: var(--s2); }
@@ -193,6 +289,16 @@ td .na { color: var(--muted); font-family: var(--font-body); }
 .pickrow .who span { display: block; font-weight: 500; font-size: 0.75rem; color: var(--muted); letter-spacing: 0; margin-top: 1px; }
 .pickrow p { margin: 0; font-size: 0.9rem; color: var(--ink-2); max-width: none; }
 @media (max-width: 620px) { .pickrow { grid-template-columns: 1fr; gap: var(--space-3xs); } }
+
+/* ── faq ────────────────────────────────────────────────────────────────── */
+/* Same ruled list as the picks and the limits. A page that answers questions in
+   three different visual idioms reads as three pages stapled together. */
+.faq { margin: var(--space-md) 0 0; border-top: 1px solid var(--ink); }
+.faq dt { font-weight: 700; color: var(--ink); font-size: 0.95rem; padding-top: var(--space-sm); letter-spacing: -0.01em; }
+.faq dd {
+  margin: var(--space-3xs) 0 0; padding-bottom: var(--space-sm);
+  border-bottom: 1px solid var(--rule); font-size: 0.9rem; color: var(--muted); max-width: var(--measure);
+}
 
 /* ── limits: a tight list ───────────────────────────────────────────────── */
 .limits { margin-top: var(--space-md); border-top: 1px solid var(--ink); }

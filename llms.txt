@@ -1,22 +1,38 @@
 # sourcery
 
-> Compare web-retrieval providers — Firecrawl, Tavily, Exa, Bright Data, a keyless baseline — on your own queries, with everything else held constant: same query, same answer model, same prompts, same judge. Swap only the retrieval layer. MIT, BYO model, ships an MCP server on the same binary.
+> Compare web-search APIs — Perplexity, Brave, Parallel, Exa, Tavily, Serper, Firecrawl, Bright Data — on your own questions, with everything else held still: same question, same answer model, same prompts, same judges. Swap only the search provider. MIT, bring your own model, ships an MCP server on the same binary.
 
-The result worth knowing before anything else: **source quality and answer quality correlate at r = 0.16.** The answer score is mostly a score of your model, not of the search API. So sourcery reports two scores, and the source one is the one that decides things.
+**The published run grades the pages a provider returned and never grades an answer.** That is the whole design choice, and it comes from run 1: how good the sources were and how good the answer was moved together at r = 0.16, a correlation coefficient where 1 is lockstep and 0 is unrelated, so 0.16 is near enough to nothing. Score the answer and you are mostly scoring your own model. Other search indexes grade the answer; the results page has a section on why it disagrees with them.
+
+Run 2, fetched 17–18 August 2026 — 204 questions (96 ordinary, 96 written to be hard, 12 with no answer anywhere), 8 providers, 3 judges from 3 different labs (Claude Sonnet 5, GPT-5.6, GLM 5.2), 22,457 page ratings over 7,496 unique pages, $40.08 of retrieval:
+
+- **Set rating** is the headline: hand a judge all eight pages one provider returned for one question and ask whether someone could answer from those alone, 0 nothing useful to 3 a full answer. Perplexity leads at 2.768, and the ± figure is a 95% confidence interval — the range the real average probably sits in given 204 questions. Perplexity ± 0.068 is the only one clear of every other. Brave 2.611, Parallel 2.556 and Exa 2.549 overlap, so their order is noise. Then Tavily 2.149, Serper 2.123, Firecrawl 2.064, Bright Data 1.950.
+- Price buys nothing. Cost per query runs 86-fold, $0.0010 to $0.0856, and the three cheapest arms take three of the top four places.
+- The gap widens on the hard half, 0.879 between best and worst on the ordinary questions against 1.070 on the hard ones. Easy questions make providers look alike.
+- Which judge you used explains 2.2% of what varies, against 23.1% for which provider. All three judges agree on the ranking bar one swap.
+- This measures which URLs you get back, not how deeply a provider extracts a page — every source was cut to 1,600 characters before a judge saw it. For Firecrawl in particular that is the result rather than a caveat: it is 7th here at 86 times the cheapest arm, and extraction, which is what it sells, is the axis this run is blind to.
+- Run 1 (four providers, 48 questions) is superseded on everything except the r = 0.16 finding above.
 
 Install: `npx sourcery-eval init` · Agents: `npx sourcery-eval mcp --install`
 
 ## For agents
 
+- [Results page](https://sameerhimati.com/sourcery/): run 2 in full — the ranking with its intervals, ordinary against hard questions, cost, what each provider actually returns as page text, a tab on how to pick one, and the method. One self-contained page.
+- [Explorer](https://sameerhimati.com/sourcery/explorer/): every rating individually, with the sentence the judge wrote to justify it, filterable by provider, question and judge. Read this before believing any average above.
 - [Agent instructions](https://raw.githubusercontent.com/sameerhimati/sourcery/main/docs/agent-prompt.md): a block written to paste into a CLAUDE.md, AGENTS.md, system prompt or skill. Covers both the CLI surface and the MCP tools, with how to read the scores. Fetch this first if you are being asked to use sourcery.
 - [MCP server guide](https://raw.githubusercontent.com/sameerhimati/sourcery/main/mcp/README.md): registration one-liners for Claude Code, Codex, Cursor and Claude Desktop; the two tools and their response shapes; why the working directory decides whose numbers you get.
+- [Report data](https://raw.githubusercontent.com/sameerhimati/sourcery/main/docs/report-data.json): every number on the results page as JSON, derived from the run logs. Use this rather than parsing prose.
 
 ## Reference
 
-- [README](https://raw.githubusercontent.com/sameerhimati/sourcery/main/README.md): install, the two keys you need, cost controls, the provider table, what the run log contains.
-- [Findings](https://raw.githubusercontent.com/sameerhimati/sourcery/main/docs/findings.md): the full write-up — the r = 0.16 result, Firecrawl vs Bright Data on quality and reliability, and an earlier version of this eval that produced a confident wrong answer from too few queries.
+- [README](https://raw.githubusercontent.com/sameerhimati/sourcery/main/README.md): install, the two keys you need, cost controls, the provider table, running your own questions, the MCP tools.
+- [Run 2 findings](https://raw.githubusercontent.com/sameerhimati/sourcery/main/docs/run-2-findings.md): the write-up behind the results page, including the leaderboard inverting on questions with no answer, and what the run cannot see.
+- [Run 1 findings](https://raw.githubusercontent.com/sameerhimati/sourcery/main/docs/findings.md): the earlier four-provider, 48-question run. Where r = 0.16 comes from. Kept because run 2 contradicts parts of it — read it for that result and the method mistakes, not for a ranking.
 - [Providers](https://raw.githubusercontent.com/sameerhimati/sourcery/main/docs/providers.md): per-provider setup, quirks, credit arithmetic, and how to write a new adapter (one function plus a registry row).
+- [Question sets](https://raw.githubusercontent.com/sameerhimati/sourcery/main/docs/datasets.md): the built-in 48, the 24 real tasks, the 204 of run 2, and the rules for adding to them without invalidating a published number.
+- [Architecture](https://raw.githubusercontent.com/sameerhimati/sourcery/main/ARCHITECTURE.md): what every file does, and one question traced through the whole pipeline.
 
 ## Optional
 
+- [Run 2 preregistration](https://raw.githubusercontent.com/sameerhimati/sourcery/main/docs/preregistration-v3.md): what was going to be measured, written down before the run.
 - [Demo script](https://raw.githubusercontent.com/sameerhimati/sourcery/main/docs/demo-script.md): a 90-second walkthrough, if you need to explain the tool to someone rather than run it.

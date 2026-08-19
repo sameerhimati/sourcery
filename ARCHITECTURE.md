@@ -5,8 +5,8 @@ results to the same model, and has the same judges grade what came back. Every
 part of the pipeline is held identical except which search API fetched the pages,
 so any difference in score has to come from retrieval.
 
-This file is the map. It answers "where is the thing that does X" without you
-having to read the code to find out.
+It answers "where is the thing that does X" so you do not have to read the code
+to find out.
 
 ---
 
@@ -22,7 +22,7 @@ having to read the code to find out.
 | **Grading the fetched pages** (the main score) | `core/retrievalJudge.ts` |
 | **Grading the written answer** (the second score) | `core/judge.ts` |
 | **Grading one page at a time** (run 2) | `core/relevanceJudge.ts` — a rung 0–3 per question-and-page pair |
-| **Grading a whole returned set** (run 2) | `core/setJudge.ts` — 0–10 over everything one provider returned |
+| **Grading a whole returned set** (run 2) | `core/setJudge.ts` — the same 0–3 rungs as the per-page judge, asked of everything one provider returned at once |
 | **What the model already knew** | `core/noSearch.ts` — answers every question with zero sources, so questions retrieval couldn't have helped with can be told apart from the rest |
 | **The settings held identical across providers** | `core/controls.ts` |
 | **Running one question through one provider** | `core/orchestrator.ts` |
@@ -36,7 +36,7 @@ having to read the code to find out.
 
 ## The path of a single question
 
-This is a real sequence, so the numbers mean something — each step feeds the next.
+Each step feeds the next.
 
 **1. A question comes from somewhere.**
 Either the built-in 48 (`core/eval-dataset.ts`), the 24 realistic tasks
@@ -96,7 +96,7 @@ things.
 
 ## Things that exist because something went wrong
 
-Worth knowing about, because each one is load-bearing:
+Each one is load-bearing:
 
 - **`core/stage.ts`** — tags *which step* of a run failed. A retrieval call and
   three LLM calls all happen per result, and any of them can throw an error that

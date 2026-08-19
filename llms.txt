@@ -2,7 +2,7 @@
 
 > Compare web-retrieval providers — Firecrawl, Tavily, Exa, Bright Data, a keyless baseline — on your own queries, with everything else held constant: same query, same answer model, same prompts, same judge. Swap only the retrieval layer. MIT, BYO model, ships an MCP server on the same binary.
 
-The result worth knowing before anything else: **source quality and answer quality correlate at r = 0.16.** Grading a search API on the answer downstream of it mostly grades your own model, which is why sourcery reports two scores and treats the source one as primary.
+The result worth knowing before anything else: **source quality and answer quality correlate at r = 0.16.** The answer score is mostly a score of your model, not of the search API. So sourcery reports two scores, and the source one is the one that decides things.
 
 Install: `npx sourcery-eval init` · Agents: `npx sourcery-eval mcp --install`
 

@@ -14,11 +14,11 @@ I built it because I couldn't find a straight answer to that question while buil
 
 <sub>`sourcery report --tui`, from my own run log. Every provider's answer scores well above its sources.</sub>
 
-**Fetching good pages didn't mean giving good answers.** Rank the providers by how good their fetched pages were, then rank them again by how good the final answer was, and the order scrambles. A provider can hand back stale, off-topic, half-extracted junk and the answer built on top still reads fine, because the model is answering from what it already knew. Grade a search API on the answer downstream of it and you are mostly grading your own model. That's why this tool reports two scores instead of one.
+**Fetching good pages didn't mean giving good answers.** Rank the providers by how good their fetched pages were, then rank them again by how good the final answer was, and the order scrambles. A provider can hand back stale, off-topic, half-extracted junk and the answer built on top still reads fine, because the model is answering from what it already knew. The answer score is mostly a score of your model, not of the search API. That is why this reports two numbers instead of one.
 
 One query breaks it both ways at once. Exa fetched the right Apple page, answered correctly off it, and scored **0** on the answer because the judge itself was a year out of date. Tavily retrieved nothing usable and scored **9**, answering from memory.
 
-**Firecrawl, Bright Data and Tavily tie on source quality. Exa doesn't.** Across 960 results — 48 queries, four providers, five fresh fetches each, two judges — Exa scores 6.45 ± 0.52 where the other three sit between 3.95 and 4.78 with overlapping error bars. It's the one gap wide enough to survive its own uncertainty, and the mechanism is freshness: Exa's median source is 35 days old against 286–318 for everyone else.
+**Firecrawl, Bright Data and Tavily tie on source quality. Exa doesn't.** Across 960 results — 48 queries, four providers, five fresh fetches each, two judges — Exa scores 6.45 ± 0.52 where the other three sit between 3.95 and 4.78 with overlapping error bars. It is the only gap big enough that the error bars do not overlap. The reason is freshness: Exa's median source is 35 days old, everyone else's is 286 to 318.
 
 On reliability, Exa, Firecrawl and Tavily each returned something on all 240 calls; Bright Data failed 61. Every small failure count this eval has ever published turned out to be mine rather than a vendor's — Firecrawl's two were my billing, Exa's and Tavily's one apiece were my own LLM client timing out and being recorded against the provider. The harness now tags which step of a run threw, so a judge that dies can't be charged to a search API.
 
@@ -68,7 +68,7 @@ One LLM key for the answer and judge steps, and at least one retrieval key for t
 | Firecrawl | [firecrawl.dev](https://www.firecrawl.dev/app/api-keys) | metered in credits; `--dry-run` prices a run before it spends |
 | Bright Data | [brightdata.com](https://brightdata.com/cp/setting/users) | three values, see [`docs/providers.md`](docs/providers.md) |
 
-**Groq plus Tavily needs no card and gets you a scored result in about a minute.** Two search keys is where it gets interesting, because that's the first point at which you're comparing anything.
+**Groq plus Tavily needs no card and gets you a scored result in about a minute.** Two search keys is where it gets interesting. That is the first point where you are comparing anything.
 
 **A note on judges**, since it explains a choice that looks odd. The grader should be a model whose training ended *before* the questions were asked, so it can't score an answer highly just by already knowing the answer. That's why `init` pairs newer answer models with older graders, and why a current Claude judging its own output will sometimes call a correctly-sourced answer a hallucination. [The findings](docs/findings.md) has a worked example.
 
@@ -76,7 +76,7 @@ Config, env and results are all read and written relative to wherever you run th
 
 ### From a clone
 
-Clone if you want to read the code, which for an eval you're about to believe is not a bad instinct. Every command works the same, spelled `npm run sourcery -- <command>`:
+Clone it if you want to read the code. For an eval you are about to believe, that is worth doing. Every command works the same, spelled `npm run sourcery -- <command>`:
 
 ```bash
 git clone https://github.com/sameerhimati/sourcery && cd sourcery
@@ -133,20 +133,20 @@ If you'd rather start from a curated set, [`datasets/real-tasks.json`](datasets/
 | `exa` | well measured | 1 | neural index, the only one with reliable native publish dates |
 | `plain` | baseline only | none | keyless SERP and a bare `fetch()`, the free baseline |
 
-That middle column is about my numbers, not about the products. All four keyed providers have been through the full 48-query set with five fresh fetches each and a two-judge panel — 960 results. `plain` is a control: a keyless SERP that gets captcha'd on the first call has nothing to measure, and a run with `plain` as its only provider will usually return you nothing at all. Your own run is what makes that column irrelevant.
+That middle column says how much I have measured. It says nothing about how good the product is. All four keyed providers have been through the full 48-query set with five fresh fetches each and a two-judge panel — 960 results. `plain` is a control: a keyless SERP that gets captcha'd on the first call has nothing to measure, and a run with `plain` as its only provider will usually return you nothing at all. Your own run is what makes that column irrelevant.
 
 An adapter is one function, `(query, config) => { sources, context }`, plus a row in the registry. That's the entire interface. Setup recipes, per-provider quirks and credit arithmetic are in [`docs/providers.md`](docs/providers.md).
 
 ## Use it from an agent
 
-sourcery ships an MCP server on the same binary, so the eval is something an agent can consult rather than something a human reads afterwards. Two tools:
+sourcery ships an MCP server on the same binary, so an agent can consult the eval instead of a human reading it afterwards. Two tools:
 
 | tool | cost | what it does |
 |---|---|---|
 | `which_provider` | one LLM call, no retrieval | Classifies a query into one of the six types and returns whichever provider scored best on that type in your eval history. Use it to pick a backend. |
 | `evaluate_retrieval` | slow, metered, live provider and LLM calls | Runs one query across several providers with everything else held constant and returns per-provider scores. Use it to prove one. |
 
-The cheap one is the useful pattern. Before an agent spends a retrieval call it can ask which backend has actually done best on this kind of question, and route accordingly. Evidence instead of a hardcoded default, for the price of one classification. With no local history it falls back to my shipped numbers and says so.
+The cheap one is the useful pattern. Before an agent spends a retrieval call it can ask which backend has actually done best on this kind of question, and route accordingly. One classification call buys you that instead of a hardcoded default. With no local history it falls back to my shipped numbers and says so.
 
 ```bash
 sourcery mcp --install                                # prints the snippet for your client
@@ -172,7 +172,7 @@ sourcery run "<query>" \
   --judge groq/llama-3.3-70b-versatile
 ```
 
-This matters more than it looks. An eval of your retrieval stack is only meaningful if it runs the model you actually ship, and "which model is best" is a question this tool deliberately won't answer for you. Adding another OpenAI-compatible backend is a single row in [`core/llm/`](core/llm/).
+An eval of your retrieval stack only means something if it runs the model you actually ship. "Which model is best" is a question this deliberately will not answer for you. Adding another OpenAI-compatible backend is a single row in [`core/llm/`](core/llm/).
 
 ## Docs
 

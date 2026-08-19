@@ -1,26 +1,75 @@
 {
-  "_note": "What one query actually costs on each provider, for the cost column in the results explorer. A null price is one that has NOT been measured or quoted — the explorer renders those as 'not measured' rather than guessing. Do not fill these in from memory; use an invoice or the vendor's live pricing page, and put the source and date in.",
-  "_measured_on": "2026-08-17",
+  "_note": "What run 2 cost per query, priced at each provider's PAY-AS-YOU-GO rate rather than at what came out of pocket. Free credits are a fact about this account on this day, not about the product, and pricing by out-of-pocket would print $0 next to Bright Data and Serper — useless to anyone deciding what to buy. The question a reader has is what the next 204 questions would cost them. `confidence`: `billed` means a dashboard showed real spend for this run, `rate` means the per-unit price is confirmed and the usage count is ours, `unknown` means the rate is still missing.",
+  "_run_shape": "204 questions, 8 results each, page text requested. `calls` counts every request the run actually made, retries included, because that is what a provider bills.",
+  "_checked": "2026-08-18",
   "providers": {
+    "perplexity": {
+      "usd_per_query": 0.005,
+      "usd_for_run": 1.02,
+      "calls": 204,
+      "confidence": "billed",
+      "basis": "billing itemises Search API requests at 0.005; 302 requests came to $1.51 and this run made 204",
+      "source": "console.perplexity.ai billing, 2026-08-18"
+    },
+    "brave": {
+      "usd_per_query": 0.005,
+      "usd_for_run": 1.02,
+      "calls": 204,
+      "confidence": "billed",
+      "basis": "301 requests this month cost $1.51. Out of pocket was $0 because monthly credits absorbed it, which is why this table prices the rate rather than the receipt",
+      "source": "api-dashboard.search.brave.com, 2026-08-18"
+    },
+    "exa": {
+      "usd_per_query": 0.0141,
+      "usd_for_run": 2.88,
+      "calls": 204,
+      "confidence": "billed",
+      "basis": "daily spend on 2026-08-17, the fetch date, was $2.88 across this run's 204 calls",
+      "source": "dashboard.exa.ai usage, 2026-08-18"
+    },
     "tavily": {
       "usd_per_query": 0.054,
-      "basis": "measured: 150 queries burned 1,000 credits at ~6.7 credits/query",
-      "source": "own invoice + credit meter, 2026-08-17"
+      "usd_for_run": 13.83,
+      "calls": 258,
+      "confidence": "rate",
+      "basis": "$0.008 per credit confirmed on the billing page, at ~6.7 credits per query measured directly (150 queries burned 1,000 credits). This number was briefly withdrawn on the grounds that the account only paid $0.86 — wrong, because $0.86 is the overage past 1,000 free monthly credits, not the cost of the run. The account consumed 1,108 credits this month across several runs, so the per-query figure comes from the direct measurement rather than from dividing the month",
+      "source": "app.tavily.com billing, 2026-08-18"
+    },
+    "firecrawl": {
+      "usd_per_query": 0.0856,
+      "usd_for_run": 17.47,
+      "calls": 205,
+      "credits_for_run": 3493,
+      "confidence": "rate",
+      "basis": "3,493 credits for 205 calls, about 17 a question against a floor of 10 — 2 for the search, 1 per page scraped. Priced at the top-up rate of $5 per 1,000 credits, because that is what the next 204 questions cost once a plan is spent. On the Hobby plan's own rate ($19 a month for 5,000, or $0.0038 a credit) it would be $13.27. Either way one run consumed 70% of a month's allowance",
+      "source": "firecrawl.dev usage and pricing, confirmed by Sameer 2026-08-18"
+    },
+    "bright_data": {
+      "usd_per_query": 0.0129,
+      "usd_for_run": 2.64,
+      "calls": 405,
+      "credits_for_run": 1760,
+      "confidence": "rate",
+      "basis": "1,760 credits at $1.50 per 1,000 requests. The free-credit breakdown splits it: 458 to the SERP zone and 1,304 to the unblocker zone, one credit per request on each. So three quarters of what this arm costs is fetching the pages, not searching — the SERP call alone would have been $0.69 for the whole run",
+      "source": "brightdata.com free-credit breakdown and the $1.50/CPM pay-as-you-go rate, 2026-08-18"
     },
     "serper": {
       "usd_per_query": 0.001,
-      "basis": "approximate, from the published per-1k-search price",
-      "source": "vendor pricing page, 2026-08-17"
+      "usd_for_run": 0.2,
+      "calls": 204,
+      "credits_for_run": 204,
+      "confidence": "rate",
+      "basis": "$1 per 1,000 credits, one credit per search, so 204 searches cost about 20 cents. The cheapest arm in the run by a factor of five, and the only one that returns no page text at all",
+      "source": "serper.dev pricing, confirmed by Sameer 2026-08-18"
     },
-    "firecrawl": {
-      "usd_per_query": 0.12,
-      "basis": "approximate, from the credit model already encoded in core/adapters/firecrawl.ts",
-      "source": "vendor pricing page, 2026-08-17"
-    },
-    "exa": { "usd_per_query": null, "basis": null, "source": null },
-    "brave": { "usd_per_query": null, "basis": null, "source": null },
-    "perplexity": { "usd_per_query": null, "basis": null, "source": null },
-    "parallel": { "usd_per_query": null, "basis": null, "source": null },
-    "bright_data": { "usd_per_query": null, "basis": null, "source": null }
-  }
+    "parallel": {
+      "usd_per_query": 0.005,
+      "usd_for_run": 1.02,
+      "calls": 204,
+      "confidence": "billed",
+      "basis": "$1.51 used across 302 Search API requests, of which this run made 204",
+      "source": "platform.parallel.ai billing, 2026-08-18"
+    }
+  },
+  "_pricing_basis": "pay-as-you-go marginal rate, 2026-08-18, from Sameer's own billing pages"
 }

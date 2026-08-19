@@ -56,15 +56,32 @@ if (!fetches.length) {
 // lets 22,000 judgements cover eight arms. The explorer has to show that same
 // rating under each provider that returned the page rather than implying each
 // one got its own reading.
-const ratings = new Map();
+// The log is append-only and resume retries failures, so a page a judge errored
+// on and then succeeded on has two rows. One judge rated one page once: keyed by
+// question, url AND judge, last good row wins. Without this the same judge shows
+// up twice on a page and its opinion is counted twice in every mean.
+const latest = new Map();
 for (const j of judgements) {
+  // A judgement that threw is a retry, not a rating. Showing it as an empty chip
+  // beside real verdicts invites reading a transport failure as a judge's
+  // opinion of the page.
+  if (j.error || j.rung === null) continue;
+  latest.set(`${j.queryId} ${j.url} ${j.judge}`, j);
+}
+const ratings = new Map();
+for (const j of latest.values()) {
   const k = `${j.queryId} ${j.url}`;
   if (!ratings.has(k)) ratings.set(k, []);
   ratings.get(k).push({ judge: j.judge, rung: j.rung, rationale: j.rationale ?? "" });
 }
 
-const sets = new Map();
+const latestSet = new Map();
 for (const s of setVerdicts) {
+  if (s.error || s.score === null) continue;
+  latestSet.set(`${s.queryId} ${s.provider} ${s.judge}`, s);
+}
+const sets = new Map();
+for (const s of latestSet.values()) {
   const k = `${s.queryId} ${s.provider}`;
   if (!sets.has(k)) sets.set(k, []);
   sets.get(k).push({ judge: s.judge, score: s.score, rationale: s.rationale ?? "" });
@@ -223,8 +240,8 @@ const payload = {
   summary,
   n_questions: questions.size,
   n_pairs: ratings.size,
-  n_ratings: judgements.length,
-  n_set_verdicts: setVerdicts.length,
+  n_ratings: [...ratings.values()].reduce((n, rs) => n + rs.length, 0),
+  n_set_verdicts: [...sets.values()].reduce((n, rs) => n + rs.length, 0),
   questions: [...questions.values()],
 };
 
@@ -233,8 +250,8 @@ fs.writeFileSync(OUT, JSON.stringify(payload));
 const mb = (fs.statSync(OUT).size / 1e6).toFixed(2);
 console.log(
   `${OUT}: ${mb} MB, ${questions.size} questions, ${providers.length} providers, ` +
-    `${judges.length} judges, ${ratings.size} unique pairs, ${judgements.length} ratings, ` +
-    `${setVerdicts.length} set verdicts.`,
+    `${judges.length} judges, ${ratings.size} unique pairs, ${payload.n_ratings} ratings, ` +
+    `${payload.n_set_verdicts} set verdicts.`,
 );
 const unpriced = providers.filter((p) => costs[p]?.usd_per_query == null);
 if (unpriced.length) {

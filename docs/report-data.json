@@ -1,5 +1,14 @@
 {
- "generated_at": "2026-08-19T16:59:27.524Z",
+ "generated_at": "2026-08-19T20:43:29.698Z",
+ "run_window": {
+  "first_fetch": "2026-08-17",
+  "last_fetch": "2026-08-18",
+  "days": [
+   "2026-08-17",
+   "2026-08-18"
+  ]
+ },
+ "code_sha": "1ca6432-dirty",
  "run": "run 2",
  "source": "derived by scripts/build-report-data.mjs from .sourcery/pooled-*.jsonl and pooled-summary.json",
  "judges": [
@@ -139,7 +148,107 @@
   },
   "grouped_by": "the url as each provider returned it — a page under two urls counts twice"
  },
+ "latency": {
+  "exa": {
+   "n": 204,
+   "p50_ms": 2106,
+   "p90_ms": 2566,
+   "max_ms": 3994
+  },
+  "brave": {
+   "n": 204,
+   "p50_ms": 582,
+   "p90_ms": 682,
+   "max_ms": 1488
+  },
+  "serper": {
+   "n": 204,
+   "p50_ms": 3224,
+   "p90_ms": 5414,
+   "max_ms": 8209
+  },
+  "perplexity": {
+   "n": 204,
+   "p50_ms": 1720,
+   "p90_ms": 1777,
+   "max_ms": 2147
+  },
+  "parallel": {
+   "n": 204,
+   "p50_ms": 1998,
+   "p90_ms": 3114,
+   "max_ms": 5633
+  },
+  "tavily": {
+   "n": 204,
+   "p50_ms": 6784,
+   "p90_ms": 8484,
+   "max_ms": 16000
+  },
+  "bright_data": {
+   "n": 257,
+   "p50_ms": 34311,
+   "p90_ms": 75371,
+   "max_ms": 932184
+  },
+  "firecrawl": {
+   "n": 203,
+   "p50_ms": 13082,
+   "p90_ms": 20832,
+   "max_ms": 90620
+  }
+ },
  "cost_total_usd": 40.08,
+ "frontier": {
+  "providers": [
+   "serper",
+   "perplexity"
+  ],
+  "beaten_outright": [
+   "brave",
+   "parallel",
+   "exa",
+   "tavily",
+   "firecrawl",
+   "bright_data"
+  ],
+  "median_cost_usd": 0.00895,
+  "median_set_mean": 2.349,
+  "method": "a provider is on the frontier when no other arm is both cheaper per query and rated at least as high on the set score; the medians are the middle of the eight arms on each axis"
+ },
+ "cited": {
+  "extraction_yield_pct": {
+   "exa": 100,
+   "brave": 97,
+   "serper": 0,
+   "perplexity": 99.9,
+   "parallel": 100,
+   "tavily": 99.9,
+   "bright_data": 46.7,
+   "plain": 0,
+   "firecrawl": 83.3
+  },
+  "keyless_attempts": 8,
+  "first_day_rows": {
+   "exa": 204,
+   "brave": 204,
+   "serper": 204,
+   "perplexity": 204,
+   "parallel": 204,
+   "tavily": 150,
+   "bright_data": 94,
+   "firecrawl": 203
+  },
+  "arms_finished_first_day": 6
+ },
+ "recorded": {
+  "firecrawl_credits": {
+   "value": 3493,
+   "monthly_allowance": 5000,
+   "usd": 25,
+   "source": "Firecrawl billing page, read 2026-08-18. It bills web and news results separately and only the web half becomes sources."
+  }
+ },
  "providers": {
   "perplexity": {
    "set": {

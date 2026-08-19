@@ -25,7 +25,21 @@
 // Usage: npx tsx scripts/build-report-data.mjs [outfile]
 
 import fs from "node:fs";
+import { execFileSync } from "node:child_process";
 import { normalizeUrl } from "../core/pool.ts";
+
+// The commit the numbers were derived at, so a published page can be traced to
+// the code that produced it. A dirty or absent checkout says so rather than
+// naming a commit that does not describe what ran.
+const codeSha = (() => {
+  try {
+    const sha = execFileSync("git", ["rev-parse", "--short", "HEAD"], { encoding: "utf8" }).trim();
+    const dirty = execFileSync("git", ["status", "--porcelain"], { encoding: "utf8" }).trim().length > 0;
+    return dirty ? `${sha}-dirty` : sha;
+  } catch {
+    return null;
+  }
+})();
 
 const OUT = process.argv[2] ?? "docs/report-data.json";
 const F = {
@@ -67,6 +81,73 @@ const costs = readJson(F.costs).providers;
 if (!fetches.length || !judgements.length) {
   console.error(`Need ${F.fetches} and ${F.judgements}; one of them is missing or empty.`);
   process.exit(1);
+}
+
+// When the searches actually ran, off the fetch rows themselves. The page used
+// to stamp itself with `generated_at`, which is when this script last ran — so
+// rebuilding the site a month later would have advertised a month-old run as
+// fresh. These two are properties of the run and never move again.
+const fetchDays = [...new Set(fetches.map((r) => (r.fetched_at ?? "").slice(0, 10)).filter(Boolean))].sort();
+const runWindow = { first_fetch: fetchDays[0], last_fetch: fetchDays[fetchDays.length - 1], days: fetchDays };
+
+// Of the urls an arm found, the share it also returned text for. Every row
+// counts, repair passes included: this describes what an extractor emits, and
+// a re-fetch is another real observation of that. Same reasoning as the page
+// text and truncation tables, which run over the same row set.
+const extractionYield = {};
+for (const r of fetches) {
+  const y = (extractionYield[r.provider] ??= { ext: 0, src: 0 });
+  y.ext += r.num_extracted ?? 0;
+  y.src += r.num_sources ?? 0;
+}
+for (const [p, y] of Object.entries(extractionYield)) extractionYield[p] = y.src ? y.ext / y.src : null;
+
+// The keyless arm never got a result. Its rows are its attempts, so the row
+// count is the run of consecutive captcha failures that ended it.
+const keylessAttempts = fetches.filter((r) => r.provider === "plain").length;
+
+// How far each arm got before the first day ended. Two of them did not finish:
+// Tavily's plan hit its quota and Bright Data throttles above one concurrent
+// request, so both spilled into the early hours of the next morning. This is
+// where "the plan ran out around question 150" comes from — it was typed from
+// the draft before, and the fetch rows carry the day each one landed on.
+const firstDayRows = {};
+const spilledOver = new Set();
+for (const r of fetches) {
+  if (r.provider === "plain") continue; // NOT_AN_ARM is declared below this point
+  const day = (r.fetched_at ?? "").slice(0, 10);
+  if (!day) continue;
+  if (day === runWindow.first_fetch) firstDayRows[r.provider] = (firstDayRows[r.provider] ?? 0) + 1;
+  else spilledOver.add(r.provider);
+}
+// An arm "finished on the first day" if none of its rows landed later. Counting
+// rows instead would miss Firecrawl, which finished on day one with 203 of 204
+// — its one gap is a 300-second timeout, not work carried into the morning.
+const armsFinishedFirstDay = Object.keys(firstDayRows).filter((p) => !spilledOver.has(p)).length;
+
+// How long each search actually took, off the fetch rows' own fetch_ms.
+//
+// The median and the 90th percentile rather than the mean: one 932-second
+// Bright Data request would drag a mean somewhere no real request ever sat.
+// Errored rows are excluded — a row that threw is a failure, and folding its
+// duration in would score a provider on how fast it failed.
+//
+// Read it as one machine on one network on one day. Concurrency differed by
+// arm, but not in a way that flatters the slow end: Bright Data throttles above
+// a single concurrent request and so ran with the least contention of anyone,
+// and it is still the slowest by a wide margin.
+const latency = {};
+for (const r of fetches) {
+  if (r.provider === "plain" || r.error) continue;
+  if (typeof r.fetch_ms !== "number" || !(r.fetch_ms > 0)) continue;
+  (latency[r.provider] ??= []).push(r.fetch_ms);
+}
+const quantile = (xs, p) => {
+  const s = [...xs].sort((a, b) => a - b);
+  return s[Math.min(s.length - 1, Math.floor(p * s.length))];
+};
+for (const [p, xs] of Object.entries(latency)) {
+  latency[p] = { n: xs.length, p50_ms: quantile(xs, 0.5), p90_ms: quantile(xs, 0.9), max_ms: Math.max(...xs) };
 }
 
 const mean = (xs) => (xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : null);
@@ -370,8 +451,40 @@ const worst = providerOrder[providerOrder.length - 1];
 const spreadBase = exact[best].base - exact[worst].base;
 const spreadHard = exact[best].hard - exact[worst].hard;
 
+// ─── Which providers nothing else beats outright ───
+//
+// A provider stays on this list when no other arm in the run is both cheaper
+// and rated at least as well — so picking it over the others is a trade rather
+// than a mistake. Everything not on the list is beaten on price and rating at
+// the same time, which is the one comparison that needs no weighing.
+//
+// Derived here because the price chart draws a line through these points, and a
+// line that asserts something has to be reproducible from this file rather than
+// typed into the chart by hand.
+const priced = providerOrder.filter((p) => providers[p].cost.per_query_usd !== null);
+const beatenOutright = (p) =>
+  priced.some((q) => {
+    if (q === p) return false;
+    const cheaper = providers[q].cost.per_query_usd <= providers[p].cost.per_query_usd;
+    const rated = providers[q].set.mean >= providers[p].set.mean;
+    // Equal on both counts is not being beaten; one of them has to be strictly
+    // better, or two arms priced the same would knock each other off the list.
+    const strictly =
+      providers[q].cost.per_query_usd < providers[p].cost.per_query_usd || providers[q].set.mean > providers[p].set.mean;
+    return cheaper && rated && strictly;
+  });
+const median = (xs) => {
+  const s = [...xs].sort((a, b) => a - b);
+  const m = s.length >> 1;
+  return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2;
+};
+
 const payload = {
   generated_at: new Date().toISOString(),
+  // When the run happened, as against when this file was last rebuilt. The page
+  // stamps itself with these, never with generated_at.
+  run_window: runWindow,
+  code_sha: codeSha,
   run: "run 2",
   source: "derived by scripts/build-report-data.mjs from .sourcery/pooled-*.jsonl and pooled-summary.json",
   judges: summary.judges.map((j) => j.split("/").pop()),
@@ -432,10 +545,60 @@ const payload = {
     grouped_by: "the url as each provider returned it — a page under two urls counts twice",
   },
 
+  // How long one search took, per provider. See the derivation above for why
+  // this is a median and what it can and cannot be read as.
+  latency,
+
   cost_total_usd: round(
     Object.values(providers).reduce((a, p) => a + (p.cost.run_total_usd ?? 0), 0),
     2,
   ),
+
+  // The arms nothing else beats on price and rating at once, cheapest first, and
+  // the middle of the field on each axis. The price chart draws the first as a
+  // line and the second as a shaded corner; both come from here so the drawing
+  // cannot claim something the data does not.
+  frontier: {
+    providers: priced.filter((p) => !beatenOutright(p)).sort((a, b) => providers[a].cost.per_query_usd - providers[b].cost.per_query_usd),
+    beaten_outright: priced.filter(beatenOutright),
+    median_cost_usd: median(priced.map((p) => providers[p].cost.per_query_usd)),
+    median_set_mean: median(priced.map((p) => providers[p].set.mean)),
+    method:
+      "a provider is on the frontier when no other arm is both cheaper per query and rated at least as high on the set score; the medians are the middle of the eight arms on each axis",
+  },
+
+  // Figures the running prose cites that are not in a chart or the table.
+  // They used to be typed into sentences straight off docs/run-2-findings.md,
+  // which meant a reader checking one had nowhere to land and a rebuild could
+  // not correct them. Anything derivable is derived here; anything that comes
+  // from outside the run names where it came from instead.
+  cited: {
+    // Of the urls a provider found, the share it also returned text for. This
+    // is the number behind "on the ~47% of urls the unlocker returned" — it is
+    // a property of the run, not a vendor claim.
+    extraction_yield_pct: Object.fromEntries(
+      Object.entries(extractionYield).map(([p, v]) => [p, round(v * 100, 1)]),
+    ),
+    // The keyless control arm, dropped from the run. Its own fetch rows are the
+    // count: every attempt failed, so the number of rows is the number of
+    // consecutive captcha failures.
+    keyless_attempts: keylessAttempts,
+    // Rows each arm completed on the first day. Six arms finished; the two that
+    // did not are the whole of why this run is stamped across two dates.
+    first_day_rows: firstDayRows,
+    arms_finished_first_day: armsFinishedFirstDay,
+  },
+
+  // Numbers from outside the run's own logs. Each one carries its source so a
+  // reader can check it and a later run can tell whether it still holds.
+  recorded: {
+    firecrawl_credits: {
+      value: 3493,
+      monthly_allowance: 5000,
+      usd: 25,
+      source: "Firecrawl billing page, read 2026-08-18. It bills web and news results separately and only the web half becomes sources.",
+    },
+  },
 
   providers,
 
@@ -616,6 +779,49 @@ check("overlap.from_one_provider_pct", payload.overlap.from_one_provider_pct, 66
 check("overlap.from_all_providers", payload.overlap.from_all_providers, 24, 0, 15);
 check("overlap.from_two_or_more", payload.overlap.from_two_or_more, 2485, 0, 2406);
 check("cost_total_usd", payload.cost_total_usd, 40.08);
+// Only two of the eight arms survive the "nothing is both cheaper and better"
+// test, and the price chart draws a line through exactly those two. If a later
+// run puts a third arm on that line, this row fails and somebody rewrites the
+// sentence about it rather than letting the chart quietly say something new.
+for (const [label, got, want] of [
+  ["frontier.providers", payload.frontier.providers.join(", "), "serper, perplexity"],
+  ["frontier.beaten_outright", String(payload.frontier.beaten_outright.length), "6"],
+]) {
+  results.push({ label, got, want, draft: null, ok: got === want, state: got === want ? "PASS" : "FAIL" });
+}
+check("frontier.median_cost_usd", payload.frontier.median_cost_usd, 0.00895);
+check("frontier.median_set_mean", payload.frontier.median_set_mean, 2.349);
+// The prose cites these, so they get the same treatment as everything else it
+// cites. Bright Data's is the "~47% of urls the unlocker returned" sentence and
+// the keyless one is the "eight consecutive captcha failures" sentence; both
+// used to be typed rather than derived.
+check("cited.extraction_yield_pct.bright_data", payload.cited.extraction_yield_pct.bright_data, 46.7, 0.05);
+check("cited.extraction_yield_pct.firecrawl", payload.cited.extraction_yield_pct.firecrawl, 83.3, 0.05);
+check("cited.keyless_attempts", payload.cited.keyless_attempts, 8);
+// The draft said Tavily's plan ran out "around question 150". It is exactly the
+// number of rows it completed on the first day, so the page states it instead of
+// approximating it.
+check("cited.first_day_rows.tavily", payload.cited.first_day_rows.tavily, 150);
+// Six of the eight finished inside the first day; the page says so.
+check("cited.arms_finished_first_day", payload.cited.arms_finished_first_day, 6);
+// Latency, asserted so a re-derivation that quietly changes it has to be looked
+// at. Brave is the fastest arm and Bright Data the slowest by a wide margin.
+check("latency.brave.p50_ms", payload.latency.brave.p50_ms, 582);
+check("latency.bright_data.p50_ms", payload.latency.bright_data.p50_ms, 34311);
+// Every arm answered every question it was asked, so each has a full sample.
+for (const p of providerOrder) {
+  const want = p === "firecrawl" ? 203 : null;
+  if (want) check(`latency.${p}.n`, payload.latency[p].n, want);
+}
+// The run window is what the page stamps itself with, and a wrong date there
+// makes a stale run look fresh — the one error on this page a reader cannot
+// catch by reading it.
+for (const [label, got, want] of [
+  ["run_window.first_fetch", payload.run_window.first_fetch, "2026-08-17"],
+  ["run_window.last_fetch", payload.run_window.last_fetch, "2026-08-18"],
+]) {
+  results.push({ label, got, want, draft: null, ok: got === want, state: got === want ? "PASS" : "FAIL" });
+}
 // Lift is a subtraction, not a third measurement, so it has to be the two
 // numbers printed beside it. This catches the drift the draft's own lift table
 // has, where the set average came from a different computation.

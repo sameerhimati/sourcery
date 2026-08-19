@@ -35,6 +35,7 @@
     "lint": "eslint core cli mcp",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
+    "check:numbers": "node scripts/check-numbers.mjs",
     "sourcery": "tsx cli/index.ts",
     "build:cli": "tsup",
     "prepare": "tsup",

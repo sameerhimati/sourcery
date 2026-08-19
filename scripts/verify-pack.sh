@@ -11,6 +11,10 @@ npm run lint
 # sit green indefinitely (one did). tsc is the only thing that catches it.
 npm run typecheck
 npm run build:cli
+# The published page states numbers in its running text, and a figure typed into
+# a sentence is the one thing on it that no rebuild corrects. Both inputs are
+# committed, so this runs anywhere the repo does — no run data needed.
+npm run check:numbers
 
 scratch="$(mktemp -d)"
 trap 'rm -rf "$scratch"' EXIT

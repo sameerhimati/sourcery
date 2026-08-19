@@ -23,7 +23,7 @@ import { fetchedRange, navHtml, NAV_CSS } from "./nav.mjs";
 
 const DATA = process.argv[2] ?? "docs/explorer/data.json";
 const OUT = process.argv[3] ?? "docs/explorer/index.html";
-const TEMPLATE = "docs/explorer/template.html";
+const TEMPLATE = "site/explorer.html";
 // Read only for the nav's run stamp; the explorer's own data is DATA above.
 const REPORT_DATA = "docs/report-data.json";
 

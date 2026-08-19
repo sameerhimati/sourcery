@@ -12,7 +12,7 @@
 // is how two versions of it come to exist.
 //
 // The script checks itself. Every number it emits is compared against the
-// numbers printed in docs/run-2-findings.md, and it exits non-zero if one
+// numbers the first write-up printed, and it exits non-zero if one
 // moved. A mismatch means the draft is wrong or this script is, and either way
 // somebody has to look.
 //
@@ -568,7 +568,7 @@ const payload = {
   },
 
   // Figures the running prose cites that are not in a chart or the table.
-  // They used to be typed into sentences straight off docs/run-2-findings.md,
+  // They used to be typed into sentences straight off the write-up,
   // which meant a reader checking one had nowhere to land and a rebuild could
   // not correct them. Anything derivable is derived here; anything that comes
   // from outside the run names where it came from instead.
@@ -690,7 +690,7 @@ const kb = (fs.statSync(OUT).size / 1024).toFixed(1);
 // the expectation to match the output.
 // The expectation is the corrected derivation, not the draft. The draft is what
 // this is correcting, so `DRAFT_SAID` carries its old value beside every number
-// that moved — that column is the edit list for docs/run-2-findings.md.
+// that moved — that column is the edit list for the prose.
 const EXPECTED = {
   //             set    ci95   page   base   hard   r3    r2+3  unans  md  head link img tbl trunc  $/q     run$
   perplexity: [2.768, 0.068, 2.259, 2.367, 2.332, 49.9, 82.6, 0.816, 63, 24, 1, 0, 15, 40, 0.005, 1.02],
@@ -900,7 +900,7 @@ for (const [name, i, bestIsLow] of ORDERED_COLUMNS) {
 }
 
 if (changed.length) {
-  console.log(`\n${changed.length} numbers to edit in docs/run-2-findings.md:`);
+  console.log(`\n${changed.length} numbers that moved since the draft:`);
   for (const r of changed) console.log(`  ${r.label}: ${r.draft} -> ${r.got}`);
 }
 

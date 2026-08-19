@@ -7,7 +7,7 @@
 // there fixes the page.
 //
 // The running prose is templated too. Figures that used to be typed into
-// sentences from docs/run-2-findings.md — the captcha failures, Bright Data's
+// sentences by hand — the captcha failures, Bright Data's
 // extraction yield, how far Tavily got before its plan ran out — are derived in
 // scripts/build-report-data.mjs now and arrive here as tokens. The two that
 // cannot be derived, because they come from a billing page rather than the run,
@@ -91,7 +91,7 @@ const txt = (x, y, cls, s, anchor) =>
 
 // Every mark on every chart is the same colour. Grid has one accent and a chart
 // does not get to invent a second — see the note beside --mark in
-// docs/report-style.css. Two series separate by fill instead: solid is the
+// site/style.css. Two series separate by fill instead: solid is the
 // measured thing, hollow carries the caveat named in that chart's legend. It is
 // a helper rather than a literal in four places so a fifth chart cannot drift.
 const dot = (cx, cy, r, hollow) => `<circle cx="${cx}" cy="${cy}" r="${r}" class="est${hollow ? " hollow" : ""}"/>`;
@@ -556,7 +556,7 @@ const REPL = {
   __NUM_SOURCES__: String(NUM_SOURCES.default),
   __PAGE_RUNGS__: rungRows(RELEVANCE_RUNGS),
   __SET_RUNGS__: rungRows(SET_RUNGS),
-  __STYLE__: fs.readFileSync("docs/report-style.css", "utf8").trimEnd() + "\n" + NAV_CSS,
+  __STYLE__: fs.readFileSync("site/style.css", "utf8").trimEnd() + "\n" + NAV_CSS,
 };
 
 // Results and how-to-pick share the front page — the picks are the payoff of
@@ -565,8 +565,8 @@ const REPL = {
 // extra rather than a REPL entry so the orphan check below stays about numbers.
 const navMeta = { fetched: REPL.__FETCHED__, sha: REPL.__CODE_SHA__ };
 const PAGES = [
-  ["docs/report-template.html", "docs/index.html", { __NAV__: navHtml("results", navMeta) }],
-  ["docs/method-template.html", "docs/method/index.html", { __NAV__: navHtml("method", navMeta) }],
+  ["site/report.html", "docs/index.html", { __NAV__: navHtml("results", navMeta) }],
+  ["site/method.html", "docs/method/index.html", { __NAV__: navHtml("method", navMeta) }],
 ];
 
 const usedSomewhere = new Set();

@@ -6,7 +6,7 @@
 // in this eval should beat it; the interesting number is BY HOW MUCH, because
 // that gap is what the money actually buys.
 //
-// Read the caveat in docs/providers.md before quoting this arm: it differs from
+// Read this before quoting the arm anywhere: it differs from
 // the Google-backed providers on TWO axes (different index AND naive extraction),
 // so it's a floor to clear, not a controlled one-variable ablation.
 

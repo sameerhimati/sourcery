@@ -119,7 +119,7 @@ describe("querySetTemplate", () => {
   });
 
   it("is real retrieval work, not more freshness probes", () => {
-    // The built-in 48 are all "what is the latest X". findings.md argues at
+    // The built-in 48 are all "what is the latest X". Run 1 argues at
     // length that this is the dataset's weakness, so the template someone copies
     // must not reproduce it.
     const queries = parseQuerySet(querySetTemplate()).map((q) => q.query);
@@ -129,7 +129,7 @@ describe("querySetTemplate", () => {
 });
 
 describe("the shipped real-task dataset", () => {
-  // datasets/real-tasks.json is the second dataset findings.md promises: real
+  // datasets/real-tasks.json is the second dataset run 1 promises: real
   // retrieval work, measured beside the synthetic 48 rather than replacing them.
   // It is a hand-written JSON file, so nothing but a test stops it from drifting
   // out of shape between runs — and it is meant to be edited as entities die.
@@ -161,7 +161,7 @@ describe("the shipped real-task dataset", () => {
     // a content-word Jaccard scored the MacBook duplicate at 0.18, below any
     // threshold that doesn't also reject unrelated queries sharing one noun.
     // Near-duplication against the 48 is a review step when editing this file
-    // (docs/datasets.md says so); pretending a heuristic covers it would be the
+    // (the dataset rules say so); pretending a heuristic covers it would be the
     // same mistake as a failure count nobody checked the stage on.
     const builtIn = new Set(EVAL_DATASET.map((q) => q.query.replace(/\s+/g, " ").trim().toLowerCase()));
     const dupes = parseQuerySet(raw, "real-tasks.json")

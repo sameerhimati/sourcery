@@ -5,8 +5,7 @@ import type { EvalQuery, Genre, QueryType, Sharpness } from "./eval-dataset";
 //
 // The built-in 48 are freshness probes — deliberately phrased so they don't rot,
 // and deliberately unlike the work anyone actually points a retrieval agent at.
-// docs/findings.md says so at length and promises this flag as the fix. Until it
-// existed, "run it on your own queries" meant one `run` at a time, by hand.
+// Run 1 said so at length and promised this flag as the fix. Until it existed, "run it on your own queries" meant one `run` at a time, by hand.
 //
 // Additive on purpose: `core/eval-dataset.ts` is untouched. The published
 // summary is anchored to those 48, and quietly editing them would invalidate the
@@ -155,7 +154,7 @@ function parseJson(text: string, source: string, where = ""): unknown {
 /**
  * A starting point, printed by `batch --queries-template`.
  *
- * Real retrieval work, not freshness probes — the kind of task findings.md
+ * Real retrieval work, not freshness probes — the kind of task run 1
  * argues the built-in set is missing. Someone should be able to redirect this to
  * a file, edit the strings, and run it.
  */

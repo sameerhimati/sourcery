@@ -45,7 +45,7 @@ export function registerProviders(program: Command): void {
           lines.join("\n") +
           cacheLine +
           `\nCompare any two:  sourcery run "<query>" --values <a>,<b>\n` +
-          `Add your own:     see docs/providers.md\n`,
+          `Add your own:     one file in core/adapters/ plus a registry row\n`,
       );
     });
 }

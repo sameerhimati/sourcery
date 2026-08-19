@@ -50,7 +50,7 @@ import {
 import { renderNoSearch, renderPooled } from "../format";
 import { loadQuerySet } from "../query-file";
 
-// Run 2: the pooled run — the instrument docs/preregistration-v3.md commits to.
+// Run 2: the pooled run — the instrument the run-2 preregistration commits to.
 // Fetch every (query × provider) once, pool every returned page, judge each
 // unique question-page pair once per panel judge (blind by construction), then
 // score providers against the pooled verdicts. Hidden for the same reason

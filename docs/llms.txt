@@ -20,20 +20,9 @@ Install: `npx sourcery-eval init` · Agents: `npx sourcery-eval mcp --install`
 - [Results page](https://sameerhimati.com/sourcery/): the ranking with its intervals, ordinary against hard questions, cost, what each provider actually returns as page text, and how to pick one for the job you have. One self-contained page.
 - [Method](https://sameerhimati.com/sourcery/method/): what varies between arms, the two rubrics in full, what every provider was asked for, pooling, the statistics in words, and what one run cannot tell you.
 - [Explorer](https://sameerhimati.com/sourcery/explorer/): every rating individually, with the sentence the judge wrote to justify it, filterable by provider, question and judge. Read this before believing any average above.
-- [Agent instructions](https://raw.githubusercontent.com/sameerhimati/sourcery/main/docs/agent-prompt.md): a block written to paste into a CLAUDE.md, AGENTS.md, system prompt or skill. Covers both the CLI surface and the MCP tools, with how to read the scores. Fetch this first if you are being asked to use sourcery.
-- [MCP server guide](https://raw.githubusercontent.com/sameerhimati/sourcery/main/mcp/README.md): registration one-liners for Claude Code, Codex, Cursor and Claude Desktop; the two tools and their response shapes; why the working directory decides whose numbers you get.
 - [Report data](https://raw.githubusercontent.com/sameerhimati/sourcery/main/docs/report-data.json): every number on the results page as JSON, derived from the run logs. Use this rather than parsing prose.
 
 ## Reference
 
-- [README](https://raw.githubusercontent.com/sameerhimati/sourcery/main/README.md): install, the two keys you need, cost controls, the provider table, running your own questions, the MCP tools.
-- [Run 2 findings](https://raw.githubusercontent.com/sameerhimati/sourcery/main/docs/run-2-findings.md): the write-up behind the results page, including the leaderboard inverting on questions with no answer, and what the run cannot see.
-- [Run 1 findings](https://raw.githubusercontent.com/sameerhimati/sourcery/main/docs/findings.md): the earlier four-provider, 48-question run. Where r = 0.16 comes from. Kept because run 2 contradicts parts of it — read it for that result and the method mistakes, not for a ranking.
-- [Providers](https://raw.githubusercontent.com/sameerhimati/sourcery/main/docs/providers.md): per-provider setup, quirks, credit arithmetic, and how to write a new adapter (one function plus a registry row).
-- [Question sets](https://raw.githubusercontent.com/sameerhimati/sourcery/main/docs/datasets.md): the built-in 48, the 24 real tasks, the 204 of run 2, and the rules for adding to them without invalidating a published number.
-- [Architecture](https://raw.githubusercontent.com/sameerhimati/sourcery/main/ARCHITECTURE.md): what every file does, and one question traced through the whole pipeline.
-
-## Optional
-
-- [Run 2 preregistration](https://raw.githubusercontent.com/sameerhimati/sourcery/main/docs/preregistration-v3.md): what was going to be measured, written down before the run.
-- [Demo script](https://raw.githubusercontent.com/sameerhimati/sourcery/main/docs/demo-script.md): a 90-second walkthrough, if you need to explain the tool to someone rather than run it.
+- [README](https://raw.githubusercontent.com/sameerhimati/sourcery/main/README.md): install, the two keys you need, cost controls, the provider table, running your own questions, the MCP tools, and registering the server with Claude Code, Codex or Cursor.
+- [Run 2 preregistration](https://github.com/sameerhimati/sourcery/blob/53c290d0279cd32eda6f4175acdf820c3029b884/docs/preregistration-v3.md): what was going to be measured, written down before the run. Linked at the commit that registered it, which is the only version that means anything.

@@ -24,7 +24,7 @@ export interface AdapterSpec {
   label: string;
   /** Env vars that must be present. Empty = works with no account at all. */
   requiredEnv: string[];
-  /** One line, shown by `sourcery providers` and in docs/providers.md. */
+  /** One line, shown by `sourcery providers`. */
   blurb: string;
   /**
    * Where to go and get the key, shown by `init` before it asks for one.

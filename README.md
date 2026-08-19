@@ -59,8 +59,6 @@ For retrieval, pick any of these:
 
 Tavily has a free tier and needs no card, so **Groq plus Tavily gets you a scored result in about a minute**. Two retrieval keys is where it starts comparing anything.
 
-Setup recipes, per-provider quirks, and credit arithmetic are in [`docs/providers.md`](docs/providers.md).
-
 ### Know what a run costs before it spends
 
 Retrieval APIs bill per call, so price a run first:
@@ -115,7 +113,7 @@ codex mcp add sourcery -- npx -y sourcery-eval mcp    # Codex
 
 Run your agent from the directory holding `.sourcery/runs.jsonl`. The server resolves that path relative to its working directory, and from anywhere else you get my numbers instead of yours.
 
-To hand this to an agent, use [`mcp/README.md`](mcp/README.md) for the server, [`docs/agent-prompt.md`](docs/agent-prompt.md) for a block to paste into a system prompt, or [`llms.txt`](docs/llms.txt) to point it at one URL.
+To hand this to an agent, point it at [llms.txt](https://sameerhimati.com/sourcery/llms.txt) — one URL, and it finds the tools, the scores and how to read them.
 
 ## Bring your own model
 
@@ -143,14 +141,13 @@ An eval of your retrieval stack only means something if it runs the model you sh
 
 | | |
 |---|---|
-| [Results](https://sameerhimati.com/sourcery/) | eight providers, 204 questions, with the method behind it |
+| [Results](https://sameerhimati.com/sourcery/) | eight providers, 204 questions, and what each one is good for |
+| [Method](https://sameerhimati.com/sourcery/method/) | the two rubrics, the settings held identical, and what one run cannot tell you |
 | [Explorer](https://sameerhimati.com/sourcery/explorer/) | every rating, with the sentence each judge wrote to justify it |
-| [`ARCHITECTURE.md`](ARCHITECTURE.md) | where everything lives, and one question's path through the code |
-| [`docs/run-2-findings.md`](docs/run-2-findings.md) | run 2 in full, including what it cannot measure |
-| [`docs/findings.md`](docs/findings.md) | run 1, kept because run 2 contradicts parts of it |
-| [`docs/datasets.md`](docs/datasets.md) | the question sets, and the rules for editing them |
-| [`docs/providers.md`](docs/providers.md) | setup, quirks, and what each provider costs |
-| [`docs/preregistration-v3.md`](docs/preregistration-v3.md) | the plan for run 2, published before it ran |
+
+The write-ups used to be a shelf of markdown in `docs/`. They said the same
+things as the site and drifted from it, so the site is the only copy now; the
+repo is code.
 
 Adding a provider is one file in [`core/adapters/`](core/adapters/) plus a row in the registry. An adapter is one function: `(query, config) => { sources, context }`.
 

@@ -1,3 +1,7 @@
+<!-- Says the encoding out loud, because a page opened from disk, or served by
+     anything that does not send a charset, otherwise guesses — and guesses
+     wrong on every em dash and accented name on the page. -->
+<meta charset="utf-8">
 <title>Sourcery Run 2</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -170,6 +174,29 @@
   }
   .runmeta dt { color: var(--faint); text-transform: uppercase; letter-spacing: .07em; font-size: 10.5px; }
   .runmeta dd { margin: 0 0 6px; }
+
+  /* ── waiting for the data ─────────────────────────────────────── */
+  /* Everything below the masthead is drawn from a twelve-megabyte file that
+     arrives after the page does, so the page hides the empty shells of those
+     sections until it lands. The masthead and this box are all you see first,
+     and they are honest about what is happening. */
+  .wrap:not([data-state="ready"]) > *:not(.masthead):not(.loadstate) { display: none; }
+  .wrap[data-state="ready"] .loadstate { display: none; }
+  .loadstate { padding: 34px 0 0; max-width: 74ch; }
+  .loadstate p { margin: 0 0 8px; color: var(--ink-2); font-size: 14.5px; }
+  .loadstate p.sub { color: var(--muted); font-size: 13px; }
+  .loadstate code {
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 12.5px;
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    padding: 1px 5px;
+  }
+  .loadbar { height: 3px; width: 100%; max-width: 340px; margin-top: 14px; background: var(--surface-2); border-radius: 2px; overflow: hidden; }
+  .loadbar i { display: block; height: 100%; width: 0; background: var(--accent-2); transition: width .12s linear; }
+  .wrap[data-state="error"] .loadbar { display: none; }
+  .wrap[data-state="error"] .loadstate p:first-child { color: var(--bad); font-weight: 600; }
 
   /* ── method note ──────────────────────────────────────────────── */
   .method {
@@ -373,7 +400,7 @@
   footer.note { margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--line); color: var(--faint); font-size: 12.5px; max-width: 82ch; }
 </style>
 
-<div class="wrap">
+<div class="wrap" id="wrap" data-state="loading">
   <header class="masthead">
     <div>
       <h1>Sourcery Run 2</h1>
@@ -384,6 +411,13 @@
     </div>
     <dl class="runmeta" id="runmeta"></dl>
   </header>
+
+  <div class="loadstate" id="load-state">
+    <p id="load-status">Loading the run data&hellip;</p>
+    <p class="sub" id="load-note"></p>
+    <div class="loadbar"><i id="load-fill"></i></div>
+    <noscript><p class="sub">Every table and chart here is drawn in the browser, so the page needs JavaScript switched on.</p></noscript>
+  </div>
 
   <section class="method">
     <h2>Read this before the numbers</h2>
@@ -479,12 +513,13 @@
   <footer class="note" id="footer-note"></footer>
 </div>
 
-<script id="run-data" type="application/json">__SOURCERY_DATA__</script>
+<script id="run-meta" type="application/json">__SOURCERY_META__</script>
 <script>
-(function () {
+// Draws the whole page from the run's data. Called once, by the loader below,
+// after the fetch lands — nothing in here runs at parse time.
+function boot(DATA) {
   "use strict";
 
-  var DATA = JSON.parse(document.getElementById("run-data").textContent);
   var $ = function (id) { return document.getElementById(id); };
 
   function el(tag, cls, text) {
@@ -1081,5 +1116,103 @@
   renderList();
   renderDetail(null);
   readHash();
+}
+</script>
+
+<script>
+// Fetches the run's data from alongside this page and hands it to boot().
+//
+// The data used to be inlined here, which made a twelve-megabyte HTML file that
+// showed nothing at all until the whole thing had downloaded and parsed. It now
+// arrives as its own request, by relative name so the page works from any
+// subpath, and the reader gets a heading and a real byte count while it comes.
+(function () {
+  "use strict";
+
+  var meta = JSON.parse(document.getElementById("run-meta").textContent);
+  var wrap = document.getElementById("wrap");
+  var box = document.getElementById("load-state");
+  var status = document.getElementById("load-status");
+  var note = document.getElementById("load-note");
+  var fill = document.getElementById("load-fill");
+
+  function mb(bytes) { return (bytes / 1e6).toFixed(1) + " MB"; }
+
+  function say(text, cls) {
+    var p = document.createElement("p");
+    if (cls) p.className = cls;
+    p.textContent = text;
+    box.appendChild(p);
+    return p;
+  }
+
+  // Every failure here ends with the reader knowing which one it was. A blank
+  // page that never explains itself is the thing this whole file is avoiding.
+  function fail(headline, detail) {
+    wrap.setAttribute("data-state", "error");
+    status.textContent = headline;
+    note.textContent = detail;
+    // Opening the file straight off disk is the common way to land here:
+    // browsers refuse to let a file:// page read the file sitting next to it.
+    if (location.protocol === "file:") {
+      note.textContent = "Browsers do not let a page opened from a file:// path read the file sitting next to it, " +
+        "so the data never loaded. Serve the folder instead:";
+      var p = say("");
+      var code = document.createElement("code");
+      code.textContent = "python3 -m http.server";
+      p.appendChild(code);
+      p.appendChild(document.createTextNode(" in this folder, then open http://localhost:8000/"));
+      say(detail, "sub");
+    }
+  }
+
+  if (!window.fetch) {
+    fail("This browser cannot load the run data.", "The page fetches its data at load, and this browser has no fetch(). Any browser from the last several years will do.");
+    return;
+  }
+
+  status.textContent = "Loading " + mb(meta.bytes) + " of run data…";
+  note.textContent = meta.ratings.toLocaleString() + " ratings across " + meta.questions +
+    " questions, kept in a separate file so this page can appear first. Your browser caches it after the first visit.";
+
+  // Streaming the body is only so the byte counter moves; if the browser will
+  // not hand over a reader, the fetch still works, it just waits in silence.
+  function readBody(res) {
+    if (!res.body || !res.body.getReader || typeof TextDecoder === "undefined") return res.json();
+    var reader = res.body.getReader();
+    var decoder = new TextDecoder();
+    var text = "";
+    var loaded = 0;
+    return (function pump() {
+      return reader.read().then(function (chunk) {
+        if (chunk.done) {
+          text += decoder.decode();
+          return JSON.parse(text);
+        }
+        text += decoder.decode(chunk.value, { stream: true });
+        loaded += chunk.value.length;
+        if (meta.bytes) {
+          fill.style.width = Math.min(100, Math.round((loaded / meta.bytes) * 100)) + "%";
+          status.textContent = "Loading run data — " + mb(loaded) + " of " + mb(meta.bytes);
+        }
+        return pump();
+      });
+    })();
+  }
+
+  fetch(meta.url)
+    .then(function (res) {
+      if (!res.ok) throw new Error("the server answered " + res.status + " " + (res.statusText || "") + " for " + meta.url);
+      return readBody(res);
+    })
+    .then(function (data) {
+      fill.style.width = "100%";
+      wrap.setAttribute("data-state", "ready");
+      boot(data);
+    })
+    .catch(function (err) {
+      fail("The run data did not load.", "Tried to fetch " + meta.url + " next to this page and got: " +
+        ((err && err.message) || String(err)) + ".");
+    });
 })();
 </script>

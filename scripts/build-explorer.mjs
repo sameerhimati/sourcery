@@ -1,31 +1,70 @@
 #!/usr/bin/env node
-// Inject the run's data into the explorer template and write the page.
+// Write the explorer page, and tell it where to fetch the run's data.
 //
-// Template and data are kept apart so the page can be rebuilt against a newer
-// run without touching the markup, and so the markup can be edited without
-// regenerating eight megabytes of JSON to see the change.
+// The data used to be pasted straight into the page, which made a twelve
+// megabyte HTML file: on a phone that is several seconds of blank screen before
+// anything at all appears. The page now downloads the JSON from alongside
+// itself, so the markup ships in tens of kilobytes and the payload arrives as
+// one request the browser can cache. Both files therefore have to land in the
+// same directory, and the page asks for the data by relative name so it works
+// wherever it is published, subpath and all.
+//
+// Template and data are still kept apart so the page can be rebuilt against a
+// newer run without touching the markup, and so the markup can be edited
+// without regenerating eight megabytes of JSON to see the change.
 //
 // Usage: node scripts/build-explorer.mjs [data.json] [out.html]
 
 import fs from "node:fs";
+import path from "node:path";
 
 const DATA = process.argv[2] ?? "docs/explorer/data.json";
 const OUT = process.argv[3] ?? "docs/explorer/index.html";
 const TEMPLATE = "docs/explorer/template.html";
 
 const template = fs.readFileSync(TEMPLATE, "utf8");
-const data = fs.readFileSync(DATA, "utf8");
 
-// The payload rides inside a <script type="application/json"> block, so the one
-// sequence that can break out of it is a literal "</script>". A url or a judge's
-// rationale is free to contain one, and escaping the slash keeps the JSON
-// identical while making the closing tag unmatchable.
-const safe = data.replace(/<\//g, "<\\/");
-
-if (!template.includes("__SOURCERY_DATA__")) {
-  console.error(`${TEMPLATE} has no __SOURCERY_DATA__ placeholder.`);
+if (!template.includes("__SOURCERY_META__")) {
+  console.error(`${TEMPLATE} has no __SOURCERY_META__ placeholder.`);
   process.exit(1);
 }
 
-fs.writeFileSync(OUT, template.replace("__SOURCERY_DATA__", safe));
-console.log(`${OUT}: ${(fs.statSync(OUT).size / 1e6).toFixed(2)} MB`);
+if (path.dirname(path.resolve(DATA)) !== path.dirname(path.resolve(OUT))) {
+  console.error(`${OUT} fetches ${path.basename(DATA)} from its own directory, so the two have to be written side by side.`);
+  process.exit(1);
+}
+
+const raw = fs.readFileSync(DATA, "utf8");
+
+// Parsing here means a broken data file fails at build, in a terminal, rather
+// than in a reader's browser where the only symptom is a page that never fills.
+let data;
+try {
+  data = JSON.parse(raw);
+} catch (err) {
+  console.error(`${DATA} is not valid JSON, so the page would never fill: ${err.message}`);
+  process.exit(1);
+}
+
+// All the page knows before its download finishes: where the data is, and how
+// long the wait is likely to be, so it can say so instead of spinning silently.
+const meta = {
+  url: path.basename(DATA),
+  bytes: Buffer.byteLength(raw),
+  ratings: data.n_ratings ?? 0,
+  questions: data.n_questions ?? 0
+};
+
+// This block still rides inside a <script type="application/json">, and the one
+// sequence that can break out of it is a literal "</script>". The eleven
+// megabytes of judge rationales no longer travel this way, but the data file's
+// name does, so escaping the slash stays — it keeps the JSON identical while
+// making the closing tag unmatchable.
+const safe = JSON.stringify(meta).replace(/<\//g, "<\\/");
+
+// The replacement is a function because a plain string would have "$&" and its
+// relatives read as backreferences, quietly corrupting whatever contained them.
+fs.writeFileSync(OUT, template.replace("__SOURCERY_META__", () => safe));
+
+const pageKb = (fs.statSync(OUT).size / 1e3).toFixed(1);
+console.log(`${OUT}: ${pageKb} KB, fetching ${meta.url} (${(meta.bytes / 1e6).toFixed(1)} MB) at load`);

@@ -54,6 +54,7 @@ design/
 sourcery.config.mjs
 sourcery.config.js
 
-# Generated results explorer — rebuilt from .sourcery by scripts/build-explorer*.mjs
-docs/explorer/data.json
-docs/explorer/index.html
+# The results explorer and the report page are generated, and both are committed
+# anyway: GitHub Pages serves what is in the repo, so an artifact nobody commits
+# is a page nobody can open. Rebuild with scripts/build-explorer*.mjs and
+# scripts/build-report.mjs after any change to the run data.

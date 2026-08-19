@@ -1,0 +1,143 @@
+<!-- Rendered by scripts/build-report.mjs into docs/method/index.html. Same
+     rules as docs/report-template.html: every figure arrives as a
+     double-underscore token from docs/report-data.json, and typing a number
+     straight into a sentence fails the build. -->
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Method — search APIs, graded on their sources</title>
+<meta name="description" content="How Sourcery graded eight search APIs: what varies between arms, the two rubrics, the provider settings, pooling, the statistics in words, and what one run cannot tell you.">
+<link rel="canonical" href="__BASE__method/">
+
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Sourcery">
+<meta property="og:url" content="__BASE__method/">
+<meta property="og:title" content="Method — search APIs, graded on their sources">
+<meta property="og:description" content="What varies between arms, the two rubrics the judges scored on, what every provider was asked for, and what one run cannot tell you.">
+<meta property="og:image" content="__BASE__media/og-card.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Sourcery — search APIs, graded on their sources. Run 2: __N_QUESTIONS__ questions, eight providers, three judges.">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Method — search APIs, graded on their sources">
+<meta name="twitter:description" content="What varies between arms, the two rubrics the judges scored on, what every provider was asked for, and what one run cannot tell you.">
+<meta name="twitter:image" content="__BASE__media/og-card.png">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&family=Spline+Sans+Mono:wght@400;500&display=swap">
+
+<style>
+__STYLE__
+</style>
+
+<div class="wrap">
+
+__NAV__
+
+<header class="lead">
+  <h1>Method</h1>
+  <p class="standfirst">How the numbers on <a href="__BASE__">the results page</a> were made: what varies between arms, the rubrics the judges scored on, what every provider was asked for, and what one run cannot tell you.</p>
+</header>
+
+<nav class="toc" aria-label="On this page">
+  <span class="toclab">On this page</span>
+  <a href="#varies">What varies</a>
+  <a href="#rubrics">The two rubrics</a>
+  <a href="#settings">Provider settings</a>
+  <a href="#pooling">Pooling</a>
+  <a href="#statistics">The statistics, in words</a>
+  <a href="#limits">What this cannot tell you</a>
+</nav>
+
+<section id="varies">
+  <h2>What varies</h2>
+  <p>One question goes to all eight providers. Each returns up to __NUM_SOURCES__ results. Nothing else differs between arms: same prompt, same judges, same number of results requested, caching off. Of the eight arms, __ARMS_DAY1__ finished inside a single day. Tavily and Bright Data ran into their own rate limits and finished in the early hours of the next morning, and that is the one respect in which the arms were not treated identically — a page that changed overnight would have been seen differently by those two.</p>
+  <p>The settings live in one file, <span class="mono">core/controls.ts</span>, and every stage imports from it, so there is only ever one value of anything for a stage to read.</p>
+</section>
+
+<section id="rubrics">
+  <h2>The two rubrics</h2>
+  <p>Both ask the same question at two scopes, on the same four rungs. Two models can agree on a named rung; a bare number on a wide scale is something each one invents its own version of.</p>
+  <h3 class="sub">Page rating &mdash; does this page help?</h3>
+  <p>One question, one page. The judge is never told which provider returned it, never shown an answer, and never asked to write one.</p>
+  <div class="rungs">__PAGE_RUNGS__</div>
+  <h3 class="sub">Set rating &mdash; could someone answer from these alone?</h3>
+  <p>The headline. A per-page average cannot answer this: eight pages each holding a third of the answer and eight holding nothing average out the same.</p>
+  <div class="rungs">__SET_RUNGS__</div>
+  <p class="sub">Both prompts are in <span class="mono">core/controls.ts</span> in full. The set prompt replaced an earlier one partway through the run, which graded whether sources <em>looked</em> good: fresh, authoritative, cleanly extracted. On a question with no answer anywhere it returned a passing score while the page judge rated every page 0 or 1. The sources were good, they just could not answer.</p>
+</section>
+
+<section id="settings">
+  <h2>Provider settings</h2>
+  <p>Every provider was set to the highest-quality tier it offers. Where a depth or content knob existed it was turned up.</p>
+  <div class="scroller">
+    <table>
+      <thead>
+        <tr><th>Provider</th><th>Product</th><th>Content setting</th><th>What comes back</th></tr>
+      </thead>
+      <tbody>__PROVIDER_SETTINGS__</tbody>
+    </table>
+  </div>
+  <p class="tnote">Serper is the one deliberate downgrade: it sells a separate scrape endpoint and this run does not call it, and that choice was pre-registered. Bright Data is the only provider needing a second paid product to get page text, and its extraction step missed roughly half the URLs it tried.</p>
+</section>
+
+<section id="pooling">
+  <h2>Pooling</h2>
+  <p>Providers overlap heavily. Every page from every arm is collapsed into one pool keyed by normalized URL and graded once; that rating counts for each provider that returned it. __OVERLAP_ONE__% of the __UNIQUE_PAIRS__ pages came from exactly one provider and __OVERLAP_ALL__ came from all eight.</p>
+  <p>Pooling blinds the judge structurally: a page is detached from whoever returned it before grading, so there is no provider name to be swayed by. The cost is that where several arms returned the same URL, the longest extraction anyone returned is what gets graded, so extraction quality is averaged away on those pages.</p>
+</section>
+
+<section id="statistics">
+  <h2>The statistics, in words</h2>
+  <div class="limits">
+    <div class="limit"><h3>Confidence interval</h3><p>Where the real value probably sits, given that __N_QUESTIONS__ questions is a sample. Two overlapping intervals mean the order between those providers is not a finding.</p></div>
+    <div class="limit"><h3>Variance shares</h3><p>How much of everything that varies is explained by each thing that could explain it. The provider explains __VAR_PROVIDER__%; which judge you picked explains __VAR_JUDGE__%.</p></div>
+    <div class="limit"><h3>Kappa</h3><p>Agreement between two judges after subtracting the agreement you would get by chance. These three run __KAPPA_LO__ to __KAPPA_HI__ — they agree on the order and argue about the decimals.</p></div>
+    <div class="limit"><h3>Sign test</h3><p>Comparing two providers across the same small set of questions by counting wins, then asking how often a split that lopsided would happen by luck. Used on the __N_UNANS__ unanswerable questions, where eight providers cannot be ranked but two can be compared.</p></div>
+  </div>
+</section>
+
+<section id="limits">
+  <h2>What this cannot tell you</h2>
+  <div class="limits">
+    <div class="limit">
+      <h3>Who extracts a page best</h3>
+      <p>Each source gets a __TRUNC_LIMIT__-character slice, which is what an agent with a real context budget would allow. Providers that return whole documents therefore have most of that document sitting past the line. Other budgets are just as defensible. A larger slice would let the providers returning whole documents show more of what they extract, and it could reorder the bottom of the table, though it would not close the gap at the top. <a href="#pooling">Pooling</a> costs the same measurement a second way — where several arms returned the same URL, the longest extraction anyone returned is the one that got graded, and that is __OVERLAP_MULTI_PCT__% of the pages. Measuring extraction properly means holding the URLs fixed and varying only the extractor, and that run has not happened.</p>
+    </div>
+    <div class="limit">
+      <h3>What your agent will answer</h3>
+      <p>Nothing here grades an answer, on purpose. An answer-graded benchmark measures that, bearing in mind such a number also grades your model.</p>
+    </div>
+    <div class="limit">
+      <h3>How any of this behaves at scale</h3>
+      <p>Every arm was run once, at whatever concurrency it tolerated, so nothing here measures throughput, quota behaviour, or what any of these costs at volume. What this run did collide with — a provider that throttles at one request, a plan that ran out mid-way, a day that ate most of a month's credits — is written up in <a href="__BASE__#notes">notes from the run</a>. Those are things that happened once; none of them is a measurement.</p>
+    </div>
+    <div class="limit">
+      <h3>Whether the questions look like yours</h3>
+      <p>__N_QUESTIONS__ questions written to probe retrieval, not collected from real traffic: __N_BASE__ ordinary, __N_HARD__ deliberately hard, __N_UNANS__ with no answer at all. I wrote all of them, so whatever I find interesting is in the sample and whatever I did not think to ask is not. Frozen and public, so you can judge the resemblance — and the harness exists so you can run your own instead.</p>
+    </div>
+    <div class="limit">
+      <h3>Whether tomorrow would come out the same</h3>
+      <p>This is one run, fetched __FETCHED__. Every provider is a moving target: indexes change, tiers change, and a model behind one of these can be swapped without telling you. Nothing here is measured twice, so none of these numbers carries an estimate of how much it would move on a re-run. The confidence intervals describe sampling across questions within this one run, which is a narrower claim than it looks.</p>
+    </div>
+    <div class="limit">
+      <h3>Whether the judges are right</h3>
+      <p>Three large language models grade every page, and they agree with each other well enough to trust the ranking — kappa __KAPPA_LO__ to __KAPPA_HI__, moderate on a four-point scale. That is agreement among themselves, not agreement with a person. They were calibrated against human-settled pairs before the run, but three models trained on overlapping text can share a blind spot and agree anyway, and the __N_UNANS__ unanswerable questions show one: a plausible near-miss fools some of them.</p>
+    </div>
+    <div class="limit">
+      <h3>How fast any of them are for you</h3>
+      <p>The table has a median latency column, so timing is measured — but it is measured from one machine on one network over two days, and a provider that is quick from my connection may not be quick from your region. Each arm ran at whatever concurrency it tolerated, which does not flatter the slow end: __LAT_SLOW__ throttles above a single concurrent request, so it ran with less contention than anyone and is still the slowest by a wide margin. Take the ordering seriously and the absolute numbers loosely.</p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <p>Every rating is published with the sentence the judge wrote to justify it. Any number here traces back to the verdict that produced it.</p>
+  <div class="links">
+    <a href="__BASE__explorer/">Every rating, in the explorer</a>
+    <a href="__REPO__">Read the code</a>
+  </div>
+  <p class="colophon">Run 2 &middot; fetched __FETCHED__ &middot; judged against <span class="mono">__CODE_SHA__</span> &middot; page rebuilt __GENERATED__ &middot; MIT licensed</p>
+</footer>
+
+</div>

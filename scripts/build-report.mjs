@@ -29,17 +29,15 @@
 // Usage: node scripts/build-report.mjs [data.json] [template.html] [out.html]
 
 import fs from "node:fs";
+import path from "node:path";
 // Imported, not transcribed: the rubrics and rung names the methodology page
 // publishes are the ones the run actually used. A copy would drift.
 import { RELEVANCE_RUNGS, SET_RUNGS, NUM_SOURCES } from "../core/controls.ts";
+// The nav bar, its styles, and the site's URLs live in one module both build
+// scripts import, so the report and the explorer cannot disagree about either.
+import { BASE, REPO, fetchedRange, navHtml, NAV_CSS } from "./nav.mjs";
 
 const DATA = process.argv[2] ?? "docs/report-data.json";
-
-// Where the pages link to each other. Absolute, because these files are served
-// from Pages *and* published as standalone artifacts, and a relative link only
-// works in one of those.
-const BASE = "https://sameerhimati.com/sourcery/";
-const REPO = "https://github.com/sameerhimati/sourcery";
 
 const d = JSON.parse(fs.readFileSync(DATA, "utf8"));
 const P = d.providers;
@@ -74,18 +72,6 @@ const share = (n) => `${Math.round(n)}%`; // a percentage of pages
 // reader should not have to convert from milliseconds to notice.
 const secs = (ms) => (ms >= 10000 ? `${(ms / 1000).toFixed(0)}s` : `${(ms / 1000).toFixed(1)}s`);
 const money = (n) => `$${n.toFixed(4)}`.replace(/(\.\d*?)0+$/, "$1").replace(/\.$/, "");
-
-// A run that finished inside one day should not read as a range. Anything
-// longer names both ends, because "fetched on one day" is a claim about how
-// comparable the arms are and a two-day run has to say so.
-const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-function fetchedRange({ first_fetch, last_fetch }) {
-  const [, m1, d1] = first_fetch.split("-");
-  const [y2, m2, d2] = last_fetch.split("-");
-  if (first_fetch === last_fetch) return `${+d1} ${MONTHS[+m1 - 1]} ${y2}`;
-  if (m1 === m2) return `${+d1}–${+d2} ${MONTHS[+m2 - 1]} ${y2}`;
-  return `${+d1} ${MONTHS[+m1 - 1]} – ${+d2} ${MONTHS[+m2 - 1]} ${y2}`;
-}
 
 // Small counts read as words in a sentence. Anything the reader might want to
 // compare stays a numeral.
@@ -516,18 +502,24 @@ const REPL = {
   __NUM_SOURCES__: String(NUM_SOURCES.default),
   __PAGE_RUNGS__: rungRows(RELEVANCE_RUNGS),
   __SET_RUNGS__: rungRows(SET_RUNGS),
-  __STYLE__: fs.readFileSync("docs/report-style.css", "utf8").trimEnd(),
+  __STYLE__: fs.readFileSync("docs/report-style.css", "utf8").trimEnd() + "\n" + NAV_CSS,
 };
 
-// One page, two tabs. The method used to be a second file; splitting a report
-// from its method means most readers only ever see one of them.
-const PAGES = [["docs/report-template.html", "docs/index.html"]];
+// Results and how-to-pick share the front page — the picks are the payoff of
+// the ranking. The method has its own URL because it is the thing people cite.
+// Each page gets its own nav with itself marked current; the nav is a per-page
+// extra rather than a REPL entry so the orphan check below stays about numbers.
+const navMeta = { fetched: REPL.__FETCHED__, sha: REPL.__CODE_SHA__ };
+const PAGES = [
+  ["docs/report-template.html", "docs/index.html", { __NAV__: navHtml("results", navMeta) }],
+  ["docs/method-template.html", "docs/method/index.html", { __NAV__: navHtml("method", navMeta) }],
+];
 
 const usedSomewhere = new Set();
-for (const [tpl, out] of PAGES) {
+for (const [tpl, out, extra] of PAGES) {
   let html = fs.readFileSync(tpl, "utf8");
-  for (const [key, val] of Object.entries(REPL)) {
-    if (html.includes(key)) usedSomewhere.add(key);
+  for (const [key, val] of Object.entries({ ...extra, ...REPL })) {
+    if (html.includes(key) && key in REPL) usedSomewhere.add(key);
     html = html.replaceAll(key, () => val);
   }
   const left = html.match(/__[A-Z_]+__/g);
@@ -535,6 +527,7 @@ for (const [tpl, out] of PAGES) {
     console.error(`${out}: unfilled tokens — ${[...new Set(left)].join(", ")}`);
     process.exit(1);
   }
+  fs.mkdirSync(path.dirname(out), { recursive: true });
   fs.writeFileSync(out, html);
   console.log(`${out} — ${(fs.statSync(out).size / 1024).toFixed(1)} KB`);
 }
@@ -545,4 +538,16 @@ if (orphans.length) {
   console.error(`\nNo page uses: ${orphans.join(", ")}. Wire them in or drop them.`);
   process.exit(1);
 }
+
+// Three URLs and no other discovery surface, so the sitemap is how a crawler
+// learns /method/ exists. Written here so it can never list an unbuilt page.
+const sitemap =
+  `<?xml version="1.0" encoding="UTF-8"?>\n` +
+  `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n` +
+  [BASE, `${BASE}method/`, `${BASE}explorer/`]
+    .map((u) => `  <url><loc>${u}</loc><lastmod>${REPL.__GENERATED__}</lastmod></url>`)
+    .join("\n") +
+  `\n</urlset>\n`;
+fs.writeFileSync("docs/sitemap.xml", sitemap);
+
 console.log(`from ${DATA} (${d.run}, ${REPL.__GENERATED__})`);

@@ -2,7 +2,21 @@
      anything that does not send a charset, otherwise guesses — and guesses
      wrong on every em dash and accented name on the page. -->
 <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Sourcery Run 2</title>
+<meta name="description" content="Every rating from Sourcery run 2, with the sentence the judge wrote to justify it. Filterable by provider, question and judge.">
+<link rel="canonical" href="https://sameerhimati.com/sourcery/explorer/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Sourcery">
+<meta property="og:url" content="https://sameerhimati.com/sourcery/explorer/">
+<meta property="og:title" content="Sourcery Run 2, every rating">
+<meta property="og:description" content="Every rating from the run, with the sentence the judge wrote to justify it. Filterable by provider, question and judge.">
+<meta property="og:image" content="https://sameerhimati.com/sourcery/media/og-card.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Sourcery Run 2, every rating">
+<meta name="twitter:image" content="https://sameerhimati.com/sourcery/media/og-card.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&family=Spline+Sans+Mono:wght@400;500&display=swap">
@@ -111,7 +125,7 @@
      arrives after the page does, so the page hides the empty shells of those
      sections until it lands. The masthead and this box are all you see first,
      and they are honest about what is happening. */
-  .wrap:not([data-state="ready"]) > *:not(.masthead):not(.loadstate) { display: none; }
+  .wrap:not([data-state="ready"]) > *:not(.sitenav):not(.masthead):not(.loadstate) { display: none; }
   .wrap[data-state="ready"] .loadstate { display: none; }
   .loadstate { padding: 34px 0 0; max-width: 74ch; }
   .loadstate p { margin: 0 0 8px; color: var(--ink-2); font-size: 14.5px; }
@@ -308,9 +322,54 @@
   .empty { padding: 60px 24px; text-align: center; color: var(--muted); }
 
   footer.note { margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--line); color: var(--faint); font-size: 12.5px; max-width: 82ch; }
+
+  /* Filled by scripts/build-explorer.mjs with the shared nav styles from
+     scripts/nav.mjs, so this page and the report carry one bar, not two copies. */
+  
+/* ── site navigation (from scripts/nav.mjs) ─────────────────────────────── */
+.sitenav {
+  --nav-bg: #fafcfe;
+  display: flex; flex-wrap: wrap; align-items: flex-end; column-gap: 20px;
+  padding-top: 20px; border-bottom: 1px solid #0a0e12;
+  font-size: 0.78rem; letter-spacing: 0.02em; color: #5b5e61;
+}
+.sitenav .brand { font-weight: 800; text-transform: uppercase; color: #0a0e12; padding-bottom: 12px; white-space: nowrap; }
+.sitenav .brand a { font-weight: 500; text-transform: none; letter-spacing: 0; color: #5b5e61; text-decoration: none; margin-left: 8px; }
+.sitenav .brand a:hover { color: #d01e1c; }
+.sitenav .navlinks { display: flex; flex-wrap: wrap; }
+.sitenav .navlinks a {
+  padding: 12px 14px; font-weight: 700; font-size: 0.84rem; letter-spacing: 0.01em;
+  color: #5b5e61; text-decoration: none;
+  border: 1px solid transparent; border-bottom: 0; margin-bottom: -1px;
+}
+.sitenav .navlinks a:hover { color: #0a0e12; }
+.sitenav .navlinks a[aria-current="page"] { color: #0a0e12; background: var(--nav-bg); border-color: #0a0e12; }
+.sitenav .meta { margin-left: auto; display: flex; column-gap: 20px; padding-bottom: 12px; white-space: nowrap; }
+.sitenav .meta a { color: #5b5e61; text-decoration: none; }
+.sitenav .meta a:hover { color: #d01e1c; }
+.sitenav .stamp .mono { font-size: 0.85em; }
+@media (max-width: 760px) {
+  .sitenav .meta { margin-left: 0; width: 100%; padding: 4px 0 12px; white-space: normal; }
+}
+  /* The explorer sits on --ground rather than the report's paper, and the
+     current nav item punches through the bar's rule with the page background. */
+  #wrap .sitenav { --nav-bg: #f4f6f8; }
 </style>
 
 <div class="wrap" id="wrap" data-state="loading">
+  <nav class="sitenav" aria-label="Site">
+  <span class="brand">Sourcery<a href="https://sameerhimati.com">by Sameer Himati</a></span>
+  <span class="navlinks">
+    <a href="https://sameerhimati.com/sourcery/">Results</a>
+    <a href="https://sameerhimati.com/sourcery/#picking">How to pick</a>
+    <a href="https://sameerhimati.com/sourcery/method/">Method</a>
+    <a href="https://sameerhimati.com/sourcery/explorer/" aria-current="page">Explorer</a>
+  </span>
+  <span class="meta">
+    <span class="stamp">Run 2 &middot; fetched 17–18 August 2026 &middot; <span class="mono">1ca6432-dirty</span></span>
+    <a href="https://github.com/sameerhimati/sourcery">Source</a>
+  </span>
+</nav>
   <header class="masthead">
     <div>
       <h1>Sourcery Run 2</h1>

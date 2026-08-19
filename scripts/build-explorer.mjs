@@ -17,16 +17,23 @@
 
 import fs from "node:fs";
 import path from "node:path";
+// The nav bar and its styles come from the same module the report build uses,
+// so the two pages carry one bar rather than two copies that drift.
+import { fetchedRange, navHtml, NAV_CSS } from "./nav.mjs";
 
 const DATA = process.argv[2] ?? "docs/explorer/data.json";
 const OUT = process.argv[3] ?? "docs/explorer/index.html";
 const TEMPLATE = "docs/explorer/template.html";
+// Read only for the nav's run stamp; the explorer's own data is DATA above.
+const REPORT_DATA = "docs/report-data.json";
 
 const template = fs.readFileSync(TEMPLATE, "utf8");
 
-if (!template.includes("__SOURCERY_META__")) {
-  console.error(`${TEMPLATE} has no __SOURCERY_META__ placeholder.`);
-  process.exit(1);
+for (const ph of ["__SOURCERY_META__", "__NAV__", "__NAV_STYLE__"]) {
+  if (!template.includes(ph)) {
+    console.error(`${TEMPLATE} has no ${ph} placeholder.`);
+    process.exit(1);
+  }
 }
 
 if (path.dirname(path.resolve(DATA)) !== path.dirname(path.resolve(OUT))) {
@@ -62,9 +69,21 @@ const meta = {
 // making the closing tag unmatchable.
 const safe = JSON.stringify(meta).replace(/<\//g, "<\\/");
 
+const report = JSON.parse(fs.readFileSync(REPORT_DATA, "utf8"));
+const nav = navHtml("explorer", {
+  fetched: fetchedRange(report.run_window),
+  sha: report.code_sha ?? "unreleased",
+});
+
 // The replacement is a function because a plain string would have "$&" and its
 // relatives read as backreferences, quietly corrupting whatever contained them.
-fs.writeFileSync(OUT, template.replace("__SOURCERY_META__", () => safe));
+fs.writeFileSync(
+  OUT,
+  template
+    .replace("__SOURCERY_META__", () => safe)
+    .replace("__NAV__", () => nav)
+    .replace("__NAV_STYLE__", () => NAV_CSS),
+);
 
 const pageKb = (fs.statSync(OUT).size / 1e3).toFixed(1);
 console.log(`${OUT}: ${pageKb} KB, fetching ${meta.url} (${(meta.bytes / 1e6).toFixed(1)} MB) at load`);

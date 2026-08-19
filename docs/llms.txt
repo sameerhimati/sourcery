@@ -17,7 +17,8 @@ Install: `npx sourcery-eval init` · Agents: `npx sourcery-eval mcp --install`
 
 ## For agents
 
-- [Results page](https://sameerhimati.com/sourcery/): run 2 in full — the ranking with its intervals, ordinary against hard questions, cost, what each provider actually returns as page text, a tab on how to pick one, and the method. One self-contained page.
+- [Results page](https://sameerhimati.com/sourcery/): the ranking with its intervals, ordinary against hard questions, cost, what each provider actually returns as page text, and how to pick one for the job you have. One self-contained page.
+- [Method](https://sameerhimati.com/sourcery/method/): what varies between arms, the two rubrics in full, what every provider was asked for, pooling, the statistics in words, and what one run cannot tell you.
 - [Explorer](https://sameerhimati.com/sourcery/explorer/): every rating individually, with the sentence the judge wrote to justify it, filterable by provider, question and judge. Read this before believing any average above.
 - [Agent instructions](https://raw.githubusercontent.com/sameerhimati/sourcery/main/docs/agent-prompt.md): a block written to paste into a CLAUDE.md, AGENTS.md, system prompt or skill. Covers both the CLI surface and the MCP tools, with how to read the scores. Fetch this first if you are being asked to use sourcery.
 - [MCP server guide](https://raw.githubusercontent.com/sameerhimati/sourcery/main/mcp/README.md): registration one-liners for Claude Code, Codex, Cursor and Claude Desktop; the two tools and their response shapes; why the working directory decides whose numbers you get.

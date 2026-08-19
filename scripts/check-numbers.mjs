@@ -19,10 +19,12 @@
 // the page — which is the same as having no check at all.
 //
 // Usage: node scripts/check-numbers.mjs [page.html] [data.json]
+// With no page argument it checks every report page, so a page added to the
+// site cannot silently fall out of the check.
 
 import fs from "node:fs";
 
-const PAGE = process.argv[2] ?? "docs/index.html";
+const PAGES = process.argv[2] ? [process.argv[2]] : ["docs/index.html", "docs/method/index.html"];
 const DATA = process.argv[3] ?? "docs/report-data.json";
 
 // ── numbers the page is allowed to say without a data file behind them ───────
@@ -115,70 +117,74 @@ const fc = data.recorded?.firecrawl_credits;
 if (fc) known.add(String(Math.round((fc.value / fc.monthly_allowance) * 100)));
 if (data.overlap) known.add(String(Math.round((data.overlap.from_two_or_more / data.overlap.n_pages) * 100)));
 
-// ── every table row has to fill every column ─────────────────────────────────
-// A column added to a template's <thead> whose <td> never got added to the row
-// builder renders as a header over eight blank cells. Nothing else here catches
-// it: no number is wrong, there is simply no number. This did happen.
-const rawPage = fs.readFileSync(PAGE, "utf8");
-const tableFaults = [];
-for (const [, table] of rawPage.matchAll(/<table>([\s\S]*?)<\/table>/g)) {
-  const headRow = table.match(/<thead>[\s\S]*?<tr>([\s\S]*?)<\/tr>[\s\S]*?<\/thead>/);
-  if (!headRow) continue;
-  const nCols = (headRow[1].match(/<th\b/g) ?? []).length;
-  const body = table.match(/<tbody>([\s\S]*?)<\/tbody>/);
-  if (!body) continue;
-  for (const [, row] of body[1].matchAll(/<tr>([\s\S]*?)<\/tr>/g)) {
-    const nCells = (row.match(/<t[hd]\b/g) ?? []).length;
-    if (nCells !== nCols) {
-      const name = (row.match(/<th[^>]*>([^<]*)</) ?? [, "?"])[1];
-      tableFaults.push(`row "${name}" has ${nCells} cells against ${nCols} column headers`);
+function checkPage(PAGE) {
+  // ── every table row has to fill every column ───────────────────────────────
+  // A column added to a template's <thead> whose <td> never got added to the row
+  // builder renders as a header over eight blank cells. Nothing else here catches
+  // it: no number is wrong, there is simply no number. This did happen.
+  const rawPage = fs.readFileSync(PAGE, "utf8");
+  const tableFaults = [];
+  for (const [, table] of rawPage.matchAll(/<table>([\s\S]*?)<\/table>/g)) {
+    const headRow = table.match(/<thead>[\s\S]*?<tr>([\s\S]*?)<\/tr>[\s\S]*?<\/thead>/);
+    if (!headRow) continue;
+    const nCols = (headRow[1].match(/<th\b/g) ?? []).length;
+    const body = table.match(/<tbody>([\s\S]*?)<\/tbody>/);
+    if (!body) continue;
+    for (const [, row] of body[1].matchAll(/<tr>([\s\S]*?)<\/tr>/g)) {
+      const nCells = (row.match(/<t[hd]\b/g) ?? []).length;
+      if (nCells !== nCols) {
+        const name = (row.match(/<th[^>]*>([^<]*)</) ?? [, "?"])[1];
+        tableFaults.push(`row "${name}" has ${nCells} cells against ${nCols} column headers`);
+      }
     }
   }
-}
-if (tableFaults.length) {
-  console.error(`\n${PAGE}: table columns and cells disagree.\n`);
-  for (const f of [...new Set(tableFaults)]) console.error(`  ${f}`);
-  console.error(`\nA header was probably added to the template without its cell in the row builder.\n`);
-  process.exit(1);
-}
-
-// ── the page, as text ────────────────────────────────────────────────────────
-let html = fs.readFileSync(PAGE, "utf8");
-html = html.replace(/<svg[\s\S]*?<\/svg>/g, " "); // charts are generated; they cannot drift
-html = html.replace(/<style[\s\S]*?<\/style>/g, " ");
-html = html.replace(/<!--[\s\S]*?-->/g, " ");
-html = html.replace(/<[a-zA-Z/][^>]*>/g, " "); // tags, and with them every attribute
-for (const re of NOT_NUMBERS) html = html.replace(re, " ");
-// Numeric character references before named ones: &#8599; is an arrow glyph,
-// and left in place it reads as the number 8599.
-html = html.replace(/&#x?[0-9a-fA-F]+;/g, " ");
-html = html.replace(/&[a-z]+;/g, " ");
-
-// A number is a run of digits with optional thousands separators and decimals.
-const found = new Map();
-for (const m of html.matchAll(/\d[\d,]*(?:\.\d+)?/g)) {
-  const raw = m[0].replace(/[.,]$/, "");
-  if (!found.has(raw)) {
-    const at = Math.max(0, m.index - 60);
-    found.set(raw, html.slice(at, m.index + 60).replace(/\s+/g, " ").trim());
+  if (tableFaults.length) {
+    console.error(`\n${PAGE}: table columns and cells disagree.\n`);
+    for (const f of [...new Set(tableFaults)]) console.error(`  ${f}`);
+    console.error(`\nA header was probably added to the template without its cell in the row builder.\n`);
+    process.exit(1);
   }
+
+  // ── the page, as text ──────────────────────────────────────────────────────
+  let html = rawPage;
+  html = html.replace(/<svg[\s\S]*?<\/svg>/g, " "); // charts are generated; they cannot drift
+  html = html.replace(/<style[\s\S]*?<\/style>/g, " ");
+  html = html.replace(/<!--[\s\S]*?-->/g, " ");
+  html = html.replace(/<[a-zA-Z/][^>]*>/g, " "); // tags, and with them every attribute
+  for (const re of NOT_NUMBERS) html = html.replace(re, " ");
+  // Numeric character references before named ones: &#8599; is an arrow glyph,
+  // and left in place it reads as the number 8599.
+  html = html.replace(/&#x?[0-9a-fA-F]+;/g, " ");
+  html = html.replace(/&[a-z]+;/g, " ");
+
+  // A number is a run of digits with optional thousands separators and decimals.
+  const found = new Map();
+  for (const m of html.matchAll(/\d[\d,]*(?:\.\d+)?/g)) {
+    const raw = m[0].replace(/[.,]$/, "");
+    if (!found.has(raw)) {
+      const at = Math.max(0, m.index - 60);
+      found.set(raw, html.slice(at, m.index + 60).replace(/\s+/g, " ").trim());
+    }
+  }
+
+  const orphans = [];
+  for (const [n, context] of found) {
+    if (known.has(n) || known.has(n.replace(/,/g, "")) || ALLOWED.has(n)) continue;
+    orphans.push({ n, context });
+  }
+
+  if (orphans.length) {
+    console.error(`\n${PAGE}: ${orphans.length} number${orphans.length === 1 ? "" : "s"} the data file does not back.\n`);
+    for (const { n, context } of orphans) console.error(`  ${n.padEnd(12)} …${context}…`);
+    console.error(
+      `\nEach one is either a figure that should be derived in scripts/build-report-data.mjs\n` +
+        `and templated in, or a number the page explains rather than measures — in which case\n` +
+        `add it to ALLOWED in this file with the reason.\n`,
+    );
+    process.exit(1);
+  }
+
+  console.log(`${PAGE}: ${found.size} numbers, every one traceable to ${DATA}.`);
 }
 
-const orphans = [];
-for (const [n, context] of found) {
-  if (known.has(n) || known.has(n.replace(/,/g, "")) || ALLOWED.has(n)) continue;
-  orphans.push({ n, context });
-}
-
-if (orphans.length) {
-  console.error(`\n${PAGE}: ${orphans.length} number${orphans.length === 1 ? "" : "s"} the data file does not back.\n`);
-  for (const { n, context } of orphans) console.error(`  ${n.padEnd(12)} …${context}…`);
-  console.error(
-    `\nEach one is either a figure that should be derived in scripts/build-report-data.mjs\n` +
-      `and templated in, or a number the page explains rather than measures — in which case\n` +
-      `add it to ALLOWED in this file with the reason.\n`,
-  );
-  process.exit(1);
-}
-
-console.log(`${PAGE}: ${found.size} numbers, every one traceable to ${DATA}.`);
+for (const page of PAGES) checkPage(page);

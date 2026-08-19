@@ -30,7 +30,7 @@ Everything in this repo, and which file answers which question.
 | [`providers.md`](providers.md) | setup for each provider, their quirks, and what they actually cost |
 | [`agent-prompt.md`](agent-prompt.md) | a block to paste into a system prompt so an agent can use sourcery |
 | [`../mcp/README.md`](../mcp/README.md) | the MCP server — install, both tools, response shapes |
-| [`../llms.txt`](../llms.txt) | the machine-readable index, if you'd rather point an agent at one URL |
+| [`llms.txt`](llms.txt) | the machine-readable index, if you'd rather point an agent at one URL |
 
 ## Questions
 

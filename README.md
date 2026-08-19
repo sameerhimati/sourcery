@@ -115,7 +115,7 @@ codex mcp add sourcery -- npx -y sourcery-eval mcp    # Codex
 
 Run your agent from the directory holding `.sourcery/runs.jsonl`. The server resolves that path relative to its working directory, and from anywhere else you get my numbers instead of yours.
 
-To hand this to an agent, use [`mcp/README.md`](mcp/README.md) for the server, [`docs/agent-prompt.md`](docs/agent-prompt.md) for a block to paste into a system prompt, or [`llms.txt`](llms.txt) to point it at one URL.
+To hand this to an agent, use [`mcp/README.md`](mcp/README.md) for the server, [`docs/agent-prompt.md`](docs/agent-prompt.md) for a block to paste into a system prompt, or [`llms.txt`](docs/llms.txt) to point it at one URL.
 
 ## Bring your own model
 

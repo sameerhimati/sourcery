@@ -20,6 +20,9 @@ const F = {
   summary: ".sourcery/pooled-summary.json",
   costs: "datasets/provider-costs.json",
   noSearch: ".sourcery/no-search.jsonl",
+  base: "datasets/run2-questions.json",
+  hard: "datasets/run2-hard.json",
+  unanswerable: "datasets/run2-unanswerable.json",
 };
 
 const readJsonl = (p) =>
@@ -100,6 +103,41 @@ for (const r of noSearch) {
 const mean = (xs) => (xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : null);
 const round = (x, n = 3) => (x === null || x === undefined ? null : Number(x.toFixed(n)));
 
+// ─── Which questions are which ───
+//
+// base / hard / unanswerable is not on the fetch rows, so the split comes from
+// the frozen dataset files rather than from parsing an id prefix. An id scheme
+// is a convention; the dataset files are the definition.
+const readJson = (p) => JSON.parse(fs.readFileSync(p, "utf8"));
+const idsIn = (p) => new Set(readJson(p).map((q) => q.id));
+const GROUPS = { base: idsIn(F.base), hard: idsIn(F.hard), unanswerable: idsIn(F.unanswerable) };
+const groupOf = (queryId) =>
+  GROUPS.base.has(queryId) ? "base" : GROUPS.hard.has(queryId) ? "hard" : GROUPS.unanswerable.has(queryId) ? "unanswerable" : null;
+
+// What makes each hard question hard, read off the HARD(...) prefix on its note.
+// These four are the vocabulary the hard set was written against, and the
+// explorer has one filter per factor. A fifth factor, or a hard question with no
+// factors at all, means questions that no filter can reach, so it stops the
+// build here rather than quietly disappearing from the page.
+const FACTORS = ["trap", "buried", "multi", "obscure"];
+const hardFactors = new Map();
+for (const q of readJson(F.hard)) {
+  const m = /^HARD\(([^)]*)\)/.exec(q.note ?? "");
+  if (!m) {
+    console.error(`${q.id} is in ${F.hard} but its note does not start with HARD(...), so nothing says what makes it hard.`);
+    process.exit(1);
+  }
+  // Order inside the parens varies (buried+trap and trap+buried both occur), so
+  // it is normalised to a set in one fixed order.
+  const tagged = new Set(m[1].split("+").map((s) => s.trim()).filter(Boolean));
+  const unknown = [...tagged].filter((f) => !FACTORS.includes(f));
+  if (unknown.length) {
+    console.error(`${q.id} is tagged ${unknown.join(", ")}, which the explorer has no filter for. Add it to FACTORS here and to the page.`);
+    process.exit(1);
+  }
+  hardFactors.set(q.id, FACTORS.filter((f) => tagged.has(f)));
+}
+
 // Keyless SERP is captcha-blocked after a handful of queries: 8 consecutive
 // failures, zero successes, and fail-fast correctly killed the attempt. It left
 // its 8 rows on disk, and run 2 is eight arms, not nine. It stays out of the
@@ -152,12 +190,17 @@ for (const f of bestRow.values()) {
 const questions = new Map();
 for (const f of bestRow.values()) {
   if (!questions.has(f.queryId)) {
+    const group = groupOf(f.queryId);
     questions.set(f.queryId, {
       id: f.queryId,
       query: f.query,
       type: f.type ?? null,
       genre: f.genre ?? null,
       sharpness: f.sharpness ?? null,
+      group,
+      // Only the hard set carries factors, and an empty array on every other
+      // question would read as "hard for no reason" to anything consuming this.
+      ...(group === "hard" ? { hard_factors: hardFactors.get(f.queryId) ?? [] } : {}),
       baseline: baseline.get(f.queryId) ?? [],
       providers: {},
     });
@@ -253,6 +296,11 @@ console.log(
     `${judges.length} judges, ${ratings.size} unique pairs, ${payload.n_ratings} ratings, ` +
     `${payload.n_set_verdicts} set verdicts.`,
 );
+// Printed because a question the dataset files do not claim comes out as null,
+// and the group filter would then hide it from every button on the page.
+const byGroup = [...questions.values()].reduce((acc, q) => ({ ...acc, [q.group ?? "not in any dataset file"]: (acc[q.group ?? "not in any dataset file"] ?? 0) + 1 }), {});
+console.log(`Question groups: ${Object.entries(byGroup).map(([g, n]) => `${n} ${g}`).join(", ")}.`);
+
 const unpriced = providers.filter((p) => costs[p]?.usd_per_query == null);
 if (unpriced.length) {
   console.log(`No measured price yet for ${unpriced.join(", ")}. The explorer shows those as "not measured".`);

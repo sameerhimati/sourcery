@@ -217,6 +217,9 @@
   .chip.warn { background: var(--warn-wash); color: var(--warn); border-color: var(--warn); }
   .chip.ok   { background: var(--ok-wash);   color: var(--ok);   border-color: var(--ok); }
   .chip.mute { background: var(--surface-2); color: var(--muted); border-color: var(--line-2); }
+  /* A chip that carries a sentence rather than a one-word tag: uppercase and
+     tracking are unreadable at six words. */
+  .chip.plain { text-transform: none; letter-spacing: 0; font-size: 11.5px; font-weight: 500; }
 
   .unmeasured { color: var(--faint); font-style: italic; font-size: 12.5px; }
 
@@ -254,7 +257,24 @@
     background: var(--ground);
     border: 1px solid var(--line-2);
   }
-  .rail label { font-size: 10.5px; text-transform: uppercase; letter-spacing: .07em; color: var(--faint); font-weight: 600; }
+  .rail label, .rail .grouplabel { display: block; font-size: 10.5px; text-transform: uppercase; letter-spacing: .07em; color: var(--faint); font-weight: 600; }
+  /* Toggle rows, borrowing the select's border and the tab's weight so they sit
+     in the same rail as the other filters rather than arriving as a new kit. */
+  .rail .btnrow { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
+  .rail .btnrow.stack { display: grid; gap: 4px; }
+  .rail .btnrow button {
+    appearance: none;
+    padding: 6px 9px;
+    font: inherit; font-size: 12.5px; font-weight: 600;
+    text-align: left;
+    color: var(--muted);
+    background: var(--ground);
+    border: 1px solid var(--line-2);
+    cursor: pointer;
+  }
+  .rail .btnrow button:hover { color: var(--ink); }
+  .rail .btnrow button[aria-pressed="true"] { background: var(--accent-wash); border-color: var(--accent-2); color: var(--ink); }
+  .rail .hint { margin: 6px 0 0; font-size: 11.5px; line-height: 1.4; color: var(--faint); }
   .rail .count { padding: 8px 14px; font-size: 12px; color: var(--muted); background: var(--surface-2); border-bottom: 1px solid var(--line); }
   .qlist { max-height: 62vh; overflow-y: auto; }
   .qitem {
@@ -392,8 +412,8 @@
     </div>
     <p class="unmeasured" style="margin-top:12px">
       Page rating is the mean of every judge's 0&ndash;3 rating of every page the provider returned.
-      Set rating asks a different question of the whole returned set at once &mdash; could you answer
-      from this alone, without searching again &mdash; on the same 0&ndash;3 scale.
+      Set rating asks a different question of the whole returned set at once, on the same
+      0&ndash;3 scale: could you answer from this alone, without searching again?
     </p>
   </section>
 
@@ -404,6 +424,24 @@
           <div>
             <label for="q-search">Search</label>
             <input type="search" id="q-search" placeholder="question text or id" autocomplete="off">
+          </div>
+          <div>
+            <span class="grouplabel" id="q-group-label">Question set</span>
+            <div class="btnrow" id="q-group" role="group" aria-labelledby="q-group-label">
+              <button type="button" data-group="all" aria-pressed="true">all</button>
+              <button type="button" data-group="base" aria-pressed="false">ordinary</button>
+              <button type="button" data-group="hard" aria-pressed="false">hard</button>
+              <button type="button" data-group="unanswerable" aria-pressed="false">unanswerable</button>
+            </div>
+            <p class="hint">
+              Half the questions were written to be hard on purpose. The unanswerable ones have no
+              right answer at all, so every page should score 0 or 1.
+            </p>
+          </div>
+          <div>
+            <span class="grouplabel" id="q-factor-label">What makes the hard ones hard</span>
+            <div class="btnrow stack" id="q-factors" role="group" aria-labelledby="q-factor-label"></div>
+            <p class="hint" id="q-factor-hint"></p>
           </div>
           <div>
             <label for="q-genre">Genre</label>
@@ -461,6 +499,22 @@ function boot(DATA) {
     tavily: "Tavily", serper: "Serper", firecrawl: "Firecrawl", bright_data: "Bright Data"
   };
   function label(p) { return LABELS[p] || p.replace(/_/g, " "); }
+
+  // The three sets of questions, and the four things that make a hard one hard.
+  // The tags live in the dataset files as single words; a reader has never seen
+  // them, so nothing on this page shows the word without the sentence.
+  var GROUP_TEXT = {
+    base: "an ordinary question",
+    hard: "written to be hard on purpose",
+    unanswerable: "no right answer exists"
+  };
+  var FACTOR_TEXT = {
+    trap: "a convincing wrong answer sits nearby",
+    buried: "the answer is not on the first result",
+    multi: "no single page has all of it",
+    obscure: "thinly covered subject"
+  };
+  var FACTORS = ["trap", "buried", "multi", "obscure"];
   function fmt(x, d) { return x === null || x === undefined ? "—" : Number(x).toFixed(d === undefined ? 2 : d); }
 
   // A rung is a named step, not a score out of three, so it is drawn as a step.
@@ -572,7 +626,7 @@ function boot(DATA) {
         if (c.confidence && c.confidence !== "billed") {
           costCell.appendChild(el("span", "unmeasured", "  " + c.confidence));
         }
-        if (c.basis) costCell.title = c.basis + (c.source ? " — " + c.source : "");
+        if (c.basis) costCell.title = c.basis + (c.source ? ". " + c.source : "");
       } else if (c && c.credits_for_run) {
         // Credits are what the dashboard showed, so credits are what we print.
         // Converting them to dollars with a rate nobody confirmed is how the
@@ -618,6 +672,66 @@ function boot(DATA) {
     Object.keys(genres).sort().forEach(function (g) { sel.appendChild(new Option(g, g)); });
   })();
 
+  // ── question set and hard-factor filters ────────────────────────
+  // Which set a question belongs to is decided in build-explorer-data.mjs, from
+  // the frozen dataset files rather than from its id.
+  var groupFilter = "all";
+  var factorFilter = [];
+
+  (function () {
+    var groupRow = $("q-group");
+    var factorRow = $("q-factors");
+    // Built here so the four buttons and the sentences shown on a question come
+    // from one list, instead of two that drift the first time one is reworded.
+    FACTORS.forEach(function (f) {
+      var b = el("button", null, FACTOR_TEXT[f]);
+      b.type = "button";
+      b.setAttribute("data-factor", f);
+      b.setAttribute("aria-pressed", "false");
+      factorRow.appendChild(b);
+    });
+    $("q-factor-hint").textContent =
+      "Picking one of these switches the list to the hard questions, because only they are tagged. " +
+      "Pick several to see every question carrying any one of them.";
+
+    var groups = groupRow.querySelectorAll("button");
+    var factors = factorRow.querySelectorAll("button");
+    function paint() {
+      Array.prototype.forEach.call(groups, function (b) {
+        b.setAttribute("aria-pressed", String(b.getAttribute("data-group") === groupFilter));
+      });
+      Array.prototype.forEach.call(factors, function (b) {
+        b.setAttribute("aria-pressed", String(factorFilter.indexOf(b.getAttribute("data-factor")) !== -1));
+      });
+    }
+
+    Array.prototype.forEach.call(groups, function (b) {
+      b.addEventListener("click", function () {
+        groupFilter = b.getAttribute("data-group");
+        // A factor left armed while the list shows the ordinary questions would
+        // empty the list, since nothing outside the hard set carries a factor.
+        if (groupFilter !== "hard") factorFilter = [];
+        paint();
+        renderList();
+      });
+    });
+
+    Array.prototype.forEach.call(factors, function (b) {
+      b.addEventListener("click", function () {
+        var f = b.getAttribute("data-factor");
+        var at = factorFilter.indexOf(f);
+        if (at === -1) factorFilter.push(f); else factorFilter.splice(at, 1);
+        // Picking a factor means picking hard questions, so the set above says
+        // hard rather than continuing to claim it is showing everything.
+        if (factorFilter.length) groupFilter = "hard";
+        paint();
+        renderList();
+      });
+    });
+
+    paint();
+  })();
+
   var selectedId = null;
 
   function showTab(which) {
@@ -646,6 +760,10 @@ function boot(DATA) {
     var genre = $("q-genre").value;
     var mode = $("q-filter").value;
     var rows = INDEX.filter(function (r) {
+      if (groupFilter !== "all" && r.q.group !== groupFilter) return false;
+      if (factorFilter.length && !factorFilter.some(function (f) {
+        return (r.q.hard_factors || []).indexOf(f) !== -1;
+      })) return false;
       if (genre && r.q.genre !== genre) return false;
       if (term && (r.q.query + " " + r.q.id).toLowerCase().indexOf(term) === -1) return false;
       // "Already knew it" means a majority of the graders said the model answered
@@ -712,6 +830,12 @@ function boot(DATA) {
     var tags = el("div", "taglist");
     [q.genre, q.type, q.sharpness].forEach(function (t) {
       if (t) tags.appendChild(el("span", "chip mute", label(t)));
+    });
+    // Which set this question is in, and what made it hard, said on the question
+    // itself. A reader who arrives by link never saw the rail it was filtered in.
+    if (q.group) tags.appendChild(el("span", "chip mute plain", GROUP_TEXT[q.group] || q.group));
+    (q.hard_factors || []).forEach(function (f) {
+      tags.appendChild(el("span", "chip mute plain", FACTOR_TEXT[f] || f));
     });
     if (row.maxSpread >= 2) tags.appendChild(el("span", "chip bad", "judges " + row.maxSpread + " points apart"));
     head.appendChild(tags);
@@ -947,7 +1071,10 @@ function boot(DATA) {
     if (!svg) return;
     var acc = {};
     DATA.questions.forEach(function (q) {
-      var band = q.id.indexOf("r2h-") === 0 ? "hard" : q.id.indexOf("r2u-") === 0 ? null : "base";
+      // The set comes off the question, which the build read from the dataset
+      // files. Two definitions of "hard" on one page is how a chart and a filter
+      // come to disagree about which questions they are counting.
+      var band = q.group === "hard" ? "hard" : q.group === "base" ? "base" : null;
       if (!band) return;
       DATA.providers.forEach(function (p) {
         var a = q.providers[p];
@@ -1066,7 +1193,7 @@ function boot(DATA) {
         loaded += chunk.value.length;
         if (meta.bytes) {
           fill.style.width = Math.min(100, Math.round((loaded / meta.bytes) * 100)) + "%";
-          status.textContent = "Loading run data — " + mb(loaded) + " of " + mb(meta.bytes);
+          status.textContent = "Loading run data, " + mb(loaded) + " of " + mb(meta.bytes);
         }
         return pump();
       });

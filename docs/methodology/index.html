@@ -337,7 +337,7 @@ footer p { font-size: 0.86rem; color: var(--muted); }
 
 <header class="lead">
   <h1>Methodology</h1>
-  <p class="standfirst">How the numbers on <a href="https://sameerhimati.com/sourcery/">the results page</a> were made, in the order the run was built: where the questions came from, what the two ratings mean, what was held identical between providers, and what one run cannot tell you.</p>
+  <p class="standfirst">Here is the methodology and background for how the numbers on <a href="https://sameerhimati.com/sourcery/">the results page</a> were made, the decisions motivating the experimental design, where the questions came from, what the two ratings mean and what was held identical between providers.</p>
 </header>
 
 <nav class="toc" aria-label="On this page">
@@ -353,51 +353,56 @@ footer p { font-size: 0.86rem; color: var(--muted); }
 
 <section id="questions">
   <h2>The questions</h2>
-  <p>204 questions, written rather than collected: 96 ordinary, 96 deliberately hard, 12 with no answer anywhere. I wrote all of them. That is the sample's biggest weakness and there is no way around saying so: whatever I found interesting is in there and whatever I did not think to ask is not. All three sets are frozen and public, so you can read them and judge the resemblance to your own traffic yourself.</p>
-  <p>They spread across six kinds of task (breaking news, how-to, product lookup, local and geographic, recent releases, and live numbers) and six subject areas, weighted toward software and everyday questions because that is what I actually point a retrieval agent at. Every question carries a note written before the run saying what a correct page contains and what a plausible wrong one looks like. The judges never see those notes. They exist so that when a rating looks wrong in the explorer, there is a written intent to argue against rather than a memory.</p>
+  <p>I took what I saw from run 1 to create a set of 204 questions: 96 ordinary, 96 deliberately hard, 12 with no answer anywhere, designed to baseline false positives. Of course, there is a bias for the questions created based on the ones I picked.</p>
+  <p>They spread across six kinds of task: breaking news, how-to, product lookup, local and geographic, recent releases, and live numbers. Additionally, these spanned six subject areas, weighted toward software and everyday questions because that is what I actually point a retrieval agent at.</p>
+  <p>Every question carries a note written before the run saying what a correct page contains and what a plausible wrong one looks like, the judges never see those notes. They exist so that when a rating looks wrong in <a href="https://sameerhimati.com/sourcery/explorer/">the explorer</a>, there is a written intent to argue why.</p>
 
-  <h3 class="sub">What makes the hard half hard</h3>
-  <p>Four things, usually two at a time. <strong>Trap</strong>: a plausible wrong answer sits close to the right one, an older figure or a superseded draft. <strong>Buried</strong>: the answer exists but not on the first result. <strong>Multi</strong>: no single page has all of it. <strong>Obscure</strong>: the subject is thinly covered, so the index either has it or does not.</p>
-  <p>The point of the split is that easy questions make providers look alike. A question your model could nearly answer unaided does not test retrieval much, and if a whole benchmark is built from those, every provider passes.</p>
+  <h3 class="sub">What makes the hard hard</h3>
+  <p>Four factors tend to make questions harder for search providers to serve. <strong>Trap</strong>: a plausible wrong answer sits close to the right one, an older figure or a superseded draft.<br>
+  <strong>Buried</strong>: the answer exists but not on the first result.<br>
+  <strong>Multi</strong>: no single page has all of it.<br>
+  <strong>Obscure</strong>: the subject is thinly covered, so the index either has it or does not.</p>
+  <p>The point of the split is that easy questions make providers look alike, but as questions get harder, the gaps between providers comes up. A question your model could nearly answer unaided does not test retrieval much, and if a whole benchmark is built from those, every provider passes.</p>
 
   <h3 class="sub">Why 12 questions with no answer</h3>
-  <p>Each of these asks about something that sounds entirely real and does not exist: a Postgres setting called <span class="mono">max_parallel_vacuum_workers</span>, a <span class="mono">grace_period</span> option in a Docker Compose healthcheck, a statistic nobody publishes. Search them and you get authoritative, tightly on-topic pages about the neighbouring real thing.</p>
-  <p>Correct behaviour is that every page rates 0 or 1. A page rated 2 or 3 means either a provider surfaced something that invented the answer or a judge invented the relevance, and the explorer shows which. This is the one part of the set where a higher score is a worse result, and it is the only place the run can see a confident near-miss at all. That is the failure your own code cannot check for, because a near-miss arrives looking exactly like a hit.</p>
+  <p>The point behind creating these unanswerable set was to create a group of questions to test how far these search providers try to cheat with results that can cause hallucinations for models and agents. Each of these asks about something that sounds entirely real and does not exist.</p>
+  <p>Correct behaviour is that every page rates 0 or 1. A page rated 2 or 3 means either a provider surfaced something that invented the answer or a judge invented the relevance.</p>
 </section>
 
 <section id="changed">
   <h2>What run 2 changed, and why</h2>
-  <p>Run 1 asked 48 questions of four providers and graded the answer a model wrote from what came back. Then it checked whether source quality and answer quality moved together, and they barely did: a correlation of 0.16, where 1 is lockstep and 0 is unrelated. The model was carrying most of the result. That is the finding this whole run is a reaction to, and it is why nothing here grades an answer.</p>
-  <p>So run 2 grades the sources and never writes an answer, doubles the field to eight providers, and uses three judges from three different labs instead of one, so that no single model's taste is the ranking. It also gives the slow arms room to finish rather than timing them out, looking at you Bright Data, because a provider that is merely slow should show up as slow in a latency column, not as missing data in a quality one.</p>
-  <p>One thing changed mid-run and is worth knowing about. The set prompt replaced an earlier one that graded whether sources <em>looked</em> good: fresh, authoritative, cleanly extracted. On a question with no answer anywhere it returned a passing score while the page judge was correctly rating every page 0 or 1. The sources were good. They just could not answer. Everything published here was scored with the replacement.</p>
+  <p>Run 1 asked 48 questions of four providers and graded the answer a model wrote from the results that were returned. Then it checked whether source quality and answer quality moved together. However, in that run there was only a correlation of 0.16, where 1 is lockstep and 0 is unrelated. The model was carrying most of the result.</p>
+  <p>So run 2 grades the sources instead, doubles the field to eight providers, and uses three judges from three different labs instead of one, so that no single model's taste skews the ranking. It also gives the slow arms room to finish rather than timing them out.</p>
 </section>
 
 <section id="ratings">
   <h2>The two ratings</h2>
-  <p>Two separate questions, asked at two scopes, on the same 0&ndash;3 scale. Every score comes with a written definition of what it means, because two models can agree on what a 2 means while a bare number on a wide scale is something each one invents its own version of.</p>
-  <p><strong>They are separate judge calls, and the set rating is not an average of page ratings.</strong> That matters enough to say plainly: a per-page average cannot answer the set question. 8 pages each holding a third of the answer and 8 pages holding nothing average out to something similar, and only one of those sets lets you answer.</p>
-  <p>Each judge scores independently and its score is never merged with another judge's before it is recorded. Every individual verdict is in <a href="https://sameerhimati.com/sourcery/explorer/">the explorer</a> with the sentence that judge wrote to justify it. The averaging happens once, at the end, and only for display: a provider's set rating on the results page is the mean of its per-question scores across all 204 questions and all three judges.</p>
+  <p>Two ratings, both on a 0 to 3 scale, asking different questions of the same results.</p>
+  <p>The <strong>page rating</strong> asks whether one page helps answer one question. The judge is never told which provider returned it, never shown an answer, and never asked to write one.</p>
+  <p>The <strong>set rating</strong> asks whether a whole set of 8 results is enough to answer, and that is the headline on the results page.</p>
+  <p>These are separate judge calls, and the set rating is not an average of the page ratings. It cannot be. 8 pages each holding a third of the answer and 8 pages holding nothing average out to roughly the same score, and only one of those sets lets you answer the question.</p>
+  <p>Each judge scores on its own and nothing is merged before it gets recorded. Every individual verdict is in the explorer with the sentence that judge wrote for it. The averaging happens once, at the end, only so there is something to put in a table: a provider's set rating is the mean of its scores across all 204 questions and all three judges.</p>
+  <p>Every score has a written definition rather than a number on its own, because two models can agree on what a 2 means but a bare scale is something each one invents its own version of.</p>
 
   <h3 class="sub">Page rating: does this page help?</h3>
-  <p>One question, one page. The judge is never told which provider returned it, never shown an answer, and never asked to write one.</p>
   <div class="rungs"><div class="rung"><div class="n">0</div><div class="nm">not relevant</div><div class="mg">does not address the question</div></div>
 <div class="rung"><div class="n">1</div><div class="nm">marginal</div><div class="mg">on the topic, but would not help answer it</div></div>
 <div class="rung"><div class="n">2</div><div class="nm">relevant</div><div class="mg">contains part of the answer, or usable evidence toward it</div></div>
 <div class="rung"><div class="n">3</div><div class="nm">highly relevant</div><div class="mg">answers the question directly</div></div></div>
 
   <h3 class="sub">Set rating: could someone answer from these alone?</h3>
-  <p>The headline. One judge, one question, all 8 of a provider's results in front of it at once.</p>
   <div class="rungs"><div class="rung"><div class="n">0</div><div class="nm">nothing</div><div class="mg">no source here addresses the question</div></div>
 <div class="rung"><div class="n">1</div><div class="nm">on topic only</div><div class="mg">about the right subject, but reading all of it would not answer the question</div></div>
 <div class="rung"><div class="n">2</div><div class="nm">partial</div><div class="mg">part of the answer is here; the rest would need another search</div></div>
 <div class="rung"><div class="n">3</div><div class="nm">answerable</div><div class="mg">the question can be answered from this set alone</div></div></div>
-  <p class="sub">Both prompts are in <span class="mono">core/controls.ts</span> in full.</p>
+  <p class="sub">Both prompts are in <span class="mono">core/controls.ts</span> in full. The set prompt replaced an earlier one partway through the run. That one graded whether sources <em>looked</em> good, fresh and authoritative and cleanly extracted, and on a question with no answer anywhere it handed out a passing score while the page judge was correctly rating every page 0 or 1. The sources were good. They just could not answer. Everything published here was scored with the replacement.</p>
 </section>
 
 <section id="varies">
   <h2>What varies</h2>
-  <p>One question goes to all eight providers. Each returns up to 8 results. Nothing else differs between arms: same prompt, same judges, same number of results requested, caching off. Of the eight arms, six finished inside a single day. Tavily and Bright Data ran into their own rate limits and finished in the early hours of the next morning, and that is the one respect in which the arms were not treated identically: a page that changed overnight would have been seen differently by those two.</p>
-  <p>The settings live in one file, <span class="mono">core/controls.ts</span>, and every stage imports from it, so there is only ever one value of anything for a stage to read. Every provider was set to the highest-quality tier it offers; where a depth or content knob existed it was turned up.</p>
+  <p>One question goes to all eight providers, each returns up to 8 results, and nothing else changes between them. Same prompt, same judges, same number of results asked for, caching off.</p>
+  <p>six of the eight arms finished inside one day. Tavily and Bright Data hit their own rate limits and finished in the early hours of the next morning, and that is the one place the arms were not treated the same: a page that changed overnight would have looked different to those two.</p>
+  <p>Every setting sits in one file, <span class="mono">core/controls.ts</span>, and every stage reads from it, so there is only ever one value of anything for a stage to find. Each provider was set to the best tier it sells, and where there was a depth or content knob it got turned up.</p>
   <div class="scroller">
     <table>
       <thead>
@@ -413,22 +418,22 @@ footer p { font-size: 0.86rem; color: var(--muted); }
 <tr><th scope="row">Bright Data</th><td class="prose">SERP API + Web Unlocker</td><td>data_format: markdown, via a second paid product</td><td class="prose">Full page markdown, on the 47% of URLs the unlocker returned</td></tr></tbody>
     </table>
   </div>
-  <p class="tnote">Serper is the one deliberate downgrade: it sells a separate scrape endpoint and this run does not call it, which was decided before the run rather than after seeing the scores. Bright Data is the only provider needing a second paid product to get page text, and its extraction step missed roughly half the URLs it tried.</p>
+  <p class="tnote">Serper is the one deliberate downgrade. It sells a separate scrape endpoint and this run does not call it, which I decided before the run rather than after seeing the scores. Bright Data is the only provider that needs a second paid product to get page text at all, and its extraction step missed roughly half the URLs it tried.</p>
 </section>
 
 <section id="pooling">
   <h2>Pooling</h2>
-  <p>Providers overlap heavily. Every page from every arm is collapsed into one pool keyed by normalized URL and graded once; that rating counts for each provider that returned it. 66.8% of the 7,496 pages came from exactly one provider and 24 came from all eight.</p>
-  <p>Pooling blinds the judge structurally: a page is detached from whoever returned it before grading, so there is no provider name to be swayed by. It was a cost decision first, though, and the cost is real. Where several arms returned the same URL, the longest extraction anyone returned is what gets graded, so extraction quality is averaged away on those pages. With a bigger budget I would not pool.</p>
+  <p>Providers return the same pages constantly. Every page from every arm collapses into one pool keyed by normalised URL and gets graded once, and that rating counts for each provider that returned it. 66.8% of the 7,496 pages came from exactly one provider and 24 came from all eight.</p>
+  <p>Pooling also blinds the judge, which is a real argument for doing it: a page is detached from whoever returned it before anyone grades it, so there is no provider name to be swayed by. But it was a cost decision first and it costs something real. Where several arms returned the same URL, the longest extraction anyone returned is what got graded, so extraction quality is averaged away on those pages. With a bigger budget I would not pool.</p>
 </section>
 
 <section id="statistics">
   <h2>The statistics, in words</h2>
   <div class="limits">
-    <div class="limit"><h3>Confidence interval</h3><p>Where the real value probably sits, given that 204 questions is a sample. Two overlapping intervals mean the order between those providers is not a finding.</p></div>
-    <div class="limit"><h3>Variance shares</h3><p>How much of everything that varies is explained by each thing that could explain it. The provider explains 23.1%; which judge you picked explains 2.2%.</p></div>
-    <div class="limit"><h3>Kappa</h3><p>Agreement between two judges after subtracting the agreement you would get by chance. These three run 0.51 to 0.55: they agree on the order and argue about the decimals.</p></div>
-    <div class="limit"><h3>Sign test</h3><p>Comparing two providers across the same small set of questions by counting wins, then asking how often a split that lopsided would happen by luck. Used on the 12 unanswerable questions, where eight providers cannot be ranked but two can be compared.</p></div>
+    <div class="limit"><h3>Confidence interval</h3><p>Where the real value probably sits, given that 204 questions is a sample rather than everything. If two of them overlap, the order between those providers is not a finding.</p></div>
+    <div class="limit"><h3>Variance shares</h3><p>Of everything that moves in the ratings, how much each thing explains. The provider explains 23.1%. Which judge you happened to pick explains 2.2%.</p></div>
+    <div class="limit"><h3>Kappa</h3><p>How much two judges agree, after subtracting the agreement you would get from two people guessing. These three run 0.51 to 0.55: they agree on the order and argue about the decimals.</p></div>
+    <div class="limit"><h3>Sign test</h3><p>Compare two providers on the same small set of questions by counting wins, then ask how often a split that lopsided happens by luck. Used on the 12 unanswerable questions, where eight providers cannot be ranked but two can be compared.</p></div>
   </div>
 </section>
 
@@ -437,31 +442,31 @@ footer p { font-size: 0.86rem; color: var(--muted); }
   <div class="limits">
     <div class="limit">
       <h3>Who extracts a page best</h3>
-      <p>Each source gets a 1600-character slice, which is what an agent with a real context budget would allow. A larger slice would let the providers that return whole documents show more of what they extract, and it could reorder the bottom of the table. <a href="#pooling">Pooling</a> costs the same measurement a second way: on the 33% of pages that several arms returned, the longest extraction anyone returned is the one that got graded. Measuring extraction properly means holding the URLs fixed and varying only the extractor, and that run has not happened.</p>
+      <p>Each source gets a 1600-character slice, which is what an agent with a real context budget would give it. A bigger slice would let the providers that return whole documents show more of what they extract, and it could reorder the bottom of the table. <a href="#pooling">Pooling</a> costs the same measurement a second way: on the 33% of pages that several arms returned, the longest extraction anyone returned is the one that got graded. Measuring extraction properly means holding the URLs fixed and varying only the extractor, and I have not run that.</p>
     </div>
     <div class="limit">
       <h3>What your agent will answer</h3>
-      <p>Nothing here grades an answer, on purpose. An answer-graded benchmark measures that, bearing in mind such a number also grades your model.</p>
+      <p>Nothing here grades an answer, on purpose. If that is what you want to know, an answer-graded benchmark measures it, bearing in mind such a number is also grading your model.</p>
     </div>
     <div class="limit">
       <h3>How any of this behaves at scale</h3>
-      <p>Every arm was run once, at whatever concurrency it tolerated, so nothing here measures throughput, quota behaviour, or what any of these costs at volume. What this run did collide with is written up in <a href="https://sameerhimati.com/sourcery/#notes">notes from the run</a>: a provider that throttles at one request, a plan that ran out mid-way, a day that ate most of a month's credits. Those are things that happened once; none of them is a measurement.</p>
+      <p>Every arm ran once, at whatever concurrency it tolerated, so nothing here measures throughput, quota behaviour, or what any of it costs at volume. What the run did collide with is in <a href="https://sameerhimati.com/sourcery/#notes">notes from the run</a>: a provider that throttles at one request, a plan that ran out mid-way, a day that ate most of a month's credits. Those happened once each. None of them is a measurement.</p>
     </div>
     <div class="limit">
       <h3>Whether the questions look like yours</h3>
-      <p>They are written, not collected from real traffic, and <a href="#questions">I wrote all of them</a>. The harness exists so you can run your own instead, which is the only real answer to this one.</p>
+      <p>They are written rather than collected from real traffic, and <a href="#questions">I wrote all of them</a>. The harness exists so you can run your own instead, which is the only real answer to this one.</p>
     </div>
     <div class="limit">
       <h3>Whether tomorrow would come out the same</h3>
-      <p>This is one run, fetched 17–18 August 2026. Every provider is a moving target: indexes change, tiers change, and a model behind one of these can be swapped without telling you. Nothing here is measured twice, so none of these numbers carries an estimate of how much it would move on a re-run. The confidence intervals describe sampling across questions within this one run, which is a narrower claim than it looks.</p>
+      <p>This is one run, fetched 17–18 August 2026. Every provider is a moving target: indexes change, tiers change, and the model behind one of these can be swapped without anyone telling you. Nothing here is measured twice, so none of these numbers carries an estimate of how far it would move on a re-run. The confidence intervals describe sampling across questions inside this one run, which is a narrower claim than it looks.</p>
     </div>
     <div class="limit">
       <h3>Whether the judges are right</h3>
-      <p>Three large language models grade every page, and they agree with each other well enough to trust the ranking, kappa 0.51 to 0.55, moderate on a four-point scale. That is agreement among themselves, not agreement with a person. They were calibrated against human-settled pairs before the run, but three models trained on overlapping text can share a blind spot and agree anyway, and the 12 unanswerable questions show one: a plausible near-miss fools some of them.</p>
+      <p>Three language models grade every page and they agree with each other well enough to trust the ranking, kappa 0.51 to 0.55, which is moderate on a four-point scale. That is agreement among themselves, not agreement with a person. They were calibrated against human-settled pairs before the run, but three models trained on overlapping text can share a blind spot and agree anyway, and the 12 unanswerable questions show exactly that: a plausible near-miss fools some of them.</p>
     </div>
     <div class="limit">
       <h3>How fast any of them are for you</h3>
-      <p>The table has a median latency column, so timing is measured, but it is measured from one machine on one network over two days, and a provider that is quick from my connection may not be quick from your region. Take the ordering seriously and the absolute numbers loosely.</p>
+      <p>The table has a median latency column, so timing is measured, but it is measured from one machine on one network over two days. A provider that is quick from my connection may not be quick from your region. Take the ordering seriously and the absolute numbers loosely.</p>
     </div>
   </div>
 </section>

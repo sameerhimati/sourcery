@@ -577,7 +577,7 @@ const REPL = {
 const navMeta = { fetched: REPL.__FETCHED__, sha: REPL.__CODE_SHA__ };
 const PAGES = [
   ["site/report.html", "docs/index.html", { __NAV__: navHtml("results", navMeta) }],
-  ["site/method.html", "docs/method/index.html", { __NAV__: navHtml("method", navMeta) }],
+  ["site/methodology.html", "docs/methodology/index.html", { __NAV__: navHtml("methodology", navMeta) }],
 ];
 
 const usedSomewhere = new Set();
@@ -605,14 +605,28 @@ if (orphans.length) {
 }
 
 // Three URLs and no other discovery surface, so the sitemap is how a crawler
-// learns /method/ exists. Written here so it can never list an unbuilt page.
+// learns /methodology/ exists. Written here so it can never list an unbuilt page.
 const sitemap =
   `<?xml version="1.0" encoding="UTF-8"?>\n` +
   `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n` +
-  [BASE, `${BASE}method/`, `${BASE}explorer/`]
+  [BASE, `${BASE}methodology/`, `${BASE}explorer/`]
     .map((u) => `  <url><loc>${u}</loc><lastmod>${REPL.__GENERATED__}</lastmod></url>`)
     .join("\n") +
   `\n</urlset>\n`;
 fs.writeFileSync("docs/sitemap.xml", sitemap);
+
+// /method/ was this page's address until it was renamed. Anything already
+// linking there — a DM, a post, somebody's notes — should still arrive rather
+// than 404, so the old path keeps a stub that forwards and tells a crawler the
+// new URL is the real one. Emitted here, because nothing under docs/ is hand-written.
+const redirect = `<!doctype html>
+<meta charset="utf-8">
+<title>Moved to ${BASE}methodology/</title>
+<link rel="canonical" href="${BASE}methodology/">
+<meta http-equiv="refresh" content="0; url=${BASE}methodology/">
+<p>This page is now at <a href="${BASE}methodology/">${BASE}methodology/</a>.</p>
+`;
+fs.mkdirSync("docs/method", { recursive: true });
+fs.writeFileSync("docs/method/index.html", redirect);
 
 console.log(`from ${DATA} (${d.run}, ${REPL.__GENERATED__})`);

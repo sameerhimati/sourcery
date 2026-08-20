@@ -364,7 +364,7 @@ footer p { font-size: 0.86rem; color: var(--muted); }
   <span class="navlinks">
     <a href="https://sameerhimati.com/sourcery/" aria-current="page">Results</a>
     <a href="https://sameerhimati.com/sourcery/#picking">How to pick</a>
-    <a href="https://sameerhimati.com/sourcery/method/">Method</a>
+    <a href="https://sameerhimati.com/sourcery/methodology/">Methodology</a>
     <a href="https://sameerhimati.com/sourcery/explorer/">Explorer</a>
   </span>
 </nav>
@@ -378,7 +378,7 @@ footer p { font-size: 0.86rem; color: var(--muted); }
   <h2 class="dhead">Disclaimer</h2>
   <dl>
     <dt>Independent</dt>
-    <dd>I ran this on my own. No search provider commissioned it, reviewed it, or saw it before it went up, and there are no affiliate links on this page.</dd>
+    <dd>Nobody paid me to run this and no provider saw it before it went up. There are no affiliate links on this page.</dd>
     <dt>Self-funded</dt>
     <dd>The prices on this page are what I got charged. There are good pay-as-you-go plans and free tiers to try each of these. I spent around $40.08 across the eight providers.</dd>
     <dt>Checkable</dt>
@@ -392,7 +392,7 @@ footer p { font-size: 0.86rem; color: var(--muted); }
     <dt>Experimental design</dt>
     <dd>This run was designed as a follow-up to the first one on Sourcery. Making it agnostic to the model's answer was my takeaway from run 1, which found very small differences between search APIs largely because the models already knew a lot of the answers. Run 2 overhauls the scoring, widens the field of both providers and judge models, and raises the latency threshold so the slower providers &mdash; looking at you, Bright Data &mdash; get to finish.</dd>
   </dl>
-  <p class="dnote">I thought it important to be upfront about the limits of this run. If there is something you would want done differently, DM me on <a href="https://x.com/sameerhimati">X</a>. There is more in <a href="https://sameerhimati.com/sourcery/method/">the methodology</a>, and <a href="https://sameerhimati.com/sourcery/method/#limits">what this cannot tell you</a>.</p>
+  <p class="dnote">I thought it important to be upfront about the limits of this run. If there is something you would want done differently, DM me on <a href="https://x.com/sameerhimati">X</a>. There is more in <a href="https://sameerhimati.com/sourcery/methodology/">the methodology</a>, and <a href="https://sameerhimati.com/sourcery/methodology/#limits">what this cannot tell you</a>.</p>
 </div>
 
 <nav class="toc" aria-label="On this page">
@@ -443,7 +443,7 @@ footer p { font-size: 0.86rem; color: var(--muted); }
   <h2>Speed</h2>
   <figure>
     <div class="scroller"><svg viewBox="0 0 720 398" width="100%" role="img" aria-labelledby="lt-t lt-d" class="viz"><title id="lt-t">Search time by provider, median and 90th percentile</title><desc id="lt-d">Brave is fastest at a median of 0.6s per search. Serper, the cheapest arm, takes 3.2s. Bright Data is slowest at 34s, with the slowest one search in ten at 75s or worse, and its sample includes the repair pass its one-request throttle forced.</desc><line x1="157.38263038907812" y1="38" x2="157.38263038907812" y2="308" class="grid"/><text x="157.38263038907812" y="326" class="tick" text-anchor="middle">1.0s</text><line x1="229.3123977398553" y1="38" x2="229.3123977398553" y2="308" class="grid"/><text x="229.3123977398553" y="326" class="tick" text-anchor="middle">3.0s</text><line x1="308.14046529844563" y1="38" x2="308.14046529844563" y2="308" class="grid"/><text x="308.14046529844563" y="326" class="tick" text-anchor="middle">10s</text><line x1="380.0702326492228" y1="38" x2="380.0702326492228" y2="308" class="grid"/><text x="380.0702326492228" y="326" class="tick" text-anchor="middle">30s</text><text x="112" y="348" class="collab">seconds per search, log scale</text><text x="452" y="348" class="collab" text-anchor="end">lower is better</text><text x="112" y="368" class="note">The dot is the median search; the line runs out to the 90th percentile, the slowest one search in ten.</text><text x="96" y="63" class="name" text-anchor="end">Brave</text><line x1="121.94292851793917" y1="59" x2="132.32432258418226" y2="59" class="iv"/><line x1="132.32432258418226" y1="55" x2="132.32432258418226" y2="63" class="iv-cap"/><circle cx="121.94292851793917" cy="59" r="5" class="est"/><text x="480" y="63" class="num">0.6s</text><text x="526" y="63" class="num dim">0.7s</text><text x="96" y="97" class="name" text-anchor="end">Perplexity</text><line x1="192.89038910442605" y1="93" x2="195.0249664090944" y2="93" class="iv"/><line x1="195.0249664090944" y1="89" x2="195.0249664090944" y2="97" class="iv-cap"/><circle cx="192.89038910442605" cy="93" r="5" class="est"/><text x="480" y="97" class="num">1.7s</text><text x="526" y="97" class="num dim">1.8s</text><text x="96" y="131" class="name" text-anchor="end">Parallel</text><line x1="202.69975472386267" y1="127" x2="231.75427568665222" y2="127" class="iv"/><line x1="231.75427568665222" y1="123" x2="231.75427568665222" y2="131" class="iv-cap"/><circle cx="202.69975472386267" cy="127" r="5" class="est"/><text x="480" y="131" class="num">2.0s</text><text x="526" y="131" class="num dim">3.1s</text><text x="96" y="165" class="name" text-anchor="end">Exa</text><line x1="206.14651345862382" y1="161" x2="219.0812771727205" y2="161" class="iv"/><line x1="219.0812771727205" y1="157" x2="219.0812771727205" y2="165" class="iv-cap"/><circle cx="206.14651345862382" cy="161" r="5" class="est"/><text x="480" y="165" class="num">2.1s</text><text x="526" y="165" class="num dim">2.6s</text><text x="96" y="199" class="name" text-anchor="end">Serper</text><line x1="234.02716486289333" y1="195" x2="267.96625384184654" y2="195" class="iv"/><line x1="267.96625384184654" y1="191" x2="267.96625384184654" y2="199" class="iv-cap"/><circle cx="234.02716486289333" cy="195" r="5" class="est"/><text x="480" y="199" class="num">3.2s</text><text x="526" y="199" class="num dim">5.4s</text><text x="96" y="233" class="name" text-anchor="end">Tavily</text><line x1="282.7356352720041" y1="229" x2="297.37645536264864" y2="229" class="iv"/><line x1="297.37645536264864" y1="225" x2="297.37645536264864" y2="233" class="iv-cap"/><circle cx="282.7356352720041" cy="229" r="5" class="est"/><text x="480" y="233" class="num">6.8s</text><text x="526" y="233" class="num dim">8.5s</text><text x="96" y="267" class="name" text-anchor="end">Firecrawl</text><line x1="325.73000675778457" y1="263" x2="356.1916557850646" y2="263" class="iv"/><line x1="356.1916557850646" y1="259" x2="356.1916557850646" y2="267" class="iv-cap"/><circle cx="325.73000675778457" cy="263" r="5" class="est"/><text x="480" y="267" class="num">13s</text><text x="526" y="267" class="num dim">21s</text><text x="96" y="301" class="name" text-anchor="end">Bright Data</text><line x1="388.861241776496" y1="297" x2="440.38588293250115" y2="297" class="iv"/><line x1="440.38588293250115" y1="293" x2="440.38588293250115" y2="301" class="iv-cap"/><circle cx="388.861241776496" cy="297" r="5" class="est"/><text x="480" y="301" class="num">34s</text><text x="526" y="301" class="num dim">75s</text><text x="480" y="14" class="collab">median, then the</text><text x="480" y="30" class="collab">slowest 1 in 10</text></svg></div>
-    <figcaption>Measured from one machine on one network over two days; <a href="https://sameerhimati.com/sourcery/method/#limits">what this cannot tell you</a> says what that means. Bright Data's sample includes the repair pass its throttle forced.</figcaption>
+    <figcaption>Measured from one machine on one network over two days; <a href="https://sameerhimati.com/sourcery/methodology/#limits">what this cannot tell you</a> says what that means. Bright Data's sample includes the repair pass its throttle forced.</figcaption>
   </figure>
   <p>Speed is the other factor worth weighing. For every query I recorded how long the provider took to return its results. Brave answers in a median of 0.6s per search, about 3 times quicker than the closest competition; Serper, the cheapest arm, takes 3.2s. Bright Data is the slowest at 34s, and its slowest one search in ten takes 75s or worse.</p>
 </section>
@@ -505,7 +505,7 @@ footer p { font-size: 0.86rem; color: var(--muted); }
 </section>
 
 <section id="picking">
-  <h2>Seven providers, seven jobs</h2>
+  <h2>How to pick your provider</h2>
   <p>What you're building decides the best provider for you. Three of these eight are tied on the headline and they still aren't interchangeable: one returns snippets, one returns prose with the links stripped out, one returns excerpts with the links left in. So pick on the job at hand, and weigh what your code can check: it can see an empty result and handle it, but it is much harder to account for a confident near-miss.</p>
   <div class="picks">
     <div class="pickrow">

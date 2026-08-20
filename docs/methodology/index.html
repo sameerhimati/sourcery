@@ -1,0 +1,478 @@
+<!-- Rendered by scripts/build-report.mjs into docs/methodology/index.html. Same
+     rules as site/report.html: every figure arrives as a
+     double-underscore token from docs/report-data.json, and typing a number
+     straight into a sentence fails the build. -->
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Methodology — search APIs, graded on their sources</title>
+<meta name="description" content="How Sourcery graded eight search APIs: where the questions came from, what the two ratings mean, what is held identical between providers, pooling, the statistics in words, and what one run cannot tell you.">
+<link rel="canonical" href="https://sameerhimati.com/sourcery/methodology/">
+
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Sourcery">
+<meta property="og:url" content="https://sameerhimati.com/sourcery/methodology/">
+<meta property="og:title" content="Methodology — search APIs, graded on their sources">
+<meta property="og:description" content="Where the questions came from, what the two ratings mean, what is held identical between providers, and what one run cannot tell you.">
+<meta property="og:image" content="https://sameerhimati.com/sourcery/media/og-card.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Sourcery — search APIs, graded on their sources. Run 2: 204 questions, eight providers, three judges.">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Methodology — search APIs, graded on their sources">
+<meta name="twitter:description" content="Where the questions came from, what the two ratings mean, what is held identical between providers, and what one run cannot tell you.">
+<meta name="twitter:image" content="https://sameerhimati.com/sourcery/media/og-card.png">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&family=Spline+Sans+Mono:wght@400;500&display=swap">
+
+<style>
+/* Hallmark · macrostructure: Long Document · nav: N9 edge-aligned · footer: Ft4 dense colophon
+ * genre: editorial · tone: technical-austere
+ * theme: Grid (catalog) — near-white cool sheet, cool near-black, one signal red,
+ *   Archivo grotesk + Spline Sans Mono, zero radius, no shadow, 1px rules.
+ *   Replaces a custom cream + Instrument Serif + amber palette that landed almost
+ *   exactly on the most-recognised AI-design cluster: warm cream, serif display,
+ *   terracotta accent. It passed every execution gate and still read as generated,
+ *   because that was a choice problem rather than a craft one.
+ * light-only by request · motion: none
+ * Source file for both report pages; inlined by scripts/build-report.mjs (which appends the nav styles from scripts/nav.mjs)
+ * so each page stays a single self-contained file for publishing as an artifact.
+ */
+
+:root {
+  /* Grid, converted from the catalog's OKLCH. Never pure white, never pure black. */
+  --paper:    #fafcfe;
+  --paper-2:  #f4f6f8;
+  --paper-3:  #ebedef;
+  --rule:     #d6d8da;
+  --rule-2:   #a2a5a8;
+  --muted:    #5b5e61;
+  --neutral:  #36383b;
+  --ink-2:    #212428;
+  --ink:      #0a0e12;
+
+  /* The one signal red. It appears on the tie brackets and on a value that
+     dropped. Anywhere else it would stop being a signal. */
+  --accent:   #d01e1c;
+
+  /* Data marks: one colour, because Grid has one accent and a chart does not get
+     to invent a second. The two series in the difficulty chart separate by fill
+     — solid against hollow — plus position and a legend, not by hue. */
+  --mark:     #36383b;
+
+  /* Sequential ramp down the same cool axis. Ink reads on every step but the
+     last, which takes the paper as its text. */
+  --s0: #e6f5ff;
+  --s1: #d1dff2;
+  --s2: #abb9cb;
+  --s3: #7a8798;
+  --s4: #424e5e;
+
+  --font-display: "Archivo", "Helvetica Neue", ui-sans-serif, system-ui, sans-serif;
+  --font-body:    "Archivo", "Helvetica Neue", ui-sans-serif, system-ui, sans-serif;
+  --font-mono:    "Spline Sans Mono", "Geist Mono", ui-monospace, SFMono-Regular, monospace;
+
+  --space-3xs: 4px;
+  --space-2xs: 6px;
+  --space-xs:  8px;
+  --space-sm:  12px;
+  --space-md:  20px;
+  --space-lg:  32px;
+  --space-xl:  48px;
+  --space-2xl: 72px;
+  --page-gutter: 24px;
+}
+
+* { box-sizing: border-box; }
+html, body { overflow-x: clip; }
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink-2);
+  font-family: var(--font-body);
+  font-size: 16.5px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* One column, one width. Prose used to be capped at 68ch, which is a different
+   number of pixels at every type size on the page — so a paragraph at 0.92rem
+   wrapped visibly short of the rule above it. Nothing is capped now: text,
+   tables, cards, charts and rules all end at the same edge, and this is it. */
+.wrap { max-width: 760px; margin: 0 auto; padding: 0 var(--page-gutter) var(--space-2xl); }
+
+h1, h2, h3 {
+  font-family: var(--font-display);
+  font-style: normal;
+  color: var(--ink);
+  overflow-wrap: anywhere;
+  min-width: 0;
+  text-wrap: balance;
+}
+h1 { font-size: clamp(2.4rem, 6vw, 4rem); font-weight: 800; letter-spacing: -0.045em; line-height: 0.98; margin: 0 0 var(--space-md); }
+h2 { font-size: clamp(1.35rem, 2.8vw, 1.75rem); font-weight: 700; letter-spacing: -0.025em; line-height: 1.12; margin: 0 0 var(--space-sm); }
+h3 { font-size: 1rem; font-weight: 700; letter-spacing: -0.01em; margin: 0 0 var(--space-3xs); }
+
+p { margin: 0 0 var(--space-sm); }
+p:last-child { margin-bottom: 0; }
+strong { color: var(--ink); font-weight: 700; }
+.mono { font-family: var(--font-mono); font-size: 0.92em; }
+
+a { color: var(--ink); text-decoration: underline; text-decoration-color: var(--rule-2); text-underline-offset: 3px; text-decoration-thickness: 1px; }
+a:hover { text-decoration-color: var(--accent); }
+a:active { color: var(--accent); }
+a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* The site nav bar's rules live in scripts/nav.mjs, beside the markup they
+   style, and are appended to this file at build time. */
+
+header.lead { padding: var(--space-xl) 0 var(--space-lg); }
+.standfirst { font-size: 1.14rem; line-height: 1.5; color: var(--ink-2); }
+.standfirst strong { color: var(--ink); }
+
+/* ── who ran this ───────────────────────────────────────────────────────── */
+/* At the top of the front page, before any number. A reader deciding
+   whether to trust a benchmark wants the funding and the conflicts before the
+   numbers, and putting it here means they never have to go looking. Set in the
+   same ruled list as the limits and the picks rather than in a tinted callout —
+   a box that shouts would read as a disclaimer being got out of the way. */
+.disclosure { margin: 0 0 var(--space-xl); padding-top: var(--space-md); border-top: 1px solid var(--ink); }
+/* Not scoped to .disclosure. Every front-matter section above the tabs uses
+   this one label style, so two sections sitting next to each other cannot end
+   up with different-looking headings — which is exactly what happened when this
+   rule was a descendant selector. */
+.dhead {
+  font-family: var(--font-mono); font-size: 0.68rem; font-weight: 500;
+  letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted);
+  margin: 0 0 var(--space-sm);
+}
+.disclosure dl { margin: 0; display: grid; grid-template-columns: 11rem 1fr; gap: var(--space-2xs) var(--space-md); }
+.disclosure dt { font-weight: 700; color: var(--ink); font-size: 0.86rem; }
+.disclosure dd { margin: 0; font-size: 0.86rem; color: var(--muted); }
+.disclosure dd a { color: var(--ink-2); }
+.dnote { margin: var(--space-sm) 0 0; font-size: 0.86rem; color: var(--ink-2); }
+@media (max-width: 620px) {
+  .disclosure dl { grid-template-columns: 1fr; gap: var(--space-3xs); }
+  .disclosure dd { margin-bottom: var(--space-xs); }
+}
+
+/* ── on this page ───────────────────────────────────────────────────────── */
+/* Reference material has a contents list; a blog post does not. It is one row
+   of links rather than a sidebar, because the page is a single column and a
+   floating rail would be furniture rather than navigation. */
+.toc {
+  display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--space-xs) var(--space-md);
+  margin: 0 0 var(--space-xl);
+  padding-bottom: var(--space-sm); border-bottom: 1px solid var(--rule);
+  font-size: 0.82rem;
+}
+.toc .toclab {
+  font-family: var(--font-mono); font-size: 0.68rem; letter-spacing: 0.06em;
+  text-transform: uppercase; color: var(--muted);
+}
+.toc a { text-decoration: none; color: var(--neutral); }
+.toc a:hover { color: var(--accent); text-decoration: underline; text-decoration-color: var(--accent); }
+/* An anchor jump should not bury the heading under the sticky nav bar. */
+section[id] { scroll-margin-top: 92px; }
+
+section { margin: 0 0 var(--space-2xl); }
+section:last-child { margin-bottom: 0; }
+.sub { margin-top: var(--space-lg); }
+
+/* A warning that the next chart changes what is being measured. It sits above
+   the figure because a reader who meets it underneath has already read the
+   chart as the headline and drawn the wrong conclusion. */
+.scopenote {
+  border-left: 2px solid var(--accent); padding-left: var(--space-sm);
+  font-size: 0.9rem; color: var(--ink-2);
+}
+
+/* ── figures ────────────────────────────────────────────────────────────── */
+/* A bottom margin as well as a top one. Without it the caption butts straight
+   into the paragraph after the figure and the two read as one block of text. */
+figure { margin: var(--space-md) 0 var(--space-lg); }
+.scroller { overflow-x: auto; }
+.scroller > svg { min-width: 600px; }
+figcaption { font-size: 0.8rem; line-height: 1.5; color: var(--muted); margin-top: var(--space-xs); }
+
+.viz { display: block; height: auto; overflow: visible; }
+.viz text { font-family: var(--font-body); }
+.grid    { stroke: var(--rule); stroke-width: 1; }
+.axis    { stroke: var(--rule-2); stroke-width: 1; }
+.iv      { stroke: var(--mark); stroke-width: 1.25; }
+.iv-cap  { stroke: var(--mark); stroke-width: 1.25; }
+.est     { fill: var(--mark); }
+.est.hollow { fill: var(--paper); stroke: var(--mark); stroke-width: 1.75; }
+.join    { stroke: var(--rule-2); stroke-width: 1.25; }
+.brace   { fill: none; stroke: var(--accent); stroke-width: 1.25; }
+.name    { fill: var(--ink); font-size: 13px; font-weight: 500; }
+.tick    { fill: var(--muted); font-size: 10.5px; font-family: var(--font-mono); }
+.collab  { fill: var(--muted); font-size: 10.5px; font-family: var(--font-mono); letter-spacing: 0.03em; text-transform: uppercase; }
+.legend  { fill: var(--ink-2); font-size: 11.5px; }
+.num     { fill: var(--ink); font-size: 12.5px; font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+.num.dim { fill: var(--muted); }
+.num.hot { fill: var(--accent); }
+.bracelab { fill: var(--accent); font-size: 10.5px; font-family: var(--font-mono); text-transform: uppercase; letter-spacing: 0.04em; }
+/* A sentence inside the frame: what a whisker means, what the tint means. Set in
+   the body face rather than the label mono, because it is prose. */
+.note    { fill: var(--muted); font-size: 11px; }
+/* The efficient frontier on the price chart. Dashed and dimmed on purpose: it is
+   a line drawn through the points, not another measurement. */
+.front   { fill: none; stroke: var(--mark); stroke-width: 1.25; stroke-dasharray: 4 3; opacity: 0.5; }
+/* The cheap-and-well-rated corner. The faintest tint of the one mark colour that
+   still reads on this paper — a filled block here would outweigh the data. */
+.quad    { fill: var(--mark); opacity: 0.045; }
+.ptname  { fill: var(--ink); font-size: 12px; font-weight: 500; }
+.cell    { fill: var(--s0); }
+.cell.s0 { fill: var(--s0); } .cell.s1 { fill: var(--s1); } .cell.s2 { fill: var(--s2); }
+.cell.s3 { fill: var(--s3); } .cell.s4 { fill: var(--s4); }
+.cell.na { fill: var(--paper-2); }
+.cellv   { fill: var(--ink); font-size: 11px; font-family: var(--font-mono); }
+.cellv.on { fill: var(--paper); }
+.cellna  { fill: var(--muted); font-size: 11px; }
+
+/* ── tables ─────────────────────────────────────────────────────────────── */
+table { width: 100%; border-collapse: collapse; font-size: 0.86rem; margin-top: var(--space-md); }
+thead th {
+  text-align: left; font-weight: 700; font-size: 0.68rem; letter-spacing: 0.06em;
+  text-transform: uppercase; color: var(--muted); border-bottom: 1px solid var(--ink);
+  padding: 0 var(--space-sm) var(--space-xs) 0; white-space: nowrap;
+}
+thead th.n, td.n { text-align: right; }
+tbody th { text-align: left; font-weight: 600; padding: var(--space-xs) var(--space-sm) var(--space-xs) 0; border-bottom: 1px solid var(--rule); white-space: nowrap; color: var(--ink); }
+td { padding: var(--space-xs) var(--space-sm) var(--space-xs) 0; border-bottom: 1px solid var(--rule); font-family: var(--font-mono); font-variant-numeric: tabular-nums; color: var(--ink-2); font-size: 0.82rem; }
+td.lead { color: var(--ink); font-weight: 500; }
+td.prose { font-family: var(--font-body); font-size: 0.84rem; color: var(--muted); white-space: normal; }
+td .pm { color: var(--muted); font-size: 0.76rem; margin-left: var(--space-3xs); }
+td .star { color: var(--accent); }
+td .na { color: var(--muted); font-family: var(--font-body); }
+.tnote { font-size: 0.78rem; color: var(--muted); margin-top: var(--space-sm); }
+
+/* ── the picks: a definition list, not a card grid ──────────────────────── */
+.picks { margin-top: var(--space-md); border-top: 1px solid var(--ink); }
+.pickrow { display: grid; grid-template-columns: 12rem 1fr; gap: var(--space-md); padding: var(--space-sm) 0; border-bottom: 1px solid var(--rule); align-items: baseline; }
+.pickrow .who { font-weight: 700; color: var(--ink); font-size: 1rem; letter-spacing: -0.015em; }
+.pickrow .who span { display: block; font-weight: 500; font-size: 0.75rem; color: var(--muted); letter-spacing: 0; margin-top: 1px; }
+.pickrow p { margin: 0; font-size: 0.9rem; color: var(--ink-2); }
+@media (max-width: 620px) { .pickrow { grid-template-columns: 1fr; gap: var(--space-3xs); } }
+
+/* ── limits: a tight list ───────────────────────────────────────────────── */
+.limits { margin-top: var(--space-md); border-top: 1px solid var(--ink); }
+.limit { padding: var(--space-sm) 0; border-bottom: 1px solid var(--rule); }
+.limit p { margin: 0; font-size: 0.9rem; color: var(--muted); }
+.limit h3 { color: var(--ink); }
+
+/* ── rubric rungs ───────────────────────────────────────────────────────── */
+.rungs { margin: var(--space-sm) 0 0; border-top: 1px solid var(--ink); }
+.rung { display: grid; grid-template-columns: 1.6rem 8.5rem 1fr; gap: var(--space-sm); padding: var(--space-xs) 0; border-bottom: 1px solid var(--rule); align-items: baseline; font-size: 0.88rem; }
+.rung .n { font-family: var(--font-mono); color: var(--accent); font-variant-numeric: tabular-nums; }
+.rung .nm { font-weight: 700; color: var(--ink); }
+.rung .mg { color: var(--muted); }
+@media (max-width: 560px) { .rung { grid-template-columns: 1.6rem 1fr; } .rung .mg { grid-column: 2; } }
+
+/* ── footer ─────────────────────────────────────────────────────────────── */
+footer { margin-top: var(--space-2xl); padding-top: var(--space-md); border-top: 1px solid var(--ink); }
+footer p { font-size: 0.86rem; color: var(--muted); }
+.links { display: flex; flex-wrap: wrap; gap: var(--space-md); margin: var(--space-sm) 0; }
+.links a { font-size: 0.88rem; font-weight: 600; white-space: nowrap; }
+.colophon { font-family: var(--font-mono); font-size: 0.72rem; color: var(--muted); margin-top: var(--space-md); }
+
+@media (max-width: 640px) {
+  body { font-size: 16px; }
+  .wrap { padding: 0 var(--space-md) var(--space-xl); }
+  section { margin-bottom: var(--space-xl); }
+}
+
+/* ── site navigation (from scripts/nav.mjs) ─────────────────────────────── */
+/* Two deliberate rows: brand and run stamp on the first, the link strip on the
+   second, sitting directly on the bar's bottom rule. The current page's link
+   punches through that rule by taking the page background, and the trick only
+   works if nothing can ever wrap in between the links and the rule. */
+/* Stuck to the top of the viewport, so the way back to the other pages is
+   never a scroll away on a page this long. It carries its own background for
+   that: a transparent bar would let the text scroll through it. */
+.sitenav {
+  --nav-bg: #fafcfe;
+  position: sticky; top: 0; z-index: 20; background: var(--nav-bg);
+  display: flex; flex-wrap: wrap; align-items: baseline; column-gap: 20px; row-gap: 2px;
+  padding-top: 14px; border-bottom: 1px solid #0a0e12;
+  font-size: 0.78rem; letter-spacing: 0.02em; color: #5b5e61;
+}
+.sitenav .brand { font-weight: 800; text-transform: uppercase; color: #0a0e12; white-space: nowrap; }
+.sitenav .brand a { font-weight: 500; text-transform: none; letter-spacing: 0; color: #5b5e61; text-decoration: none; margin-left: 8px; }
+.sitenav .brand a:hover { color: #d01e1c; }
+.sitenav .meta { margin-left: auto; display: flex; column-gap: 20px; white-space: nowrap; }
+.sitenav .meta a { color: #5b5e61; text-decoration: none; }
+.sitenav .meta a:hover { color: #d01e1c; }
+.sitenav .stamp .mono { font-size: 0.85em; }
+.sitenav .navlinks { width: 100%; display: flex; flex-wrap: wrap; margin-top: 4px; }
+.sitenav .navlinks a {
+  padding: 8px 14px; font-weight: 700; font-size: 0.84rem; letter-spacing: 0.01em;
+  color: #5b5e61; text-decoration: none;
+  border: 1px solid transparent; border-bottom: 0; margin-bottom: -1px;
+}
+.sitenav .navlinks a:hover { color: #0a0e12; }
+.sitenav .navlinks a[aria-current="page"] { color: #0a0e12; background: var(--nav-bg); border-color: #0a0e12; }
+@media (max-width: 760px) {
+  .sitenav .meta { margin-left: 0; white-space: normal; }
+}
+</style>
+
+<div class="wrap">
+
+<nav class="sitenav" aria-label="Site">
+  <span class="brand">Sourcery<a href="https://sameerhimati.com">by Sameer Himati</a></span>
+  <span class="meta">
+    <span class="stamp">Run 2 &middot; fetched 17–18 August 2026 &middot; <span class="mono">f730cad</span></span>
+    <a href="https://github.com/sameerhimati/sourcery">Source</a>
+  </span>
+  <span class="navlinks">
+    <a href="https://sameerhimati.com/sourcery/">Results</a>
+    <a href="https://sameerhimati.com/sourcery/#picking">How to pick</a>
+    <a href="https://sameerhimati.com/sourcery/methodology/" aria-current="page">Methodology</a>
+    <a href="https://sameerhimati.com/sourcery/explorer/">Explorer</a>
+  </span>
+</nav>
+
+<header class="lead">
+  <h1>Methodology</h1>
+  <p class="standfirst">How the numbers on <a href="https://sameerhimati.com/sourcery/">the results page</a> were made, in the order the run was built: where the questions came from, what the two ratings mean, what was held identical between providers, and what one run cannot tell you.</p>
+</header>
+
+<nav class="toc" aria-label="On this page">
+  <span class="toclab">On this page</span>
+  <a href="#questions">The questions</a>
+  <a href="#changed">What run 2 changed</a>
+  <a href="#ratings">The two ratings</a>
+  <a href="#varies">What varies</a>
+  <a href="#pooling">Pooling</a>
+  <a href="#statistics">The statistics, in words</a>
+  <a href="#limits">What this cannot tell you</a>
+</nav>
+
+<section id="questions">
+  <h2>The questions</h2>
+  <p>204 questions, written rather than collected: 96 ordinary, 96 deliberately hard, 12 with no answer anywhere. I wrote all of them. That is the sample's biggest weakness and there is no way around saying so &mdash; whatever I found interesting is in there and whatever I did not think to ask is not. All three sets are frozen and public, so you can read them and judge the resemblance to your own traffic yourself.</p>
+  <p>They spread across six kinds of task &mdash; breaking news, how-to, product lookup, local and geographic, recent releases, and live numbers &mdash; and six subject areas, weighted toward software and everyday questions because that is what I actually point a retrieval agent at. Every question carries a note written before the run saying what a correct page contains and what a plausible wrong one looks like. The judges never see those notes. They exist so that when a rating looks wrong in the explorer, there is a written intent to argue against rather than a memory.</p>
+
+  <h3 class="sub">What makes the hard half hard</h3>
+  <p>Four things, usually two at a time. <strong>Trap</strong>: a plausible wrong answer sits close to the right one, an older figure or a superseded draft. <strong>Buried</strong>: the answer exists but not on the first result. <strong>Multi</strong>: no single page has all of it. <strong>Obscure</strong>: the subject is thinly covered, so the index either has it or does not.</p>
+  <p>The point of the split is that easy questions make providers look alike. A question your model could nearly answer unaided does not test retrieval much, and if a whole benchmark is built from those, every provider passes.</p>
+
+  <h3 class="sub">Why 12 questions with no answer</h3>
+  <p>Each of these asks about something that sounds entirely real and does not exist: a Postgres setting called <span class="mono">max_parallel_vacuum_workers</span>, a <span class="mono">grace_period</span> option in a Docker Compose healthcheck, a statistic nobody publishes. Search them and you get authoritative, tightly on-topic pages about the neighbouring real thing.</p>
+  <p>Correct behaviour is that every page rates 0 or 1. A page rated 2 or 3 means either a provider surfaced something that invented the answer or a judge invented the relevance, and the explorer shows which. This is the one part of the set where a higher score is a worse result, and it is the only place the run can see a confident near-miss at all &mdash; the failure your own code cannot check for, because a near-miss arrives looking exactly like a hit.</p>
+</section>
+
+<section id="changed">
+  <h2>What run 2 changed, and why</h2>
+  <p>Run 1 asked 48 questions of four providers and graded the answer a model wrote from what came back. Then it checked whether source quality and answer quality moved together, and they barely did: a correlation of 0.16, where 1 is lockstep and 0 is unrelated. The model was carrying most of the result. That is the finding this whole run is a reaction to, and it is why nothing here grades an answer.</p>
+  <p>So run 2 grades the sources and never writes an answer, doubles the field to eight providers, and uses three judges from three different labs instead of one, so that no single model's taste is the ranking. It also gives the slow arms room to finish rather than timing them out &mdash; looking at you, Bright Data &mdash; because a provider that is merely slow should show up as slow in a latency column, not as missing data in a quality one.</p>
+  <p>One thing changed mid-run and is worth knowing about. The set prompt replaced an earlier one that graded whether sources <em>looked</em> good: fresh, authoritative, cleanly extracted. On a question with no answer anywhere it returned a passing score while the page judge was correctly rating every page 0 or 1. The sources were good. They just could not answer. Everything published here was scored with the replacement.</p>
+</section>
+
+<section id="ratings">
+  <h2>The two ratings</h2>
+  <p>Two separate questions, asked at two scopes, on the same 0&ndash;3 scale. Every score comes with a written definition of what it means, because two models can agree on what a 2 means while a bare number on a wide scale is something each one invents its own version of.</p>
+  <p><strong>They are separate judge calls, and the set rating is not an average of page ratings.</strong> That matters enough to say plainly: a per-page average cannot answer the set question. 8 pages each holding a third of the answer and 8 pages holding nothing average out to something similar, and only one of those sets lets you answer.</p>
+  <p>Each judge scores independently and its score is never merged with another judge's before it is recorded &mdash; every individual verdict is in <a href="https://sameerhimati.com/sourcery/explorer/">the explorer</a> with the sentence that judge wrote to justify it. The averaging happens once, at the end, and only for display: a provider's set rating on the results page is the mean of its per-question scores across all 204 questions and all three judges.</p>
+
+  <h3 class="sub">Page rating &mdash; does this page help?</h3>
+  <p>One question, one page. The judge is never told which provider returned it, never shown an answer, and never asked to write one.</p>
+  <div class="rungs"><div class="rung"><div class="n">0</div><div class="nm">not relevant</div><div class="mg">does not address the question</div></div>
+<div class="rung"><div class="n">1</div><div class="nm">marginal</div><div class="mg">on the topic, but would not help answer it</div></div>
+<div class="rung"><div class="n">2</div><div class="nm">relevant</div><div class="mg">contains part of the answer, or usable evidence toward it</div></div>
+<div class="rung"><div class="n">3</div><div class="nm">highly relevant</div><div class="mg">answers the question directly</div></div></div>
+
+  <h3 class="sub">Set rating &mdash; could someone answer from these alone?</h3>
+  <p>The headline. One judge, one question, all 8 of a provider's results in front of it at once.</p>
+  <div class="rungs"><div class="rung"><div class="n">0</div><div class="nm">nothing</div><div class="mg">no source here addresses the question</div></div>
+<div class="rung"><div class="n">1</div><div class="nm">on topic only</div><div class="mg">about the right subject, but reading all of it would not answer the question</div></div>
+<div class="rung"><div class="n">2</div><div class="nm">partial</div><div class="mg">part of the answer is here; the rest would need another search</div></div>
+<div class="rung"><div class="n">3</div><div class="nm">answerable</div><div class="mg">the question can be answered from this set alone</div></div></div>
+  <p class="sub">Both prompts are in <span class="mono">core/controls.ts</span> in full.</p>
+</section>
+
+<section id="varies">
+  <h2>What varies</h2>
+  <p>One question goes to all eight providers. Each returns up to 8 results. Nothing else differs between arms: same prompt, same judges, same number of results requested, caching off. Of the eight arms, six finished inside a single day. Tavily and Bright Data ran into their own rate limits and finished in the early hours of the next morning, and that is the one respect in which the arms were not treated identically: a page that changed overnight would have been seen differently by those two.</p>
+  <p>The settings live in one file, <span class="mono">core/controls.ts</span>, and every stage imports from it, so there is only ever one value of anything for a stage to read. Every provider was set to the highest-quality tier it offers; where a depth or content knob existed it was turned up.</p>
+  <div class="scroller">
+    <table>
+      <thead>
+        <tr><th>Provider</th><th>Product</th><th>Content setting</th><th>What comes back</th></tr>
+      </thead>
+      <tbody><tr><th scope="row">Perplexity</th><td class="prose">Search API /search</td><td>search_context_size: high</td><td class="prose">Excerpts, their maximum; there is no full-page mode</td></tr>
+<tr><th scope="row">Brave</th><td class="prose">Search API, web endpoint</td><td>extra_snippets: true</td><td class="prose">Snippets only, by architecture; never a page body</td></tr>
+<tr><th scope="row">Parallel</th><td class="prose">Search API, advanced tier</td><td>mode: advanced, 6,000-char excerpts</td><td class="prose">Dense excerpts; cannot be turned off</td></tr>
+<tr><th scope="row">Exa</th><td class="prose">/search with inline contents</td><td>contents: { text: true }</td><td class="prose">Page text at Exa's own default length</td></tr>
+<tr><th scope="row">Tavily</th><td class="prose">Search API /search</td><td>search_depth: advanced, include_raw_content: markdown</td><td class="prose">Full page markdown</td></tr>
+<tr><th scope="row">Serper</th><td class="prose">Google Search API /search</td><td>none; their scrape endpoint was not called</td><td class="prose">Links and snippets only. The one deliberate downgrade</td></tr>
+<tr><th scope="row">Firecrawl</th><td class="prose">v2 /search with scrape</td><td>scrapeOptions: { formats: [&quot;markdown&quot;] }</td><td class="prose">Full page markdown</td></tr>
+<tr><th scope="row">Bright Data</th><td class="prose">SERP API + Web Unlocker</td><td>data_format: markdown, via a second paid product</td><td class="prose">Full page markdown, on the 47% of URLs the unlocker returned</td></tr></tbody>
+    </table>
+  </div>
+  <p class="tnote">Serper is the one deliberate downgrade: it sells a separate scrape endpoint and this run does not call it, and that choice was pre-registered. Bright Data is the only provider needing a second paid product to get page text, and its extraction step missed roughly half the URLs it tried.</p>
+</section>
+
+<section id="pooling">
+  <h2>Pooling</h2>
+  <p>Providers overlap heavily. Every page from every arm is collapsed into one pool keyed by normalized URL and graded once; that rating counts for each provider that returned it. 66.8% of the 7,496 pages came from exactly one provider and 24 came from all eight.</p>
+  <p>Pooling blinds the judge structurally: a page is detached from whoever returned it before grading, so there is no provider name to be swayed by. It was a cost decision first, though, and the cost is real &mdash; where several arms returned the same URL, the longest extraction anyone returned is what gets graded, so extraction quality is averaged away on those pages. With a bigger budget I would not pool.</p>
+</section>
+
+<section id="statistics">
+  <h2>The statistics, in words</h2>
+  <div class="limits">
+    <div class="limit"><h3>Confidence interval</h3><p>Where the real value probably sits, given that 204 questions is a sample. Two overlapping intervals mean the order between those providers is not a finding.</p></div>
+    <div class="limit"><h3>Variance shares</h3><p>How much of everything that varies is explained by each thing that could explain it. The provider explains 23.1%; which judge you picked explains 2.2%.</p></div>
+    <div class="limit"><h3>Kappa</h3><p>Agreement between two judges after subtracting the agreement you would get by chance. These three run 0.51 to 0.55: they agree on the order and argue about the decimals.</p></div>
+    <div class="limit"><h3>Sign test</h3><p>Comparing two providers across the same small set of questions by counting wins, then asking how often a split that lopsided would happen by luck. Used on the 12 unanswerable questions, where eight providers cannot be ranked but two can be compared.</p></div>
+  </div>
+</section>
+
+<section id="limits">
+  <h2>What this cannot tell you</h2>
+  <div class="limits">
+    <div class="limit">
+      <h3>Who extracts a page best</h3>
+      <p>Each source gets a 1600-character slice, which is what an agent with a real context budget would allow. A larger slice would let the providers that return whole documents show more of what they extract, and it could reorder the bottom of the table. <a href="#pooling">Pooling</a> costs the same measurement a second way: on the 33% of pages that several arms returned, the longest extraction anyone returned is the one that got graded. Measuring extraction properly means holding the URLs fixed and varying only the extractor, and that run has not happened.</p>
+    </div>
+    <div class="limit">
+      <h3>What your agent will answer</h3>
+      <p>Nothing here grades an answer, on purpose. An answer-graded benchmark measures that, bearing in mind such a number also grades your model.</p>
+    </div>
+    <div class="limit">
+      <h3>How any of this behaves at scale</h3>
+      <p>Every arm was run once, at whatever concurrency it tolerated, so nothing here measures throughput, quota behaviour, or what any of these costs at volume. What this run did collide with is written up in <a href="https://sameerhimati.com/sourcery/#notes">notes from the run</a>: a provider that throttles at one request, a plan that ran out mid-way, a day that ate most of a month's credits. Those are things that happened once; none of them is a measurement.</p>
+    </div>
+    <div class="limit">
+      <h3>Whether the questions look like yours</h3>
+      <p>They are written, not collected from real traffic, and <a href="#questions">I wrote all of them</a>. The harness exists so you can run your own instead, which is the only real answer to this one.</p>
+    </div>
+    <div class="limit">
+      <h3>Whether tomorrow would come out the same</h3>
+      <p>This is one run, fetched 17–18 August 2026. Every provider is a moving target: indexes change, tiers change, and a model behind one of these can be swapped without telling you. Nothing here is measured twice, so none of these numbers carries an estimate of how much it would move on a re-run. The confidence intervals describe sampling across questions within this one run, which is a narrower claim than it looks.</p>
+    </div>
+    <div class="limit">
+      <h3>Whether the judges are right</h3>
+      <p>Three large language models grade every page, and they agree with each other well enough to trust the ranking, kappa 0.51 to 0.55, moderate on a four-point scale. That is agreement among themselves, not agreement with a person. They were calibrated against human-settled pairs before the run, but three models trained on overlapping text can share a blind spot and agree anyway, and the 12 unanswerable questions show one: a plausible near-miss fools some of them.</p>
+    </div>
+    <div class="limit">
+      <h3>How fast any of them are for you</h3>
+      <p>The table has a median latency column, so timing is measured, but it is measured from one machine on one network over two days, and a provider that is quick from my connection may not be quick from your region. Take the ordering seriously and the absolute numbers loosely.</p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <p>Every rating is published with the sentence the judge wrote to justify it. Any number here traces back to the verdict that produced it.</p>
+  <div class="links">
+    <a href="https://sameerhimati.com/sourcery/explorer/">Every rating, in the explorer</a>
+    <a href="https://github.com/sameerhimati/sourcery">Read the code</a>
+  </div>
+  <p class="colophon">Run 2 &middot; fetched 17–18 August 2026 &middot; judged against <span class="mono">f730cad</span> &middot; page rebuilt 2026-08-20 &middot; MIT licensed</p>
+</footer>
+
+</div>

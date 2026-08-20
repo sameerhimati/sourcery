@@ -77,7 +77,7 @@ __NAV__
   <h2 class="dhead">Disclaimer</h2>
   <dl>
     <dt>Independent</dt>
-    <dd>I ran this on my own. No search provider commissioned it, reviewed it, or saw it before it went up, and there are no affiliate links on this page.</dd>
+    <dd>Nobody paid me to run this and no provider saw it before it went up. There are no affiliate links on this page.</dd>
     <dt>Self-funded</dt>
     <dd>The prices on this page are what I got charged. There are good pay-as-you-go plans and free tiers to try each of these. I spent around $__COST_TOTAL__ across the eight providers.</dd>
     <dt>Checkable</dt>
@@ -91,7 +91,7 @@ __NAV__
     <dt>Experimental design</dt>
     <dd>This run was designed as a follow-up to the first one on Sourcery. Making it agnostic to the model's answer was my takeaway from run 1, which found very small differences between search APIs largely because the models already knew a lot of the answers. Run 2 overhauls the scoring, widens the field of both providers and judge models, and raises the latency threshold so the slower providers &mdash; looking at you, Bright Data &mdash; get to finish.</dd>
   </dl>
-  <p class="dnote">I thought it important to be upfront about the limits of this run. If there is something you would want done differently, DM me on <a href="https://x.com/sameerhimati">X</a>. There is more in <a href="__BASE__method/">the methodology</a>, and <a href="__BASE__method/#limits">what this cannot tell you</a>.</p>
+  <p class="dnote">I thought it important to be upfront about the limits of this run. If there is something you would want done differently, DM me on <a href="https://x.com/sameerhimati">X</a>. There is more in <a href="__BASE__methodology/">the methodology</a>, and <a href="__BASE__methodology/#limits">what this cannot tell you</a>.</p>
 </div>
 
 <nav class="toc" aria-label="On this page">
@@ -142,7 +142,7 @@ __NAV__
   <h2>Speed</h2>
   <figure>
     <div class="scroller">__CHART_LATENCY__</div>
-    <figcaption>Measured from one machine on one network over two days; <a href="__BASE__method/#limits">what this cannot tell you</a> says what that means. Bright Data's sample includes the repair pass its throttle forced.</figcaption>
+    <figcaption>Measured from one machine on one network over two days; <a href="__BASE__methodology/#limits">what this cannot tell you</a> says what that means. Bright Data's sample includes the repair pass its throttle forced.</figcaption>
   </figure>
   <p>Speed is the other factor worth weighing. For every query I recorded how long the provider took to return its results. __LAT_FAST__ answers in a median of __LAT_FAST_P50__ per search, about __LAT_FAST_LEAD__ times quicker than the closest competition; __CHEAPEST__, the cheapest arm, takes __CHEAPEST_P50__. __LAT_SLOW__ is the slowest at __LAT_SLOW_P50__, and its slowest one search in ten takes __LAT_SLOW_P90__ or worse.</p>
 </section>
@@ -197,7 +197,7 @@ __NAV__
 </section>
 
 <section id="picking">
-  <h2>Seven providers, seven jobs</h2>
+  <h2>How to pick your provider</h2>
   <p>What you're building decides the best provider for you. Three of these eight are tied on the headline and they still aren't interchangeable: one returns snippets, one returns prose with the links stripped out, one returns excerpts with the links left in. So pick on the job at hand, and weigh what your code can check: it can see an empty result and handle it, but it is much harder to account for a confident near-miss.</p>
   <div class="picks">
     <div class="pickrow">

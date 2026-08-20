@@ -27,11 +27,11 @@ export function fetchedRange({ first_fetch, last_fetch }) {
 const ITEMS = [
   ["results", "Results", BASE],
   ["pick", "How to pick", `${BASE}#picking`],
-  ["method", "Method", `${BASE}method/`],
+  ["methodology", "Methodology", `${BASE}methodology/`],
   ["explorer", "Explorer", `${BASE}explorer/`],
 ];
 
-// `current` is "results" | "method" | "explorer". The values arrive final —
+// `current` is "results" | "methodology" | "explorer". The values arrive final —
 // never as __TOKENS__ — so the bar renders the same no matter which build
 // script asked for it or in what order tokens get filled.
 export function navHtml(current, { fetched, sha }) {

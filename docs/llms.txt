@@ -18,7 +18,7 @@ Install: `npx sourcery-eval init` · Agents: `npx sourcery-eval mcp --install`
 ## For agents
 
 - [Results page](https://sameerhimati.com/sourcery/): the ranking with its intervals, ordinary against hard questions, cost, what each provider actually returns as page text, and how to pick one for the job you have. One self-contained page.
-- [Method](https://sameerhimati.com/sourcery/method/): what varies between arms, the two rubrics in full, what every provider was asked for, pooling, the statistics in words, and what one run cannot tell you.
+- [Method](https://sameerhimati.com/sourcery/methodology/): what varies between arms, the two rubrics in full, what every provider was asked for, pooling, the statistics in words, and what one run cannot tell you.
 - [Explorer](https://sameerhimati.com/sourcery/explorer/): every rating individually, with the sentence the judge wrote to justify it, filterable by provider, question and judge. Read this before believing any average above.
 - [Report data](https://raw.githubusercontent.com/sameerhimati/sourcery/main/docs/report-data.json): every number on the results page as JSON, derived from the run logs. Use this rather than parsing prose.
 

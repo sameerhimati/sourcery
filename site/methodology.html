@@ -1,25 +1,25 @@
-<!-- Rendered by scripts/build-report.mjs into docs/method/index.html. Same
+<!-- Rendered by scripts/build-report.mjs into docs/methodology/index.html. Same
      rules as site/report.html: every figure arrives as a
      double-underscore token from docs/report-data.json, and typing a number
      straight into a sentence fails the build. -->
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Method — search APIs, graded on their sources</title>
-<meta name="description" content="How Sourcery graded eight search APIs: what varies between arms, the two rubrics, the provider settings, pooling, the statistics in words, and what one run cannot tell you.">
-<link rel="canonical" href="__BASE__method/">
+<title>Methodology — search APIs, graded on their sources</title>
+<meta name="description" content="How Sourcery graded eight search APIs: where the questions came from, what the two ratings mean, what is held identical between providers, pooling, the statistics in words, and what one run cannot tell you.">
+<link rel="canonical" href="__BASE__methodology/">
 
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Sourcery">
-<meta property="og:url" content="__BASE__method/">
-<meta property="og:title" content="Method — search APIs, graded on their sources">
-<meta property="og:description" content="What varies between arms, the two rubrics the judges scored on, what every provider was asked for, and what one run cannot tell you.">
+<meta property="og:url" content="__BASE__methodology/">
+<meta property="og:title" content="Methodology — search APIs, graded on their sources">
+<meta property="og:description" content="Where the questions came from, what the two ratings mean, what is held identical between providers, and what one run cannot tell you.">
 <meta property="og:image" content="__BASE__media/og-card.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="Sourcery — search APIs, graded on their sources. Run 2: __N_QUESTIONS__ questions, eight providers, three judges.">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Method — search APIs, graded on their sources">
-<meta name="twitter:description" content="What varies between arms, the two rubrics the judges scored on, what every provider was asked for, and what one run cannot tell you.">
+<meta name="twitter:title" content="Methodology — search APIs, graded on their sources">
+<meta name="twitter:description" content="Where the questions came from, what the two ratings mean, what is held identical between providers, and what one run cannot tell you.">
 <meta name="twitter:image" content="__BASE__media/og-card.png">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -35,18 +35,57 @@ __STYLE__
 __NAV__
 
 <header class="lead">
-  <h1>Method</h1>
-  <p class="standfirst">How the numbers on <a href="__BASE__">the results page</a> were made: what varies between arms, the rubrics the judges scored on, what every provider was asked for, and what one run cannot tell you.</p>
+  <h1>Methodology</h1>
+  <p class="standfirst">How the numbers on <a href="__BASE__">the results page</a> were made, in the order the run was built: where the questions came from, what the two ratings mean, what was held identical between providers, and what one run cannot tell you.</p>
 </header>
 
 <nav class="toc" aria-label="On this page">
   <span class="toclab">On this page</span>
+  <a href="#questions">The questions</a>
+  <a href="#changed">What run 2 changed</a>
+  <a href="#ratings">The two ratings</a>
   <a href="#varies">What varies</a>
-  <a href="#rubrics">The two rubrics</a>
   <a href="#pooling">Pooling</a>
   <a href="#statistics">The statistics, in words</a>
   <a href="#limits">What this cannot tell you</a>
 </nav>
+
+<section id="questions">
+  <h2>The questions</h2>
+  <p>__N_QUESTIONS__ questions, written rather than collected: __N_BASE__ ordinary, __N_HARD__ deliberately hard, __N_UNANS__ with no answer anywhere. I wrote all of them. That is the sample's biggest weakness and there is no way around saying so &mdash; whatever I found interesting is in there and whatever I did not think to ask is not. All three sets are frozen and public, so you can read them and judge the resemblance to your own traffic yourself.</p>
+  <p>They spread across six kinds of task &mdash; breaking news, how-to, product lookup, local and geographic, recent releases, and live numbers &mdash; and six subject areas, weighted toward software and everyday questions because that is what I actually point a retrieval agent at. Every question carries a note written before the run saying what a correct page contains and what a plausible wrong one looks like. The judges never see those notes. They exist so that when a rating looks wrong in the explorer, there is a written intent to argue against rather than a memory.</p>
+
+  <h3 class="sub">What makes the hard half hard</h3>
+  <p>Four things, usually two at a time. <strong>Trap</strong>: a plausible wrong answer sits close to the right one, an older figure or a superseded draft. <strong>Buried</strong>: the answer exists but not on the first result. <strong>Multi</strong>: no single page has all of it. <strong>Obscure</strong>: the subject is thinly covered, so the index either has it or does not.</p>
+  <p>The point of the split is that easy questions make providers look alike. A question your model could nearly answer unaided does not test retrieval much, and if a whole benchmark is built from those, every provider passes.</p>
+
+  <h3 class="sub">Why __N_UNANS__ questions with no answer</h3>
+  <p>Each of these asks about something that sounds entirely real and does not exist: a Postgres setting called <span class="mono">max_parallel_vacuum_workers</span>, a <span class="mono">grace_period</span> option in a Docker Compose healthcheck, a statistic nobody publishes. Search them and you get authoritative, tightly on-topic pages about the neighbouring real thing.</p>
+  <p>Correct behaviour is that every page rates 0 or 1. A page rated 2 or 3 means either a provider surfaced something that invented the answer or a judge invented the relevance, and the explorer shows which. This is the one part of the set where a higher score is a worse result, and it is the only place the run can see a confident near-miss at all &mdash; the failure your own code cannot check for, because a near-miss arrives looking exactly like a hit.</p>
+</section>
+
+<section id="changed">
+  <h2>What run 2 changed, and why</h2>
+  <p>Run 1 asked 48 questions of four providers and graded the answer a model wrote from what came back. Then it checked whether source quality and answer quality moved together, and they barely did: a correlation of 0.16, where 1 is lockstep and 0 is unrelated. The model was carrying most of the result. That is the finding this whole run is a reaction to, and it is why nothing here grades an answer.</p>
+  <p>So run 2 grades the sources and never writes an answer, doubles the field to eight providers, and uses three judges from three different labs instead of one, so that no single model's taste is the ranking. It also gives the slow arms room to finish rather than timing them out &mdash; looking at you, Bright Data &mdash; because a provider that is merely slow should show up as slow in a latency column, not as missing data in a quality one.</p>
+  <p>One thing changed mid-run and is worth knowing about. The set prompt replaced an earlier one that graded whether sources <em>looked</em> good: fresh, authoritative, cleanly extracted. On a question with no answer anywhere it returned a passing score while the page judge was correctly rating every page 0 or 1. The sources were good. They just could not answer. Everything published here was scored with the replacement.</p>
+</section>
+
+<section id="ratings">
+  <h2>The two ratings</h2>
+  <p>Two separate questions, asked at two scopes, on the same 0&ndash;3 scale. Every score comes with a written definition of what it means, because two models can agree on what a 2 means while a bare number on a wide scale is something each one invents its own version of.</p>
+  <p><strong>They are separate judge calls, and the set rating is not an average of page ratings.</strong> That matters enough to say plainly: a per-page average cannot answer the set question. __NUM_SOURCES__ pages each holding a third of the answer and __NUM_SOURCES__ pages holding nothing average out to something similar, and only one of those sets lets you answer.</p>
+  <p>Each judge scores independently and its score is never merged with another judge's before it is recorded &mdash; every individual verdict is in <a href="__BASE__explorer/">the explorer</a> with the sentence that judge wrote to justify it. The averaging happens once, at the end, and only for display: a provider's set rating on the results page is the mean of its per-question scores across all __N_QUESTIONS__ questions and all three judges.</p>
+
+  <h3 class="sub">Page rating &mdash; does this page help?</h3>
+  <p>One question, one page. The judge is never told which provider returned it, never shown an answer, and never asked to write one.</p>
+  <div class="rungs">__PAGE_RUNGS__</div>
+
+  <h3 class="sub">Set rating &mdash; could someone answer from these alone?</h3>
+  <p>The headline. One judge, one question, all __NUM_SOURCES__ of a provider's results in front of it at once.</p>
+  <div class="rungs">__SET_RUNGS__</div>
+  <p class="sub">Both prompts are in <span class="mono">core/controls.ts</span> in full.</p>
+</section>
 
 <section id="varies">
   <h2>What varies</h2>
@@ -63,22 +102,10 @@ __NAV__
   <p class="tnote">Serper is the one deliberate downgrade: it sells a separate scrape endpoint and this run does not call it, and that choice was pre-registered. Bright Data is the only provider needing a second paid product to get page text, and its extraction step missed roughly half the URLs it tried.</p>
 </section>
 
-<section id="rubrics">
-  <h2>The two rubrics</h2>
-  <p>Both ask the same question at two scopes, on the same 0&ndash;3 scale, and every score comes with a written definition. Two models can agree on what a 2 means; a bare number on a wide scale is something each one invents its own version of.</p>
-  <h3 class="sub">Page rating &mdash; does this page help?</h3>
-  <p>One question, one page. The judge is never told which provider returned it, never shown an answer, and never asked to write one.</p>
-  <div class="rungs">__PAGE_RUNGS__</div>
-  <h3 class="sub">Set rating &mdash; could someone answer from these alone?</h3>
-  <p>The headline. A per-page average cannot answer this: eight pages each holding a third of the answer and eight holding nothing average out the same.</p>
-  <div class="rungs">__SET_RUNGS__</div>
-  <p class="sub">Both prompts are in <span class="mono">core/controls.ts</span> in full. The set prompt replaced an earlier one partway through the run, which graded whether sources <em>looked</em> good: fresh, authoritative, cleanly extracted. On a question with no answer anywhere it returned a passing score while the page judge rated every page 0 or 1. The sources were good, they just could not answer.</p>
-</section>
-
 <section id="pooling">
   <h2>Pooling</h2>
   <p>Providers overlap heavily. Every page from every arm is collapsed into one pool keyed by normalized URL and graded once; that rating counts for each provider that returned it. __OVERLAP_ONE__% of the __UNIQUE_PAIRS__ pages came from exactly one provider and __OVERLAP_ALL__ came from all eight.</p>
-  <p>Pooling blinds the judge structurally: a page is detached from whoever returned it before grading, so there is no provider name to be swayed by. The cost is that where several arms returned the same URL, the longest extraction anyone returned is what gets graded, so extraction quality is averaged away on those pages.</p>
+  <p>Pooling blinds the judge structurally: a page is detached from whoever returned it before grading, so there is no provider name to be swayed by. It was a cost decision first, though, and the cost is real &mdash; where several arms returned the same URL, the longest extraction anyone returned is what gets graded, so extraction quality is averaged away on those pages. With a bigger budget I would not pool.</p>
 </section>
 
 <section id="statistics">
@@ -108,7 +135,7 @@ __NAV__
     </div>
     <div class="limit">
       <h3>Whether the questions look like yours</h3>
-      <p>__N_QUESTIONS__ questions written to probe retrieval, not collected from real traffic: __N_BASE__ ordinary, __N_HARD__ deliberately hard, __N_UNANS__ with no answer at all. I wrote all of them, so whatever I find interesting is in the sample and whatever I did not think to ask is not. Frozen and public, so you can judge the resemblance. The harness exists so you can run your own instead.</p>
+      <p>They are written, not collected from real traffic, and <a href="#questions">I wrote all of them</a>. The harness exists so you can run your own instead, which is the only real answer to this one.</p>
     </div>
     <div class="limit">
       <h3>Whether tomorrow would come out the same</h3>

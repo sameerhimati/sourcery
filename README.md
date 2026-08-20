@@ -142,7 +142,7 @@ An eval of your retrieval stack only means something if it runs the model you sh
 | | |
 |---|---|
 | [Results](https://sameerhimati.com/sourcery/) | eight providers, 204 questions, and what each one is good for |
-| [Method](https://sameerhimati.com/sourcery/method/) | the two rubrics, the settings held identical, and what one run cannot tell you |
+| [Method](https://sameerhimati.com/sourcery/methodology/) | the two rubrics, the settings held identical, and what one run cannot tell you |
 | [Explorer](https://sameerhimati.com/sourcery/explorer/) | every rating, with the sentence each judge wrote to justify it |
 
 The write-ups used to be a shelf of markdown in `docs/`. They said the same

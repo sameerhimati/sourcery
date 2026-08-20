@@ -24,7 +24,7 @@
 
 import fs from "node:fs";
 
-const PAGES = process.argv[2] ? [process.argv[2]] : ["docs/index.html", "docs/method/index.html"];
+const PAGES = process.argv[2] ? [process.argv[2]] : ["docs/index.html", "docs/methodology/index.html"];
 const DATA = process.argv[3] ?? "docs/report-data.json";
 
 // ── numbers the page is allowed to say without a data file behind them ───────
@@ -39,6 +39,11 @@ const ALLOWED = new Map([
   ["100", "a percentage denominator in prose"],
   ["2026", "the year"],
   ["5", "a small count in prose (5.6, 5.2 model names are handled separately)"],
+  // Run 1's shape and its one surviving finding. They are the reason run 2 is
+  // built the way it is, and no run-2 log can produce them — the data file
+  // behind this page only knows about run 2.
+  ["48", "run 1's question count, cited as the design this run reacted to"],
+  ["0.16", "run 1's source-quality to answer-quality correlation, the finding run 2 is built on"],
 ]);
 
 // Model names carry digits and are not measurements.

@@ -408,14 +408,14 @@ footer p { font-size: 0.86rem; color: var(--muted); }
       <thead>
         <tr><th>Provider</th><th>Product</th><th>Content setting</th><th>What comes back</th></tr>
       </thead>
-      <tbody><tr><th scope="row">Perplexity</th><td class="prose">Search API /search</td><td>search_context_size: high</td><td class="prose">Excerpts, their maximum; there is no full-page mode</td></tr>
-<tr><th scope="row">Brave</th><td class="prose">Search API, web endpoint</td><td>extra_snippets: true</td><td class="prose">Snippets only, by architecture; never a page body</td></tr>
-<tr><th scope="row">Parallel</th><td class="prose">Search API, advanced tier</td><td>mode: advanced, 6,000-char excerpts</td><td class="prose">Dense excerpts; cannot be turned off</td></tr>
-<tr><th scope="row">Exa</th><td class="prose">/search with inline contents</td><td>contents: { text: true }</td><td class="prose">Page text at Exa's own default length</td></tr>
-<tr><th scope="row">Tavily</th><td class="prose">Search API /search</td><td>search_depth: advanced, include_raw_content: markdown</td><td class="prose">Full page markdown</td></tr>
-<tr><th scope="row">Serper</th><td class="prose">Google Search API /search</td><td>none; their scrape endpoint was not called</td><td class="prose">Links and snippets only. The one deliberate downgrade</td></tr>
-<tr><th scope="row">Firecrawl</th><td class="prose">v2 /search with scrape</td><td>scrapeOptions: { formats: [&quot;markdown&quot;] }</td><td class="prose">Full page markdown</td></tr>
-<tr><th scope="row">Bright Data</th><td class="prose">SERP API + Web Unlocker</td><td>data_format: markdown, via a second paid product</td><td class="prose">Full page markdown, on the 47% of URLs the unlocker returned</td></tr></tbody>
+      <tbody><tr><th scope="row"><a href="https://www.perplexity.ai/api-platform/">Perplexity</a></th><td class="prose">Search API /search</td><td>search_context_size: high</td><td class="prose">Excerpts, their maximum; there is no full-page mode</td></tr>
+<tr><th scope="row"><a href="https://brave.com/search/api/">Brave</a></th><td class="prose">Search API, web endpoint</td><td>extra_snippets: true</td><td class="prose">Snippets only, by architecture; never a page body</td></tr>
+<tr><th scope="row"><a href="https://parallel.ai/">Parallel</a></th><td class="prose">Search API, advanced tier</td><td>mode: advanced, 6,000-char excerpts</td><td class="prose">Dense excerpts; cannot be turned off</td></tr>
+<tr><th scope="row"><a href="https://exa.ai/">Exa</a></th><td class="prose">/search with inline contents</td><td>contents: { text: true }</td><td class="prose">Page text at Exa's own default length</td></tr>
+<tr><th scope="row"><a href="https://www.tavily.com/">Tavily</a></th><td class="prose">Search API /search</td><td>search_depth: advanced, include_raw_content: markdown</td><td class="prose">Full page markdown</td></tr>
+<tr><th scope="row"><a href="https://serper.dev/">Serper</a></th><td class="prose">Google Search API /search</td><td>none; their scrape endpoint was not called</td><td class="prose">Links and snippets only. The one deliberate downgrade</td></tr>
+<tr><th scope="row"><a href="https://www.firecrawl.dev/">Firecrawl</a></th><td class="prose">v2 /search with scrape</td><td>scrapeOptions: { formats: [&quot;markdown&quot;] }</td><td class="prose">Full page markdown</td></tr>
+<tr><th scope="row"><a href="https://brightdata.com/products/serp-api">Bright Data</a></th><td class="prose">SERP API + Web Unlocker</td><td>data_format: markdown, via a second paid product</td><td class="prose">Full page markdown, on the 47% of URLs the unlocker returned</td></tr></tbody>
     </table>
   </div>
   <p class="tnote">Serper is the one deliberate downgrade. It sells a separate scrape endpoint and this run does not call it, which I decided before the run rather than after seeing the scores. Bright Data is the only provider that needs a second paid product to get page text at all, and its extraction step missed roughly half the URLs it tried.</p>

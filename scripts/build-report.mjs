@@ -56,6 +56,23 @@ const LABEL = {
   bright_data: "Bright Data",
 };
 
+// Where a reader goes to buy the thing this page just ranked. The API's own
+// landing page rather than the company homepage, because three of these sell a
+// consumer product under the same brand and it is not what was measured.
+// One map, so the table, the settings table and the picking cards cannot end up
+// pointing at three different pages for the same provider.
+const HOME = {
+  perplexity: "https://www.perplexity.ai/api-platform/",
+  brave: "https://brave.com/search/api/",
+  parallel: "https://parallel.ai/",
+  exa: "https://exa.ai/",
+  tavily: "https://www.tavily.com/",
+  serper: "https://serper.dev/",
+  firecrawl: "https://www.firecrawl.dev/",
+  bright_data: "https://brightdata.com/products/serp-api",
+};
+const homeLink = (k) => `<a href="${HOME[k]}">${esc(LABEL[k])}</a>`;
+
 const esc = (s) =>
   String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 // One helper per kind of number the page renders, and every chart and cell goes
@@ -420,7 +437,7 @@ function tableRows() {
     const noText = v.structure.markdown_pct === null;
     return (
       `<tr>` +
-      `<th scope="row">${esc(LABEL[k])}</th>` +
+      `<th scope="row">${homeLink(k)}</th>` +
       `<td class="n lead">${f3(v.set.mean)}<span class="pm">${pm(v.set.ci95)}</span></td>` +
       `<td class="n lead">${v.binary.rung3_pct}%</td>` +
       `<td class="n">${f3(v.page.mean)}</td>` +
@@ -452,7 +469,7 @@ const SETTINGS = [
 ]
   .map(
     ([k, product, setting, out]) =>
-      `<tr><th scope="row">${esc(LABEL[k])}</th><td class="prose">${esc(product)}</td><td>${esc(setting)}</td><td class="prose">${esc(out)}</td></tr>`,
+      `<tr><th scope="row">${homeLink(k)}</th><td class="prose">${esc(product)}</td><td>${esc(setting)}</td><td class="prose">${esc(out)}</td></tr>`,
   )
   .join("\n");
 
@@ -522,6 +539,13 @@ const REPL = {
       Math.min(...ORDER.filter((k) => k !== latFast).map((k) => d.latency[k].p50_ms)) / d.latency[latFast].p50_ms,
     ),
   ),
+  __HOME_PERPLEXITY__: HOME.perplexity,
+  __HOME_BRAVE__: HOME.brave,
+  __HOME_PARALLEL__: HOME.parallel,
+  __HOME_EXA__: HOME.exa,
+  __HOME_TAVILY__: HOME.tavily,
+  __HOME_SERPER__: HOME.serper,
+  __HOME_FIRECRAWL__: HOME.firecrawl,
   __PARALLEL_PRICE__: money(P.parallel.cost.per_query_usd),
   __PARALLEL_HEADINGS__: String(Math.round(P.parallel.structure.headings_pct)),
   __PARALLEL_LINKS__: String(Math.round(P.parallel.structure.links_pct)),

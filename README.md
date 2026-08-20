@@ -2,11 +2,13 @@
 
 **Find the best search API for your agent.**
 
+[![Sourcery Search Benchmark: Search API Retrieval Eval. Finding the best search for your agents. Run 2: 204 questions, eight providers, three judges.](https://raw.githubusercontent.com/sameerhimati/sourcery/main/docs/media/card.png)](https://sameerhimati.com/sourcery/)
+
 sourcery asks the same question of several web-search APIs with everything else held still — same prompts, same judges, same settings — and scores the pages that come back. Only the retrieval provider changes.
 
 I built it because I could not get a straight answer to that question while building a research agent, and the answers I found were vendor benchmarks.
 
-**[Read the results →](https://sameerhimati.com/sourcery/)** — eight providers, 204 questions, 22,457 page ratings from three judges. One provider is clear of the field and most of the rest of the ranking is noise, which the page shows rather than hides.
+**[Read the full report →](https://sameerhimati.com/sourcery/)**: eight providers, 204 questions, 22,457 page ratings from three judges. One provider is clear of the field and most of the rest of the ranking is noise, which the page shows rather than hides. The [methodology](https://sameerhimati.com/sourcery/methodology/) is a page of its own, and every individual rating is in [the explorer](https://sameerhimati.com/sourcery/explorer/) with the sentence the judge wrote for it.
 
 ## Install
 
@@ -141,8 +143,8 @@ An eval of your retrieval stack only means something if it runs the model you sh
 
 | | |
 |---|---|
-| [Results](https://sameerhimati.com/sourcery/) | eight providers, 204 questions, and what each one is good for |
-| [Method](https://sameerhimati.com/sourcery/methodology/) | the two rubrics, the settings held identical, and what one run cannot tell you |
+| [Full report](https://sameerhimati.com/sourcery/) | eight providers, 204 questions, and what each one is good for |
+| [Methodology](https://sameerhimati.com/sourcery/methodology/) | the two rubrics, the settings held identical, and what one run cannot tell you |
 | [Explorer](https://sameerhimati.com/sourcery/explorer/) | every rating, with the sentence each judge wrote to justify it |
 
 The write-ups used to be a shelf of markdown in `docs/`. They said the same

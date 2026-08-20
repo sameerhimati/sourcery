@@ -62,10 +62,10 @@ __NAV__
   <strong>Buried</strong>: the answer exists but not on the first result.<br>
   <strong>Multi</strong>: no single page has all of it.<br>
   <strong>Obscure</strong>: the subject is thinly covered, so the index either has it or does not.</p>
-  <p>The point of the split is that easy questions make providers look alike, but as questions get harder, the gaps between providers comes up. A question your model could nearly answer unaided does not test retrieval much, and if a whole benchmark is built from those, every provider passes.</p>
+  <p>The point of the split is that easy questions make providers look alike, but as questions get harder, the gaps between providers come up. A question your model could nearly answer unaided does not test retrieval much, and if a whole benchmark is built from those, every provider passes.</p>
 
   <h3 class="sub">Why __N_UNANS__ questions with no answer</h3>
-  <p>The point behind creating these unanswerable set was to create a group of questions to test how far these search providers try to cheat with results that can cause hallucinations for models and agents. Each of these asks about something that sounds entirely real and does not exist.</p>
+  <p>The point behind creating this unanswerable set was to create a group of questions to test how far these search providers try to cheat with results that can cause hallucinations for models and agents. Each of these asks about something that sounds entirely real and does not exist.</p>
   <p>Correct behaviour is that every page rates 0 or 1. A page rated 2 or 3 means either a provider surfaced something that invented the answer or a judge invented the relevance.</p>
 </section>
 
@@ -170,7 +170,7 @@ __NAV__
     <a href="__BASE__explorer/">Every rating, in the explorer</a>
     <a href="__REPO__">Read the code</a>
   </div>
-  <p class="colophon">Run 2 &middot; fetched __FETCHED__ &middot; judged against <span class="mono">__CODE_SHA__</span> &middot; page rebuilt __GENERATED__ &middot; MIT licensed</p>
+  <p class="colophon">Run 2 &middot; fetched __FETCHED__ &middot; page rebuilt __GENERATED__ &middot; MIT licensed</p>
 </footer>
 
 </div>

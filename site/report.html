@@ -77,7 +77,7 @@ __NAV__
   <h2 class="dhead">Disclaimer</h2>
   <dl>
     <dt>Independent</dt>
-    <dd>Nobody paid me to run this and no provider saw it before it went up. There are no affiliate links on this page.</dd>
+    <dd>Nobody paid me to run this, no provider saw it before it went up, and there are no affiliate links on this page. Some of it ran on credits I had picked up at hackathons and the like, which is worth saying out loud.</dd>
     <dt>Self-funded</dt>
     <dd>The prices on this page are what I got charged. There are good pay-as-you-go plans and free tiers to try each of these. I spent around $__COST_TOTAL__ across the eight providers.</dd>
     <dt>Checkable</dt>
@@ -85,7 +85,7 @@ __NAV__
     <dt>Pooling</dt>
     <dd>Every page is graded once, so if several providers returned the same link I only ran it past the judges once, to control cost. There is a real methodological argument for pooling too. A page is detached from whoever returned it before anyone grades it, so there is no provider name for a model to be swayed by. __N_PAIRS__ question-page pairs collapse to __UNIQUE_PAIRS__ unique ones, and grading the unique set meant __POOL_SAVED_PCT__% fewer judge calls. Where several providers returned the same URL, the longest extraction is the one that got graded, so extraction quality is averaged away on those pages. Would not pool next time with a larger budget.</dd>
     <dt>Context management</dt>
-    <dd>To preserve cost and context size, each result is truncated to __TRUNC_LIMIT__ characters before a judge sees it, which is a realistic slice of an agent's context budget and also the cheapest way to make this many ratings affordable. It cuts hardest against the providers that return whole documents, and a bigger slice could reorder the bottom of the table. What says it is not simply measuring truncation: Exa runs past the budget on __TRUNC_EXA__% of its results and still places fourth, Brave on __TRUNC_BRAVE__% and places second. <a href="__BASE__methodology/#limits">The limits section</a> puts this first, because it is the thing I would attack if this were someone else's page.</dd>
+    <dd>To preserve cost and context size, each result is truncated to __TRUNC_LIMIT__ characters before a judge sees it. That is a realistic slice of an agent's context budget and it was also the cheapest way to make this many ratings affordable, but it cuts hardest against the providers that return whole documents, so a bigger slice could reorder the bottom of the table. The reason I do not think it is only measuring truncation is Exa and Brave, which run past the budget on __TRUNC_EXA__% and __TRUNC_BRAVE__% of their results and still place fourth and second. <a href="__BASE__methodology/#limits">More on that in the limits</a>.</dd>
     <dt>Experimental design</dt>
     <dd>This run was designed as a follow-up to the first one on Sourcery. Making it agnostic to the model's answer was my takeaway from <a href="__RUN1_URL__">run 1</a>, which found very small differences between search APIs largely because the models already knew a lot of the answers. Run 2 overhauls the scoring, widens the field of both providers and judge models, and raises the latency threshold so the slower providers get to finish. Looking at you, Bright Data.</dd>
   </dl>
@@ -98,7 +98,7 @@ __NAV__
   <div class="picks">
     <div class="pickrow">
       <div class="who"><a href="__HOME_PERPLEXITY__">Perplexity</a><span>best overall</span></div>
-      <p>Clear of the field on the score and on the cheapest tier. Fully answers __PPX_RUNG3__% of the time, about 1.4&times; anyone else. Be clear about what you are getting though: it returns excerpts, never a whole page. Only __TRUNC_PERPLEXITY__% of its results even reach the __TRUNC_LIMIT__-character budget against __TRUNC_FIRECRAWL__% of Firecrawl's, and __PPX_HEADINGS__% of them keep headings, so if your agent needs to read a document rather than a summary of one this is the wrong end of the table.</p>
+      <p>Clear of the field on the score and on the cheapest tier. Fully answers __PPX_RUNG3__% of the time, about 1.4&times; anyone else. But to be clear, with Perplexity you are getting excerpts not whole pages. Only __TRUNC_PERPLEXITY__% of its results even reach the __TRUNC_LIMIT__-character budget, against __TRUNC_FIRECRAWL__% of Firecrawl's. So if your agents need to read a document end to end rather than a summary, providers like Tavily, Firecrawl and Exa are your best bets.</p>
     </div>
     <div class="pickrow">
       <div class="who"><a href="__HOME_EXA__">Exa</a><span>best for agents</span></div>
@@ -125,7 +125,7 @@ __NAV__
       <p>Full page markdown on __TAVILY_MD__% of results, with headings, links and images intact. Outscores Firecrawl and costs less. If your agent needs the document rather than a summary of it, start here.</p>
     </div>
   </div>
-  <p class="scopenote"><strong>The order turns over on the questions with no answer.</strong> Perplexity produces the most convincing near-misses of the eight and Firecrawl the fewest, and Firecrawl beats it on all __N_UNANS__ of them. A near-miss is the failure your own code cannot catch, because it arrives looking exactly like a hit. If you are wiring one of these into something that has to be right rather than merely useful, weigh that against the headline.</p>
+  <p class="scopenote"><strong>The order flips on the __N_UNANS__ questions that have no answer.</strong> Perplexity returns the most convincing near-misses of the eight and Firecrawl the fewest, and Firecrawl beats it on all __N_UNANS__. Your code can see an empty result and handle it, it cannot see this one, so weigh it against the headline before you put any of these into production.</p>
 </section>
 
 <nav class="toc" aria-label="On this page">
@@ -234,7 +234,7 @@ __NAV__
     <a href="__BASE__explorer/">Every rating, in the explorer</a>
     <a href="__REPO__">Read the code</a>
   </div>
-  <p class="colophon">Run 2 &middot; fetched __FETCHED__ &middot; judged against <span class="mono">__CODE_SHA__</span> &middot; page rebuilt __GENERATED__ &middot; MIT licensed</p>
+  <p class="colophon">Run 2 &middot; fetched __FETCHED__ &middot; page rebuilt __GENERATED__ &middot; MIT licensed</p>
 </footer>
 
 </div>

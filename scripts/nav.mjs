@@ -31,10 +31,10 @@ const ITEMS = [
   ["explorer", "Explorer", `${BASE}explorer/`],
 ];
 
-// `current` is "results" | "methodology" | "explorer". The values arrive final —
-// never as __TOKENS__ — so the bar renders the same no matter which build
-// script asked for it or in what order tokens get filled.
-export function navHtml(current, { fetched, sha }) {
+// `current` is "results" | "methodology" | "explorer". The values arrive final,
+// never as __TOKENS__, so the bar renders the same no matter which build script
+// asked for it or in what order tokens get filled.
+export function navHtml(current, { fetched }) {
   const links = ITEMS.map(
     ([key, label, href]) =>
       `<a href="${href}"${key === current ? ' aria-current="page"' : ""}>${label}</a>`,
@@ -42,7 +42,7 @@ export function navHtml(current, { fetched, sha }) {
   return `<nav class="sitenav" aria-label="Site">
   <span class="brand">Sourcery<a href="https://sameerhimati.com">by Sameer Himati</a></span>
   <span class="meta">
-    <span class="stamp">Run 2 &middot; fetched ${fetched} &middot; <span class="mono">${sha}</span></span>
+    <span class="stamp">Run 2 &middot; fetched ${fetched}</span>
     <a href="${REPO}">Source</a>
   </span>
   <span class="navlinks">

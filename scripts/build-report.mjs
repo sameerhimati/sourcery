@@ -560,7 +560,6 @@ const REPL = {
   __TRUNC_LIMIT__: String(P.firecrawl.truncation.limit_chars),
   __TRUNC_FIRECRAWL__: String(Math.round(P.firecrawl.truncation.pct)),
   __TRUNC_PERPLEXITY__: String(Math.round(P.perplexity.truncation.pct)),
-  __PPX_HEADINGS__: String(Math.round(P.perplexity.structure.headings_pct)),
   __TRUNC_EXA__: String(Math.round(P.exa.truncation.pct)),
   __TRUNC_BRAVE__: String(Math.round(P.brave.truncation.pct)),
   // Run 1's write-up is not in the tree any more. It is the reason run 2 exists
@@ -572,7 +571,6 @@ const REPL = {
   // ran, which drifts every rebuild and would let a year-old run advertise
   // today's date; the run window is a fact about the run and never moves.
   __FETCHED__: fetchedRange(d.run_window),
-  __CODE_SHA__: d.code_sha ?? "unreleased",
   // Figures the prose cites. Derived ones first, then the two that come from
   // outside the run and carry their source in docs/report-data.json.
   __KEYLESS_FAILS__: numberWord(d.cited.keyless_attempts),
@@ -612,7 +610,7 @@ const REPL = {
 // the ranking. The method has its own URL because it is the thing people cite.
 // Each page gets its own nav with itself marked current; the nav is a per-page
 // extra rather than a REPL entry so the orphan check below stays about numbers.
-const navMeta = { fetched: REPL.__FETCHED__, sha: REPL.__CODE_SHA__ };
+const navMeta = { fetched: REPL.__FETCHED__ };
 const PAGES = [
   ["site/report.html", "docs/index.html", { __NAV__: navHtml("results", navMeta) }],
   ["site/methodology.html", "docs/methodology/index.html", { __NAV__: navHtml("methodology", navMeta) }],

@@ -72,7 +72,6 @@ const safe = JSON.stringify(meta).replace(/<\//g, "<\\/");
 const report = JSON.parse(fs.readFileSync(REPORT_DATA, "utf8"));
 const nav = navHtml("explorer", {
   fetched: fetchedRange(report.run_window),
-  sha: report.code_sha ?? "unreleased",
 });
 
 // The replacement is a function because a plain string would have "$&" and its

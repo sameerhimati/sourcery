@@ -381,7 +381,7 @@ footer p { font-size: 0.86rem; color: var(--muted); }
 <nav class="sitenav" aria-label="Site">
   <span class="brand">Sourcery<a href="https://sameerhimati.com">by Sameer Himati</a></span>
   <span class="meta">
-    <span class="stamp">Run 2 &middot; fetched 17–18 August 2026 &middot; <span class="mono">f730cad</span></span>
+    <span class="stamp">Run 2 &middot; fetched 17–18 August 2026</span>
     <a href="https://github.com/sameerhimati/sourcery">Source</a>
   </span>
   <span class="navlinks">
@@ -400,7 +400,7 @@ footer p { font-size: 0.86rem; color: var(--muted); }
   <h2 class="dhead">Disclaimer</h2>
   <dl>
     <dt>Independent</dt>
-    <dd>Nobody paid me to run this and no provider saw it before it went up. There are no affiliate links on this page.</dd>
+    <dd>Nobody paid me to run this, no provider saw it before it went up, and there are no affiliate links on this page. Some of it ran on credits I had picked up at hackathons and the like, which is worth saying out loud.</dd>
     <dt>Self-funded</dt>
     <dd>The prices on this page are what I got charged. There are good pay-as-you-go plans and free tiers to try each of these. I spent around $40.08 across the eight providers.</dd>
     <dt>Checkable</dt>
@@ -408,7 +408,7 @@ footer p { font-size: 0.86rem; color: var(--muted); }
     <dt>Pooling</dt>
     <dd>Every page is graded once, so if several providers returned the same link I only ran it past the judges once, to control cost. There is a real methodological argument for pooling too. A page is detached from whoever returned it before anyone grades it, so there is no provider name for a model to be swayed by. 12,954 question-page pairs collapse to 7,496 unique ones, and grading the unique set meant 42% fewer judge calls. Where several providers returned the same URL, the longest extraction is the one that got graded, so extraction quality is averaged away on those pages. Would not pool next time with a larger budget.</dd>
     <dt>Context management</dt>
-    <dd>To preserve cost and context size, each result is truncated to 1600 characters before a judge sees it, which is a realistic slice of an agent's context budget and also the cheapest way to make this many ratings affordable. It cuts hardest against the providers that return whole documents, and a bigger slice could reorder the bottom of the table. What says it is not simply measuring truncation: Exa runs past the budget on 93% of its results and still places fourth, Brave on 77% and places second. <a href="https://sameerhimati.com/sourcery/methodology/#limits">The limits section</a> puts this first, because it is the thing I would attack if this were someone else's page.</dd>
+    <dd>To preserve cost and context size, each result is truncated to 1600 characters before a judge sees it. That is a realistic slice of an agent's context budget and it was also the cheapest way to make this many ratings affordable, but it cuts hardest against the providers that return whole documents, so a bigger slice could reorder the bottom of the table. The reason I do not think it is only measuring truncation is Exa and Brave, which run past the budget on 93% and 77% of their results and still place fourth and second. <a href="https://sameerhimati.com/sourcery/methodology/#limits">More on that in the limits</a>.</dd>
     <dt>Experimental design</dt>
     <dd>This run was designed as a follow-up to the first one on Sourcery. Making it agnostic to the model's answer was my takeaway from <a href="https://github.com/sameerhimati/sourcery/blob/35c5a38/docs/findings.md">run 1</a>, which found very small differences between search APIs largely because the models already knew a lot of the answers. Run 2 overhauls the scoring, widens the field of both providers and judge models, and raises the latency threshold so the slower providers get to finish. Looking at you, Bright Data.</dd>
   </dl>
@@ -421,7 +421,7 @@ footer p { font-size: 0.86rem; color: var(--muted); }
   <div class="picks">
     <div class="pickrow">
       <div class="who"><a href="https://www.perplexity.ai/api-platform/">Perplexity</a><span>best overall</span></div>
-      <p>Clear of the field on the score and on the cheapest tier. Fully answers 49.9% of the time, about 1.4&times; anyone else. Be clear about what you are getting though: it returns excerpts, never a whole page. Only 40% of its results even reach the 1600-character budget against 98% of Firecrawl's, and 25% of them keep headings, so if your agent needs to read a document rather than a summary of one this is the wrong end of the table.</p>
+      <p>Clear of the field on the score and on the cheapest tier. Fully answers 49.9% of the time, about 1.4&times; anyone else. But to be clear, with Perplexity you are getting excerpts not whole pages. Only 40% of its results even reach the 1600-character budget, against 98% of Firecrawl's. So if your agents need to read a document end to end rather than a summary, providers like Tavily, Firecrawl and Exa are your best bets.</p>
     </div>
     <div class="pickrow">
       <div class="who"><a href="https://exa.ai/">Exa</a><span>best for agents</span></div>
@@ -448,7 +448,7 @@ footer p { font-size: 0.86rem; color: var(--muted); }
       <p>Full page markdown on 98% of results, with headings, links and images intact. Outscores Firecrawl and costs less. If your agent needs the document rather than a summary of it, start here.</p>
     </div>
   </div>
-  <p class="scopenote"><strong>The order turns over on the questions with no answer.</strong> Perplexity produces the most convincing near-misses of the eight and Firecrawl the fewest, and Firecrawl beats it on all 12 of them. A near-miss is the failure your own code cannot catch, because it arrives looking exactly like a hit. If you are wiring one of these into something that has to be right rather than merely useful, weigh that against the headline.</p>
+  <p class="scopenote"><strong>The order flips on the 12 questions that have no answer.</strong> Perplexity returns the most convincing near-misses of the eight and Firecrawl the fewest, and Firecrawl beats it on all 12. Your code can see an empty result and handle it, it cannot see this one, so weigh it against the headline before you put any of these into production.</p>
 </section>
 
 <nav class="toc" aria-label="On this page">
@@ -564,7 +564,7 @@ footer p { font-size: 0.86rem; color: var(--muted); }
     <a href="https://sameerhimati.com/sourcery/explorer/">Every rating, in the explorer</a>
     <a href="https://github.com/sameerhimati/sourcery">Read the code</a>
   </div>
-  <p class="colophon">Run 2 &middot; fetched 17–18 August 2026 &middot; judged against <span class="mono">f730cad</span> &middot; page rebuilt 2026-08-20 &middot; MIT licensed</p>
+  <p class="colophon">Run 2 &middot; fetched 17–18 August 2026 &middot; page rebuilt 2026-08-20 &middot; MIT licensed</p>
 </footer>
 
 </div>

@@ -75,7 +75,7 @@ Return JSON only: {"score": <int 0-10>, "rationale": "<one sentence>"}.`;
 // Additive: the constants above are run 1's instrument and stay untouched so its
 // results remain reproducible. Run 2 (core/pooled.ts) judges each unique
 // question-and-page pair once, on a short scale with named rungs, per
-// the run-2 preregistration. The judge never learns which provider returned a
+// the run-2 plan. The judge never learns which provider returned a
 // page — pooling detaches pages from providers before judging, so blinding is
 // structural rather than promised.
 

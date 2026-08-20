@@ -1,5 +1,5 @@
 // ─── Run 2: the pooled run ───
-// The instrument the run-2 preregistration committed to. Three phases, each
+// The instrument run 2 committed to. Three phases, each
 // resumable:
 //
 //   1. fetch  — every (query × provider), once. The only step that costs money.

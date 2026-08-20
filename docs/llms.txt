@@ -25,4 +25,3 @@ Install: `npx sourcery-eval init` · Agents: `npx sourcery-eval mcp --install`
 ## Reference
 
 - [README](https://raw.githubusercontent.com/sameerhimati/sourcery/main/README.md): install, the two keys you need, cost controls, the provider table, running your own questions, the MCP tools, and registering the server with Claude Code, Codex or Cursor.
-- [Run 2 preregistration](https://github.com/sameerhimati/sourcery/blob/53c290d0279cd32eda6f4175acdf820c3029b884/docs/preregistration-v3.md): what was going to be measured, written down before the run. Linked at the commit that registered it, which is the only version that means anything.

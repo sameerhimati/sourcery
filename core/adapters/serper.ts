@@ -7,8 +7,8 @@
 // omission. Serper does sell a separate scraping endpoint, and calling it here
 // would make this arm look like the providers that return page text — but the
 // run-2 plan seats Serper as one of the three providers measured on the links
-// they return — section 6 of the preregistration, which is the plan of record
-// and cannot be edited quietly.
+// they return, which is the run-2 plan of record and not something to edit
+// quietly.
 // Bright Data fetches pages after its SERP because Bright Data's own Web
 // Unlocker is the thing it sells; bolting somebody else's extractor onto
 // Serper's links would measure the extractor, not Serper.

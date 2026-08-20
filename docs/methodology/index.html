@@ -358,7 +358,8 @@ footer p { font-size: 0.86rem; color: var(--muted); }
   <p>Every question carries a note written before the run saying what a correct page contains and what a plausible wrong one looks like, the judges never see those notes. They exist so that when a rating looks wrong in <a href="https://sameerhimati.com/sourcery/explorer/">the explorer</a>, there is a written intent to argue why.</p>
 
   <h3 class="sub">What makes the hard hard</h3>
-  <p>Four factors tend to make questions harder for search providers to serve. <strong>Trap</strong>: a plausible wrong answer sits close to the right one, an older figure or a superseded draft.<br>
+  <p>Four factors tend to make questions harder for search providers to serve.</p>
+  <p><strong>Trap</strong>: a plausible wrong answer sits close to the right one, an older figure or a superseded draft.<br>
   <strong>Buried</strong>: the answer exists but not on the first result.<br>
   <strong>Multi</strong>: no single page has all of it.<br>
   <strong>Obscure</strong>: the subject is thinly covered, so the index either has it or does not.</p>
@@ -377,12 +378,10 @@ footer p { font-size: 0.86rem; color: var(--muted); }
 
 <section id="ratings">
   <h2>The two ratings</h2>
-  <p>Two ratings, both on a 0 to 3 scale, asking different questions of the same results.</p>
-  <p>The <strong>page rating</strong> asks whether one page helps answer one question. The judge is never told which provider returned it, never shown an answer, and never asked to write one.</p>
-  <p>The <strong>set rating</strong> asks whether a whole set of 8 results is enough to answer, and that is the headline on the results page.</p>
-  <p>These are separate judge calls, and the set rating is not an average of the page ratings. It cannot be. 8 pages each holding a third of the answer and 8 pages holding nothing average out to roughly the same score, and only one of those sets lets you answer the question.</p>
-  <p>Each judge scores on its own and nothing is merged before it gets recorded. Every individual verdict is in the explorer with the sentence that judge wrote for it. The averaging happens once, at the end, only so there is something to put in a table: a provider's set rating is the mean of its scores across all 204 questions and all three judges.</p>
-  <p>Every score has a written definition rather than a number on its own, because two models can agree on what a 2 means but a bare scale is something each one invents its own version of.</p>
+  <p>There are two ratings here and they answer different questions of the same results, both on a 0 to 3 scale. The page rating asks whether one page helps answer one question, and the judge scoring it is never told which provider returned that page, never shown an answer and never asked to write one. The set rating asks whether a whole set of 8 results is enough to answer at all, and that is the one carrying the ranking on the results page.</p>
+  <p>These are separate judge calls rather than one derived from the other, so the set rating is never an average of the page ratings. It could not be, because 8 pages each holding a third of the answer and 8 pages holding nothing average out to roughly the same score, and only one of those sets actually lets you answer the question.</p>
+  <p>Each judge scores on its own and nothing gets merged before it is recorded, so every individual verdict sits in <a href="https://sameerhimati.com/sourcery/explorer/">the explorer</a> with the sentence that judge wrote for it. The averaging happens once, at the end, and only so there is something to put in a table: a provider's set rating is the mean of its scores across all 204 questions and all three judges.</p>
+  <p>Both scales come with a written definition of every score rather than a bare number, because two models can agree on what a 2 means but a naked scale is something each one invents its own version of.</p>
 
   <h3 class="sub">Page rating: does this page help?</h3>
   <div class="rungs"><div class="rung"><div class="n">0</div><div class="nm">not relevant</div><div class="mg">does not address the question</div></div>
@@ -400,9 +399,9 @@ footer p { font-size: 0.86rem; color: var(--muted); }
 
 <section id="varies">
   <h2>What varies</h2>
-  <p>One question goes to all eight providers, each returns up to 8 results, and nothing else changes between them. Same prompt, same judges, same number of results asked for, caching off.</p>
-  <p>six of the eight arms finished inside one day. Tavily and Bright Data hit their own rate limits and finished in the early hours of the next morning, and that is the one place the arms were not treated the same: a page that changed overnight would have looked different to those two.</p>
-  <p>Every setting sits in one file, <span class="mono">core/controls.ts</span>, and every stage reads from it, so there is only ever one value of anything for a stage to find. Each provider was set to the best tier it sells, and where there was a depth or content knob it got turned up.</p>
+  <p>One question goes to all eight providers and each returns up to 8 results, and nothing else changes between them: same prompt, same judges, same number of results asked for, caching off.</p>
+  <p>six of the eight arms finished inside one day, but Tavily and Bright Data hit their own rate limits and finished in the early hours of the next morning, which is the one place the arms were not treated identically, since a page that changed overnight would have looked different to those two.</p>
+  <p>Every setting sits in one file, <span class="mono">core/controls.ts</span>, and every stage of the run reads from it, so there is only ever one value of anything for a stage to find. Each provider was set to the best tier it sells, and wherever there was a depth or content knob it got turned up.</p>
   <div class="scroller">
     <table>
       <thead>
@@ -423,17 +422,17 @@ footer p { font-size: 0.86rem; color: var(--muted); }
 
 <section id="pooling">
   <h2>Pooling</h2>
-  <p>Providers return the same pages constantly. Every page from every arm collapses into one pool keyed by normalised URL and gets graded once, and that rating counts for each provider that returned it. 66.8% of the 7,496 pages came from exactly one provider and 24 came from all eight.</p>
-  <p>Pooling also blinds the judge, which is a real argument for doing it: a page is detached from whoever returned it before anyone grades it, so there is no provider name to be swayed by. But it was a cost decision first and it costs something real. Where several arms returned the same URL, the longest extraction anyone returned is what got graded, so extraction quality is averaged away on those pages. With a bigger budget I would not pool.</p>
+  <p>Providers return the same pages constantly, so every page from every arm collapses into one pool keyed by normalised URL and gets graded once, and that rating then counts for each provider that returned it. 66.8% of the 7,496 pages came from exactly one provider and 24 came from all eight.</p>
+  <p>Pooling also blinds the judge, which is a real argument for doing it, since a page is detached from whoever returned it before anyone grades it and there is no provider name left to be swayed by. However, it was a cost decision first and it costs something real: where several arms returned the same URL, the longest extraction anyone returned is the one that got graded, so extraction quality is averaged away on those pages. With a bigger budget I would not pool.</p>
 </section>
 
 <section id="statistics">
   <h2>The statistics, in words</h2>
   <div class="limits">
-    <div class="limit"><h3>Confidence interval</h3><p>Where the real value probably sits, given that 204 questions is a sample rather than everything. If two of them overlap, the order between those providers is not a finding.</p></div>
-    <div class="limit"><h3>Variance shares</h3><p>Of everything that moves in the ratings, how much each thing explains. The provider explains 23.1%. Which judge you happened to pick explains 2.2%.</p></div>
-    <div class="limit"><h3>Kappa</h3><p>How much two judges agree, after subtracting the agreement you would get from two people guessing. These three run 0.51 to 0.55: they agree on the order and argue about the decimals.</p></div>
-    <div class="limit"><h3>Sign test</h3><p>Compare two providers on the same small set of questions by counting wins, then ask how often a split that lopsided happens by luck. Used on the 12 unanswerable questions, where eight providers cannot be ranked but two can be compared.</p></div>
+    <div class="limit"><h3>Confidence interval</h3><p>Where the real value probably sits, given that 204 questions is a sample rather than every question anyone could ask. If two of them overlap, the order between those two providers is not a finding.</p></div>
+    <div class="limit"><h3>Variance shares</h3><p>Of everything that moves in the ratings, how much each thing explains. Which provider you used explains 23.1% of it, and which judge you happened to pick explains 2.2%.</p></div>
+    <div class="limit"><h3>Kappa</h3><p>How much two judges agree, after subtracting the agreement you would get from two people guessing. These three run 0.51 to 0.55, which means they agree on the order and argue about the decimals.</p></div>
+    <div class="limit"><h3>Sign test</h3><p>Comparing two providers over the same small set of questions by counting wins, then asking how often a split that lopsided would come up by luck. I used it on the 12 unanswerable questions, where eight providers cannot be ranked but two of them can still be compared.</p></div>
   </div>
 </section>
 
@@ -442,31 +441,31 @@ footer p { font-size: 0.86rem; color: var(--muted); }
   <div class="limits">
     <div class="limit">
       <h3>Who extracts a page best</h3>
-      <p>Each source gets a 1600-character slice, which is what an agent with a real context budget would give it. A bigger slice would let the providers that return whole documents show more of what they extract, and it could reorder the bottom of the table. <a href="#pooling">Pooling</a> costs the same measurement a second way: on the 33% of pages that several arms returned, the longest extraction anyone returned is the one that got graded. Measuring extraction properly means holding the URLs fixed and varying only the extractor, and I have not run that.</p>
+      <p>Each source gets a 1600-character slice, which is what an agent working inside a real context budget would give it, but a bigger slice would let the providers that return whole documents show more of what they extract and it could reorder the bottom of the table. <a href="#pooling">Pooling</a> costs the same measurement a second way, because on the 33% of pages that several arms returned, the longest extraction anyone returned is the one that got graded. Measuring extraction properly means holding the URLs fixed and varying only the extractor, and I have not run that.</p>
     </div>
     <div class="limit">
       <h3>What your agent will answer</h3>
-      <p>Nothing here grades an answer, on purpose. If that is what you want to know, an answer-graded benchmark measures it, bearing in mind such a number is also grading your model.</p>
+      <p>Nothing here grades an answer, on purpose. If that is what you want to know then an answer-graded benchmark measures it, bearing in mind that such a number is also grading your model.</p>
     </div>
     <div class="limit">
       <h3>How any of this behaves at scale</h3>
-      <p>Every arm ran once, at whatever concurrency it tolerated, so nothing here measures throughput, quota behaviour, or what any of it costs at volume. What the run did collide with is in <a href="https://sameerhimati.com/sourcery/#notes">notes from the run</a>: a provider that throttles at one request, a plan that ran out mid-way, a day that ate most of a month's credits. Those happened once each. None of them is a measurement.</p>
+      <p>Every arm ran once, at whatever concurrency it tolerated, so nothing here measures throughput, quota behaviour, or what any of it costs at volume. What the run did collide with is written up in <a href="https://sameerhimati.com/sourcery/#notes">notes from the run</a>, a provider that throttles at one request, a plan that ran out mid-way, a day that ate most of a month's credits, but those happened once each and none of them is a measurement.</p>
     </div>
     <div class="limit">
       <h3>Whether the questions look like yours</h3>
-      <p>They are written rather than collected from real traffic, and <a href="#questions">I wrote all of them</a>. The harness exists so you can run your own instead, which is the only real answer to this one.</p>
+      <p>They are written rather than collected from real traffic, and <a href="#questions">I wrote all of them</a>, so the harness exists in order that you can run your own instead. That is the only real answer to this one.</p>
     </div>
     <div class="limit">
       <h3>Whether tomorrow would come out the same</h3>
-      <p>This is one run, fetched 17–18 August 2026. Every provider is a moving target: indexes change, tiers change, and the model behind one of these can be swapped without anyone telling you. Nothing here is measured twice, so none of these numbers carries an estimate of how far it would move on a re-run. The confidence intervals describe sampling across questions inside this one run, which is a narrower claim than it looks.</p>
+      <p>This is one run, fetched 17–18 August 2026, and every provider is a moving target: indexes change, tiers change, and the model behind one of these can be swapped without anyone telling you. Nothing here is measured twice, so none of these numbers carries an estimate of how far it would move on a re-run, and the confidence intervals only describe sampling across questions inside this one run, which is a narrower claim than it looks.</p>
     </div>
     <div class="limit">
       <h3>Whether the judges are right</h3>
-      <p>Three language models grade every page and they agree with each other well enough to trust the ranking, kappa 0.51 to 0.55, which is moderate on a four-point scale. That is agreement among themselves, not agreement with a person. They were calibrated against human-settled pairs before the run, but three models trained on overlapping text can share a blind spot and agree anyway, and the 12 unanswerable questions show exactly that: a plausible near-miss fools some of them.</p>
+      <p>Three language models grade every page and they agree with each other well enough to trust the ranking, kappa 0.51 to 0.55, which is moderate on a four-point scale. However, that is agreement among themselves rather than agreement with a person. They were calibrated against human-settled pairs before the run, but three models trained on overlapping text can share a blind spot and agree anyway, and the 12 unanswerable questions show exactly that happening: a plausible near-miss gets past some of them.</p>
     </div>
     <div class="limit">
       <h3>How fast any of them are for you</h3>
-      <p>The table has a median latency column, so timing is measured, but it is measured from one machine on one network over two days. A provider that is quick from my connection may not be quick from your region. Take the ordering seriously and the absolute numbers loosely.</p>
+      <p>The table has a median latency column so timing is measured, but it is measured from one machine on one network over two days, and a provider that is quick from my connection may not be quick from your region. Take the ordering seriously and the absolute numbers loosely.</p>
     </div>
   </div>
 </section>

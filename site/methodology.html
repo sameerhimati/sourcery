@@ -77,7 +77,8 @@ __NAV__
 
 <section id="ratings">
   <h2>The two ratings</h2>
-  <p>There are two ratings here and they answer different questions of the same results, both on a 0 to 3 scale. The page rating asks whether one page helps answer one question, and the judge scoring it is never told which provider returned that page, never shown an answer and never asked to write one. The set rating asks whether a whole set of __NUM_SOURCES__ results is enough to answer at all, and that is the one carrying the ranking on the results page.</p>
+  <p>One call to a provider for one query comes back with a set of __NUM_SOURCES__ pages, and that set is the unit everything here is measured on. Each of those pages gets read and rated on its own, and then the __NUM_SOURCES__ of them get read again together as a set, so a single question against a single provider produces __NUM_SOURCES__ page ratings and one set rating from every judge.</p>
+  <p>The two ratings answer different questions of the same results, both on a 0 to 3 scale. The page rating asks whether one page helps answer one question, and the judge scoring it is never told which provider returned that page, never shown an answer and never asked to write one. The set rating asks whether the whole set is enough to answer at all, and that is the one carrying the ranking on the results page.</p>
   <p>These are separate judge calls rather than one derived from the other, so the set rating is never an average of the page ratings. It could not be, because __NUM_SOURCES__ pages each holding a third of the answer and __NUM_SOURCES__ pages holding nothing average out to roughly the same score, and only one of those sets actually lets you answer the question.</p>
   <p>Each judge scores on its own and nothing gets merged before it is recorded, so every individual verdict sits in <a href="__BASE__explorer/">the explorer</a> with the sentence that judge wrote for it. The averaging happens once, at the end, and only so there is something to put in a table: a provider's set rating is the mean of its scores across all __N_QUESTIONS__ questions and all three judges.</p>
   <p>Both scales come with a written definition of every score rather than a bare number, because two models can agree on what a 2 means but a naked scale is something each one invents its own version of.</p>
@@ -87,7 +88,15 @@ __NAV__
 
   <h3 class="sub">Set rating: could someone answer from these alone?</h3>
   <div class="rungs">__SET_RUNGS__</div>
-  <p class="sub">Both prompts are in <span class="mono">core/controls.ts</span> in full. The set prompt replaced an earlier one partway through the run. That one graded whether sources <em>looked</em> good, fresh and authoritative and cleanly extracted, and on a question with no answer anywhere it handed out a passing score while the page judge was correctly rating every page 0 or 1. The sources were good. They just could not answer. Everything published here was scored with the replacement.</p>
+  <details class="prompts">
+    <summary>The two prompts, exactly as they were sent</summary>
+    <p class="hint">Printed from <a href="__CONTROLS_URL__">the file the run imported them from</a>, at the commit these numbers were judged against, so what is on this page cannot drift from what the judges were actually asked. The scale above appears inside each one because that is how a judge sees it.</p>
+    <h4>Page rating</h4>
+    <pre>__PAGE_PROMPT__</pre>
+    <h4>Set rating</h4>
+    <pre>__SET_PROMPT__</pre>
+  </details>
+  <p class="sub">The set prompt replaced an earlier one partway through the run. That one graded whether sources <em>looked</em> good, fresh and authoritative and cleanly extracted, and on a question with no answer anywhere it handed out a passing score while the page judge was correctly rating every page 0 or 1. The sources were good, they just could not answer, and everything published here was scored with the replacement.</p>
 </section>
 
 <section id="varies">

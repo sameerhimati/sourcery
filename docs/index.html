@@ -305,6 +305,29 @@ td .na { color: var(--muted); font-family: var(--font-body); }
 .rung .mg { color: var(--muted); }
 @media (max-width: 560px) { .rung { grid-template-columns: 1.6rem 1fr; } .rung .mg { grid-column: 2; } }
 
+/* ── the prompts, printed ───────────────────────────────────────────────── */
+/* Collapsed by default: a reader following the argument does not need 250 words
+   of system prompt in the way, and a reader checking the method needs it on the
+   page rather than in a file they have to go find. <details> because that is one
+   HTML element and this page runs no script. */
+.prompts { margin: var(--space-md) 0 0; border-top: 1px solid var(--rule); padding-top: var(--space-sm); }
+.prompts > summary { cursor: pointer; font-weight: 700; color: var(--ink); font-size: 0.9rem; }
+.prompts > summary:hover { color: var(--accent); }
+.prompts .hint { margin: var(--space-sm) 0; font-size: 0.82rem; color: var(--muted); }
+.prompts h4 {
+  font-family: var(--font-mono); font-size: 0.68rem; font-weight: 500;
+  letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted);
+  margin: var(--space-md) 0 var(--space-2xs);
+}
+/* Wrapped rather than scrolled. A prompt is prose the model reads as prose, and
+   a horizontal scrollbar would hide the end of every line of it. */
+.prompts pre {
+  margin: 0; padding: var(--space-sm) var(--space-md);
+  background: var(--paper-2); border-left: 2px solid var(--rule-2);
+  font-family: var(--font-mono); font-size: 0.76rem; line-height: 1.6; color: var(--ink-2);
+  white-space: pre-wrap; overflow-wrap: anywhere;
+}
+
 /* ── footer ─────────────────────────────────────────────────────────────── */
 footer { margin-top: var(--space-2xl); padding-top: var(--space-md); border-top: 1px solid var(--ink); }
 footer p { font-size: 0.86rem; color: var(--muted); }

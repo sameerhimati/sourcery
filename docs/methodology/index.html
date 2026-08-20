@@ -271,6 +271,29 @@ td .na { color: var(--muted); font-family: var(--font-body); }
 .rung .mg { color: var(--muted); }
 @media (max-width: 560px) { .rung { grid-template-columns: 1.6rem 1fr; } .rung .mg { grid-column: 2; } }
 
+/* ── the prompts, printed ───────────────────────────────────────────────── */
+/* Collapsed by default: a reader following the argument does not need 250 words
+   of system prompt in the way, and a reader checking the method needs it on the
+   page rather than in a file they have to go find. <details> because that is one
+   HTML element and this page runs no script. */
+.prompts { margin: var(--space-md) 0 0; border-top: 1px solid var(--rule); padding-top: var(--space-sm); }
+.prompts > summary { cursor: pointer; font-weight: 700; color: var(--ink); font-size: 0.9rem; }
+.prompts > summary:hover { color: var(--accent); }
+.prompts .hint { margin: var(--space-sm) 0; font-size: 0.82rem; color: var(--muted); }
+.prompts h4 {
+  font-family: var(--font-mono); font-size: 0.68rem; font-weight: 500;
+  letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted);
+  margin: var(--space-md) 0 var(--space-2xs);
+}
+/* Wrapped rather than scrolled. A prompt is prose the model reads as prose, and
+   a horizontal scrollbar would hide the end of every line of it. */
+.prompts pre {
+  margin: 0; padding: var(--space-sm) var(--space-md);
+  background: var(--paper-2); border-left: 2px solid var(--rule-2);
+  font-family: var(--font-mono); font-size: 0.76rem; line-height: 1.6; color: var(--ink-2);
+  white-space: pre-wrap; overflow-wrap: anywhere;
+}
+
 /* ── footer ─────────────────────────────────────────────────────────────── */
 footer { margin-top: var(--space-2xl); padding-top: var(--space-md); border-top: 1px solid var(--ink); }
 footer p { font-size: 0.86rem; color: var(--muted); }
@@ -378,7 +401,8 @@ footer p { font-size: 0.86rem; color: var(--muted); }
 
 <section id="ratings">
   <h2>The two ratings</h2>
-  <p>There are two ratings here and they answer different questions of the same results, both on a 0 to 3 scale. The page rating asks whether one page helps answer one question, and the judge scoring it is never told which provider returned that page, never shown an answer and never asked to write one. The set rating asks whether a whole set of 8 results is enough to answer at all, and that is the one carrying the ranking on the results page.</p>
+  <p>One call to a provider for one query comes back with a set of 8 pages, and that set is the unit everything here is measured on. Each of those pages gets read and rated on its own, and then the 8 of them get read again together as a set, so a single question against a single provider produces 8 page ratings and one set rating from every judge.</p>
+  <p>The two ratings answer different questions of the same results, both on a 0 to 3 scale. The page rating asks whether one page helps answer one question, and the judge scoring it is never told which provider returned that page, never shown an answer and never asked to write one. The set rating asks whether the whole set is enough to answer at all, and that is the one carrying the ranking on the results page.</p>
   <p>These are separate judge calls rather than one derived from the other, so the set rating is never an average of the page ratings. It could not be, because 8 pages each holding a third of the answer and 8 pages holding nothing average out to roughly the same score, and only one of those sets actually lets you answer the question.</p>
   <p>Each judge scores on its own and nothing gets merged before it is recorded, so every individual verdict sits in <a href="https://sameerhimati.com/sourcery/explorer/">the explorer</a> with the sentence that judge wrote for it. The averaging happens once, at the end, and only so there is something to put in a table: a provider's set rating is the mean of its scores across all 204 questions and all three judges.</p>
   <p>Both scales come with a written definition of every score rather than a bare number, because two models can agree on what a 2 means but a naked scale is something each one invents its own version of.</p>
@@ -394,7 +418,28 @@ footer p { font-size: 0.86rem; color: var(--muted); }
 <div class="rung"><div class="n">1</div><div class="nm">on topic only</div><div class="mg">about the right subject, but reading all of it would not answer the question</div></div>
 <div class="rung"><div class="n">2</div><div class="nm">partial</div><div class="mg">part of the answer is here; the rest would need another search</div></div>
 <div class="rung"><div class="n">3</div><div class="nm">answerable</div><div class="mg">the question can be answered from this set alone</div></div></div>
-  <p class="sub">Both prompts are in <span class="mono">core/controls.ts</span> in full. The set prompt replaced an earlier one partway through the run. That one graded whether sources <em>looked</em> good, fresh and authoritative and cleanly extracted, and on a question with no answer anywhere it handed out a passing score while the page judge was correctly rating every page 0 or 1. The sources were good. They just could not answer. Everything published here was scored with the replacement.</p>
+  <details class="prompts">
+    <summary>The two prompts, exactly as they were sent</summary>
+    <p class="hint">Printed from <a href="https://github.com/sameerhimati/sourcery/blob/f730cad/core/controls.ts">the file the run imported them from</a>, at the commit these numbers were judged against, so what is on this page cannot drift from what the judges were actually asked. The scale above appears inside each one because that is how a judge sees it.</p>
+    <h4>Page rating</h4>
+    <pre>You judge whether ONE web page helps answer ONE question. Grade the page on this scale:
+0 = not relevant: does not address the question
+1 = marginal: on the topic, but would not help answer it
+2 = relevant: contains part of the answer, or usable evidence toward it
+3 = highly relevant: answers the question directly
+A page can contain every word of the question and answer nothing — judge whether it answers, not whether it matches keywords. Judge the body, not the headline: if a page's title or opening promises the subject but the actual content is about something else, that is 0, however closely the title matches. A missing publish date is not itself disqualifying; stale content that the question implicitly needs fresh is.
+Return JSON only: {&quot;rung&quot;: &lt;int 0-3&gt;, &quot;rationale&quot;: &quot;&lt;one sentence&gt;&quot;}.</pre>
+    <h4>Set rating</h4>
+    <pre>You judge whether ONE web-search provider's WHOLE set of returned sources is enough to answer ONE question. The question you are answering is: could someone answer it from this set alone, without searching again? Grade the set on this scale:
+0 = nothing: no source here addresses the question
+1 = on topic only: about the right subject, but reading all of it would not answer the question
+2 = partial: part of the answer is here; the rest would need another search
+3 = answerable: the question can be answered from this set alone
+Grade what the sources say, not what they are about. Authoritative, on-topic, cleanly extracted pages that do not contain the answer are a 1 — a set of the right organisation's pages that never states the fact asked for is a failed retrieval, not a good one. If nothing in the set answers the question, say so even when every source is credible.
+Judge the body, not the headline: a page whose title promises the subject while its content is about something else contributes nothing. A missing publish date is not itself disqualifying; stale content that the question implicitly needs fresh is.
+Return JSON only: {&quot;score&quot;: &lt;int 0-3&gt;, &quot;rationale&quot;: &quot;&lt;one sentence&gt;&quot;}.</pre>
+  </details>
+  <p class="sub">The set prompt replaced an earlier one partway through the run. That one graded whether sources <em>looked</em> good, fresh and authoritative and cleanly extracted, and on a question with no answer anywhere it handed out a passing score while the page judge was correctly rating every page 0 or 1. The sources were good, they just could not answer, and everything published here was scored with the replacement.</p>
 </section>
 
 <section id="varies">

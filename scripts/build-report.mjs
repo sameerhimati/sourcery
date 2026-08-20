@@ -32,7 +32,7 @@ import fs from "node:fs";
 import path from "node:path";
 // Imported, not transcribed: the rubrics and rung names the methodology page
 // publishes are the ones the run actually used. A copy would drift.
-import { RELEVANCE_RUNGS, SET_RUNGS, NUM_SOURCES } from "../core/controls.ts";
+import { RELEVANCE_RUNGS, SET_RUNGS, NUM_SOURCES, RELEVANCE_JUDGE_SYSTEM, SET_JUDGE_SYSTEM } from "../core/controls.ts";
 // The nav bar, its styles, and the site's URLs live in one module both build
 // scripts import, so the report and the explorer cannot disagree about either.
 import { BASE, REPO, fetchedRange, navHtml, NAV_CSS } from "./nav.mjs";
@@ -589,6 +589,15 @@ const REPL = {
   __BASE__: BASE,
   __REPO__: REPO,
   __NUM_SOURCES__: String(NUM_SOURCES.default),
+  // The prompts as sent, imported rather than retyped. A method page that
+  // describes a prompt in its own words is asking to be trusted; this one can be
+  // read against the file, and it cannot drift from what actually ran.
+  __PAGE_PROMPT__: esc(RELEVANCE_JUDGE_SYSTEM),
+  __SET_PROMPT__: esc(SET_JUDGE_SYSTEM),
+  // Pinned to the commit the numbers were judged against, not to main, so the
+  // link keeps showing the code that produced them. A dirty checkout has no
+  // sha to link to, so it falls back rather than 404ing.
+  __CONTROLS_URL__: `${REPO}/blob/${/^[0-9a-f]{7,40}$/.test(d.code_sha ?? "") ? d.code_sha : "main"}/core/controls.ts`,
   __PAGE_RUNGS__: rungRows(RELEVANCE_RUNGS),
   __SET_RUNGS__: rungRows(SET_RUNGS),
   __STYLE__: fs.readFileSync("site/style.css", "utf8").trimEnd() + "\n" + NAV_CSS,

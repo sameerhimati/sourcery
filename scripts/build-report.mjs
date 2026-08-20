@@ -513,8 +513,18 @@ const REPL = {
   __LAT_SLOW__: LABEL[latSlow],
   __LAT_SLOW_P50__: secs(d.latency[latSlow].p50_ms),
   __LAT_SLOW_P90__: secs(d.latency[latSlow].p90_ms),
-  __LAT_RATIO__: String(Math.round(d.latency[latSlow].p50_ms / d.latency[latFast].p50_ms)),
   __CHEAPEST__: LABEL[cheapest],
+  // How far clear the fastest arm is of the next one down. Derived rather than
+  // typed, because "three times quicker" is a claim about two medians and both
+  // of them move when the run does.
+  __LAT_FAST_LEAD__: String(
+    Math.round(
+      Math.min(...ORDER.filter((k) => k !== latFast).map((k) => d.latency[k].p50_ms)) / d.latency[latFast].p50_ms,
+    ),
+  ),
+  __PARALLEL_PRICE__: money(P.parallel.cost.per_query_usd),
+  __PARALLEL_HEADINGS__: String(Math.round(P.parallel.structure.headings_pct)),
+  __PARALLEL_LINKS__: String(Math.round(P.parallel.structure.links_pct)),
   __CHEAPEST_P50__: secs(d.latency[cheapest].p50_ms),
   __POOL_SAVED_PCT__: String(Math.round(((d.counts.pairs - d.counts.unique_pairs) / d.counts.pairs) * 100)),
   // The complement of from_one_provider_pct: the share of pages more than one

@@ -560,6 +560,13 @@ const REPL = {
   __TRUNC_LIMIT__: String(P.firecrawl.truncation.limit_chars),
   __TRUNC_FIRECRAWL__: String(Math.round(P.firecrawl.truncation.pct)),
   __TRUNC_PERPLEXITY__: String(Math.round(P.perplexity.truncation.pct)),
+  __PPX_HEADINGS__: String(Math.round(P.perplexity.structure.headings_pct)),
+  __TRUNC_EXA__: String(Math.round(P.exa.truncation.pct)),
+  __TRUNC_BRAVE__: String(Math.round(P.brave.truncation.pct)),
+  // Run 1's write-up is not in the tree any more. It is the reason run 2 exists
+  // and the page names it three times, so it links at the last commit that had
+  // it rather than at nothing.
+  __RUN1_URL__: `${REPO}/blob/35c5a38/docs/findings.md`,
   __GENERATED__: new Date(d.generated_at).toISOString().slice(0, 10),
   // What the page stamps itself with. `generated_at` is when this script last
   // ran, which drifts every rebuild and would let a year-old run advertise

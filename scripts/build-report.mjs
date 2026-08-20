@@ -35,7 +35,7 @@ import path from "node:path";
 import { RELEVANCE_RUNGS, SET_RUNGS, NUM_SOURCES, RELEVANCE_JUDGE_SYSTEM, SET_JUDGE_SYSTEM } from "../core/controls.ts";
 // The nav bar, its styles, and the site's URLs live in one module both build
 // scripts import, so the report and the explorer cannot disagree about either.
-import { BASE, REPO, fetchedRange, navHtml, NAV_CSS } from "./nav.mjs";
+import { BASE, REPO, fetchedRange, navHtml, NAV_CSS, countPixel } from "./nav.mjs";
 
 const DATA = process.argv[2] ?? "docs/report-data.json";
 
@@ -612,8 +612,8 @@ const REPL = {
 // extra rather than a REPL entry so the orphan check below stays about numbers.
 const navMeta = { fetched: REPL.__FETCHED__ };
 const PAGES = [
-  ["site/report.html", "docs/index.html", { __NAV__: navHtml("results", navMeta) }],
-  ["site/methodology.html", "docs/methodology/index.html", { __NAV__: navHtml("methodology", navMeta) }],
+  ["site/report.html", "docs/index.html", { __NAV__: navHtml("results", navMeta), __COUNT__: countPixel("/", "Report") }],
+  ["site/methodology.html", "docs/methodology/index.html", { __NAV__: navHtml("methodology", navMeta), __COUNT__: countPixel("/methodology", "Methodology") }],
 ];
 
 const usedSomewhere = new Set();

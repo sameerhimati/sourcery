@@ -21,6 +21,20 @@ export function fetchedRange({ first_fetch, last_fetch }) {
   return `${+d1} ${MONTHS[+m1 - 1]} – ${+d2} ${MONTHS[+m2 - 1]} ${y2}`;
 }
 
+// Counting readers without running any script on the page. GoatCounter serves a
+// pixel endpoint, so a plain <img> does it: no JavaScript, no cookies, nothing
+// stored that identifies anybody. That matters here more than it usually would,
+// because the page's argument is that everything on it can be checked, and a
+// tracker a reader cannot see costs some of that.
+//
+// Empty means no pixel is emitted at all. Put the GoatCounter site code here
+// (the subdomain, so "sourcery" for sourcery.goatcounter.com) to turn it on.
+export const GOATCOUNTER = "";
+export const countPixel = (path, title) =>
+  GOATCOUNTER
+    ? `<img src="https://${GOATCOUNTER}.goatcounter.com/count?p=${encodeURIComponent(path)}&t=${encodeURIComponent(title)}" alt="" width="1" height="1" style="position:absolute">`
+    : "";
+
 // Three pages, three items. "How to pick" used to sit here as a fragment link
 // into the front page; it is the first thing on that page now, so the Results
 // item already lands on it and a second item pointing at the same screen was

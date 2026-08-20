@@ -19,7 +19,7 @@ import fs from "node:fs";
 import path from "node:path";
 // The nav bar and its styles come from the same module the report build uses,
 // so the two pages carry one bar rather than two copies that drift.
-import { fetchedRange, navHtml, NAV_CSS } from "./nav.mjs";
+import { fetchedRange, navHtml, NAV_CSS, countPixel } from "./nav.mjs";
 
 const DATA = process.argv[2] ?? "docs/explorer/data.json";
 const OUT = process.argv[3] ?? "docs/explorer/index.html";
@@ -29,7 +29,7 @@ const REPORT_DATA = "docs/report-data.json";
 
 const template = fs.readFileSync(TEMPLATE, "utf8");
 
-for (const ph of ["__SOURCERY_META__", "__NAV__", "__NAV_STYLE__"]) {
+for (const ph of ["__SOURCERY_META__", "__NAV__", "__NAV_STYLE__", "__COUNT__"]) {
   if (!template.includes(ph)) {
     console.error(`${TEMPLATE} has no ${ph} placeholder.`);
     process.exit(1);
@@ -80,6 +80,7 @@ fs.writeFileSync(
   OUT,
   template
     .replace("__SOURCERY_META__", () => safe)
+    .replace("__COUNT__", () => countPixel("/explorer", "Explorer"))
     .replace("__NAV__", () => nav)
     .replace("__NAV_STYLE__", () => NAV_CSS),
 );

@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-08-20T01:21:36.464Z",
+ "generated_at": "2026-08-20T01:21:56.140Z",
  "run_window": {
   "first_fetch": "2026-08-17",
   "last_fetch": "2026-08-18",
@@ -8,7 +8,7 @@
    "2026-08-18"
   ]
  },
- "code_sha": "8ac91f5-dirty",
+ "code_sha": "f730cad",
  "run": "run 2",
  "source": "derived by scripts/build-report-data.mjs from .sourcery/pooled-*.jsonl and pooled-summary.json",
  "judges": [

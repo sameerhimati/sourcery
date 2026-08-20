@@ -92,6 +92,41 @@ __NAV__
   <p class="dnote">I thought it important to be upfront about the limits of this run. If there is something you would want done differently, DM me on <a href="https://x.com/sameerhimati">X</a>. There is more in <a href="__BASE__methodology/">the methodology</a>, and <a href="__BASE__methodology/#limits">what this cannot tell you</a>.</p>
 </div>
 
+<section id="picking">
+  <h2>How to pick your provider</h2>
+  <p>What you're building decides the best provider for you. Three of these eight are tied on the score below and they still aren't interchangeable: one returns snippets, one returns prose with the links stripped out, one returns excerpts with the links left in. So pick on the job at hand, and weigh what your code can check: it can see an empty result and handle it, but it is much harder to account for a confident near-miss.</p>
+  <div class="picks">
+    <div class="pickrow">
+      <div class="who"><a href="__HOME_PERPLEXITY__">Perplexity</a><span>best overall</span></div>
+      <p>Clear of the field and on the cheapest tier. Fully answers __PPX_RUNG3__% of the time, about 1.4&times; anyone else. It returns excerpts rather than whole pages, and it is the easiest of the eight to hallucinate: asked a question with no answer, it convinced two of the three judges there was a direct answer. I would be cautious about using Perplexity in real production outside of this.</p>
+    </div>
+    <div class="pickrow">
+      <div class="who"><a href="__HOME_EXA__">Exa</a><span>best for agents</span></div>
+      <p>Keeps structure and strips navigation: __EXA_HEADINGS__% of its pages have headings, with only __EXA_LINKS__% having links. Top-cluster relevance, and it goes toe to toe with Parallel while having a much better developer experience and dashboard. The best option when you are feeding text to a model and link noise costs you context.</p>
+    </div>
+    <div class="pickrow">
+      <div class="who"><a href="__HOME_PARALLEL__">Parallel</a><span>best balance</span></div>
+      <p>Third, close enough to Brave and Exa that the order between the three of them is noise, on the cheapest tier at __PARALLEL_PRICE__ a query, and quick. The thing that sets it apart is that alongside Perplexity it is the only arm that does not drop between the base and the hard half, while everyone else gets worse exactly where you needed the help. __PARALLEL_HEADINGS__% of its pages keep headings and __PARALLEL_LINKS__% keep links, so it sits between Exa's stripped prose and Tavily's whole documents.</p>
+    </div>
+    <div class="pickrow">
+      <div class="who"><a href="__HOME_BRAVE__">Brave</a><span>summaries only</span></div>
+      <p>Ranks second on relevance and returns real page text on __BRAVE_MD__% of results, and its content is search snippets joined together. Fine for grounding a summary, but wrong for anything that has to read a page.</p>
+    </div>
+    <div class="pickrow">
+      <div class="who"><a href="__HOME_SERPER__">Serper</a><span>best raw search</span></div>
+      <p>Links and snippets, with no page content, at __SERPER_PRICE__ a query. The cheapest, and the best of them if you already have a scraper and only need the index.</p>
+    </div>
+    <div class="pickrow">
+      <div class="who"><a href="__HOME_FIRECRAWL__">Firecrawl</a><span>hardest to fool</span></div>
+      <p>On the __N_UNANS__ questions with no answer, it produced the fewest convincing near-misses, beating Perplexity on all __N_UNANS__. Most expensive of the eight.</p>
+    </div>
+    <div class="pickrow">
+      <div class="who"><a href="__HOME_TAVILY__">Tavily</a><span>best for full documents</span></div>
+      <p>Full page markdown on __TAVILY_MD__% of results, with headings, links and images intact. Outscores Firecrawl and costs less. If your agent needs the document rather than a summary of it, start here.</p>
+    </div>
+  </div>
+</section>
+
 <nav class="toc" aria-label="On this page">
   <span class="toclab">On this page</span>
   <a href="#results">Results</a>
@@ -102,7 +137,6 @@ __NAV__
   <a href="#vs-answer-graded">vs. answer-graded indexes</a>
   <a href="#table">Every number</a>
   <a href="#notes">Notes from the run</a>
-  <a href="#picking">How to pick</a>
 </nav>
 
 <section id="results">
@@ -162,7 +196,6 @@ __NAV__
   <p>Their index carries no confidence intervals and their top five span two points. On their published sample sizes that gap is inside the noise, which is the same reason three providers here are drawn as a tie.</p>
 </section>
 
-
 <section id="table">
   <h2>Every number</h2>
   <div class="scroller">
@@ -192,41 +225,6 @@ __NAV__
   <p>Bright Data throttles above one concurrent request, so its arm ran at a crawl and needed a second repair pass that went past midnight, which is why this run is stamped across two days instead of one. Tavily's plan ran out around question __TAVILY_QUOTA_Q__ and the rest of its questions had to wait. Firecrawl went through __FC_CREDITS__ credits in a day, __FC_CREDIT_PCT__% of a month's allowance and $__FC_CREDIT_USD__ of prepaid credit, because it bills web and news results separately.</p>
   <p>I also tried a keyless arm as a free-floor control and dropped it after __KEYLESS_FAILS__ consecutive captcha failures and no successes at all. Need to work on that one.</p>
   <p>One thing I would tell anyone repeating this: run it before you read it. A batching bug cost about $__WASTED_USD__ of retrieval that produced nothing usable. Of __N_QUESTIONS__ questions across eight providers, __SEARCH_CLEAN__ of __SEARCH_TOTAL__ fetches came back clean; the single miss is Firecrawl timing out at 300 seconds, which I checked against their API by hand before recording it.</p>
-</section>
-
-<section id="picking">
-  <h2>How to pick your provider</h2>
-  <p>What you're building decides the best provider for you. Three of these eight are tied on the headline and they still aren't interchangeable: one returns snippets, one returns prose with the links stripped out, one returns excerpts with the links left in. So pick on the job at hand, and weigh what your code can check: it can see an empty result and handle it, but it is much harder to account for a confident near-miss.</p>
-  <div class="picks">
-    <div class="pickrow">
-      <div class="who"><a href="__HOME_PERPLEXITY__">Perplexity</a><span>best overall</span></div>
-      <p>Clear of the field and on the cheapest tier. Fully answers __PPX_RUNG3__% of the time, about 1.4&times; anyone else. It returns excerpts rather than whole pages, and it is the easiest of the eight to hallucinate: asked a question with no answer, it convinced two of the three judges there was a direct answer. I would be cautious about using Perplexity in real production outside of this.</p>
-    </div>
-    <div class="pickrow">
-      <div class="who"><a href="__HOME_EXA__">Exa</a><span>best for agents</span></div>
-      <p>Keeps structure and strips navigation: __EXA_HEADINGS__% of its pages have headings, with only __EXA_LINKS__% having links. Top-cluster relevance, and it goes toe to toe with Parallel while having a much better developer experience and dashboard. The best option when you are feeding text to a model and link noise costs you context.</p>
-    </div>
-    <div class="pickrow">
-      <div class="who"><a href="__HOME_PARALLEL__">Parallel</a><span>best balance</span></div>
-      <p>Third on the headline and inside Brave's and Exa's intervals, on the cheapest tier at __PARALLEL_PRICE__ a query, and quick. The thing that sets it apart is that alongside Perplexity it is the only arm that does not drop between the base and the hard half, while everyone else gets worse exactly where you needed the help. __PARALLEL_HEADINGS__% of its pages keep headings and __PARALLEL_LINKS__% keep links, so it sits between Exa's stripped prose and Tavily's whole documents.</p>
-    </div>
-    <div class="pickrow">
-      <div class="who"><a href="__HOME_BRAVE__">Brave</a><span>summaries only</span></div>
-      <p>Ranks second on relevance and returns real page text on __BRAVE_MD__% of results, and its content is search snippets joined together. Fine for grounding a summary, but wrong for anything that has to read a page.</p>
-    </div>
-    <div class="pickrow">
-      <div class="who"><a href="__HOME_SERPER__">Serper</a><span>best raw search</span></div>
-      <p>Links and snippets, with no page content, at __SERPER_PRICE__ a query. The cheapest, and the best of them if you already have a scraper and only need the index.</p>
-    </div>
-    <div class="pickrow">
-      <div class="who"><a href="__HOME_FIRECRAWL__">Firecrawl</a><span>hardest to fool</span></div>
-      <p>On the __N_UNANS__ questions with no answer, it produced the fewest convincing near-misses, beating Perplexity on all __N_UNANS__. Most expensive of the eight.</p>
-    </div>
-    <div class="pickrow">
-      <div class="who"><a href="__HOME_TAVILY__">Tavily</a><span>best for full documents</span></div>
-      <p>Full page markdown on __TAVILY_MD__% of results, with headings, links and images intact. Outscores Firecrawl and costs less. If your agent needs the document rather than a summary of it, start here.</p>
-    </div>
-  </div>
 </section>
 
 <footer>

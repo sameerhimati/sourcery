@@ -21,12 +21,12 @@ export function fetchedRange({ first_fetch, last_fetch }) {
   return `${+d1} ${MONTHS[+m1 - 1]} – ${+d2} ${MONTHS[+m2 - 1]} ${y2}`;
 }
 
-// "How to pick" is a section of the front page, so it is a fragment link and is
-// never the current page. If it ever moves to its own URL it becomes a fourth
-// `current` value here and nothing else in either build script changes.
+// Three pages, three items. "How to pick" used to sit here as a fragment link
+// into the front page; it is the first thing on that page now, so the Results
+// item already lands on it and a second item pointing at the same screen was
+// just a longer bar.
 const ITEMS = [
   ["results", "Results", BASE],
-  ["pick", "How to pick", `${BASE}#picking`],
   ["methodology", "Methodology", `${BASE}methodology/`],
   ["explorer", "Explorer", `${BASE}explorer/`],
 ];

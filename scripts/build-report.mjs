@@ -552,6 +552,7 @@ const REPL = {
     Math.round((d.recorded.firecrawl_credits.value / d.recorded.firecrawl_credits.monthly_allowance) * 100),
   ),
   __FC_CREDIT_USD__: String(d.recorded.firecrawl_credits.usd),
+  __WASTED_USD__: String(d.recorded.wasted_usd.value),
   // Derived, not recorded: the number of questions Tavily got through before its
   // plan's quota stopped it is exactly its row count on the run's first day.
   __TAVILY_QUOTA_Q__: String(d.cited.first_day_rows.tavily),

@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-08-19T20:43:29.698Z",
+ "generated_at": "2026-08-20T01:21:36.464Z",
  "run_window": {
   "first_fetch": "2026-08-17",
   "last_fetch": "2026-08-18",
@@ -8,7 +8,7 @@
    "2026-08-18"
   ]
  },
- "code_sha": "1ca6432-dirty",
+ "code_sha": "8ac91f5-dirty",
  "run": "run 2",
  "source": "derived by scripts/build-report-data.mjs from .sourcery/pooled-*.jsonl and pooled-summary.json",
  "judges": [
@@ -247,6 +247,10 @@
    "monthly_allowance": 5000,
    "usd": 25,
    "source": "Firecrawl billing page, read 2026-08-18. It bills web and news results separately and only the web half becomes sources."
+  },
+  "wasted_usd": {
+   "value": 19,
+   "source": "Provider billing pages, read 2026-08-18. Retrieval spent on a batching bug whose results were unusable and never judged."
   }
  },
  "providers": {

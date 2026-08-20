@@ -598,6 +598,14 @@ const payload = {
       usd: 25,
       source: "Firecrawl billing page, read 2026-08-18. It bills web and news results separately and only the web half becomes sources.",
     },
+    // Retrieval bought by a batching bug and thrown away. It never reached a
+    // judge, so no run log knows about it; it is only visible on the invoices.
+    // Recorded here because the page tells the story and a figure in a sentence
+    // has to come from somewhere.
+    wasted_usd: {
+      value: 19,
+      source: "Provider billing pages, read 2026-08-18. Retrieval spent on a batching bug whose results were unusable and never judged.",
+    },
   },
 
   providers,

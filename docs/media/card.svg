@@ -1,5 +1,5 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-label="Finding the best search for your agents. Run 2, 204 questions, 8 providers, 3 judges.">
-  <title>Finding the best search for your agents</title>
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-label="Sourcery Search Benchmark: Search API Retrieval Eval. Finding the best search for your agents. Run 2, 204 questions, 8 providers, 3 judges.">
+  <title>Sourcery Search Benchmark: Search API Retrieval Eval</title>
   <!-- Open Graph card for https://sameerhimati.com/sourcery/. Palette, type and
        rules match docs/report-style.css: paper #fafcfe, ink #0a0e12, one signal
        red, 1px rules, zero radius, no shadow. Archivo is embedded so the file
@@ -27,8 +27,10 @@
   <text class="site" x="1128" y="74" text-anchor="end">sameerhimati.com/sourcery</text>
   <rect x="72" y="104" width="1056" height="1" fill="#d6d8da"/>
 
-  <text class="title" x="72" y="286">Finding the best search</text>
-  <text class="title" x="72" y="374">for your agents</text>
+  <text class="title" x="72" y="246">Sourcery Search Benchmark:</text>
+  <text class="title" x="72" y="334">Search API Retrieval Eval</text>
+
+  <text class="stand" x="72" y="404">Finding the best search for your agents</text>
 
   <rect x="72" y="518" width="1056" height="1" fill="#d6d8da"/>
   <rect x="72" y="552" width="10" height="10" fill="#d01e1c"/>

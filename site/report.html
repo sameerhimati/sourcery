@@ -8,8 +8,8 @@
      asserts every number on the page traces back to the data file. -->
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Sourcery Search Benchmark: Search API Retrieval Eval Report</title>
-<meta name="description" content="Eight web-search APIs, the same __N_QUESTIONS__ questions, three judges reading every page that came back, and never an answer. Results and full method.">
+<title>Sourcery Search Benchmark: Search API Retrieval Eval</title>
+<meta name="description" content="Finding the best search for your agents">
 <link rel="canonical" href="__BASE__">
 
 <!-- Social preview. The card is a checked-in file rather than a render at
@@ -18,16 +18,16 @@
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Sourcery">
 <meta property="og:url" content="__BASE__">
-<meta property="og:title" content="Sourcery Search Benchmark: Search API Retrieval Eval Report">
-<meta property="og:description" content="Eight providers, the same __N_QUESTIONS__ questions, one run. Three judges read every page that came back and none of them ever graded an answer.">
-<meta property="og:image" content="__BASE__media/share-card.png">
+<meta property="og:title" content="Sourcery Search Benchmark: Search API Retrieval Eval">
+<meta property="og:description" content="Finding the best search for your agents">
+<meta property="og:image" content="__BASE__media/card.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="Sourcery. Finding the best search for your agents. Run 2: __N_QUESTIONS__ questions, eight providers, three judges.">
+<meta property="og:image:alt" content="Sourcery Search Benchmark: Search API Retrieval Eval. Finding the best search for your agents. Run 2: __N_QUESTIONS__ questions, eight providers, three judges.">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Sourcery Search Benchmark: Search API Retrieval Eval Report">
-<meta name="twitter:description" content="Eight providers, the same __N_QUESTIONS__ questions, one run. Three judges read every page that came back and none of them ever graded an answer.">
-<meta name="twitter:image" content="__BASE__media/share-card.png">
+<meta name="twitter:title" content="Sourcery Search Benchmark: Search API Retrieval Eval">
+<meta name="twitter:description" content="Finding the best search for your agents">
+<meta name="twitter:image" content="__BASE__media/card.png">
 
 <!-- Dataset rather than FAQPage. FAQPage would mean writing every answer a
      second time inside a script tag, and two copies of a sentence drift the
@@ -70,7 +70,7 @@ __NAV__
 
 <header class="lead">
   <h1>Sourcery Search Benchmark: Search API Retrieval Eval</h1>
-  <p class="standfirst"><a href="https://artificialanalysis.ai/agents/search-api">Benchmarks of search APIs</a> tend to grade providers by judging the answer a model writes after retrieval. In my view that is a judge of the model more than of the search provider itself. With Sourcery I wanted to evaluate these providers controlling for the LLM, judging on the fetched results rather than the output. All eight providers got the same __N_QUESTIONS__ questions in a single run, then 3 models, Claude Sonnet 5, GPT-5.6 Terra and GLM 5.2, read every page and scored it.</p>
+  <p class="standfirst"><strong>Finding the best search for your agents.</strong> <a href="https://artificialanalysis.ai/agents/search-api">Benchmarks of search APIs</a> tend to grade providers by judging the answer a model writes after retrieval. In my view that is a judge of the model more than of the search provider itself. With Sourcery I wanted to evaluate these providers controlling for the LLM, judging on the fetched results rather than the output. All eight providers got the same __N_QUESTIONS__ questions in a single run, then 3 models, Claude Sonnet 5, GPT-5.6 Terra and GLM 5.2, read every page and scored it.</p>
 </header>
 
 <div class="disclosure" id="who">

@@ -476,7 +476,6 @@ Return JSON only: {&quot;score&quot;: &lt;int 0-3&gt;, &quot;rationale&quot;: &q
   <div class="limits">
     <div class="limit"><h3>Confidence interval</h3><p>Where the real value probably sits, given that 204 questions is a sample rather than every question anyone could ask. If two of them overlap, the order between those two providers is not a finding.</p></div>
     <div class="limit"><h3>Variance shares</h3><p>Of everything that moves in the ratings, how much each thing explains. Which provider you used explains 23.1% of it, and which judge you happened to pick explains 2.2%.</p></div>
-    <div class="limit"><h3>Kappa</h3><p>How much two judges agree, after subtracting the agreement you would get from two people guessing. These three run 0.51 to 0.55, which means they agree on the order and argue about the decimals.</p></div>
     <div class="limit"><h3>Sign test</h3><p>Comparing two providers over the same small set of questions by counting wins, then asking how often a split that lopsided would come up by luck. I used it on the 12 unanswerable questions, where eight providers cannot be ranked but two of them can still be compared.</p></div>
   </div>
 </section>
@@ -506,7 +505,7 @@ Return JSON only: {&quot;score&quot;: &lt;int 0-3&gt;, &quot;rationale&quot;: &q
     </div>
     <div class="limit">
       <h3>Whether the judges are right</h3>
-      <p>Three language models grade every page and they agree with each other well enough to trust the ranking, kappa 0.51 to 0.55, which is moderate on a four-point scale. However, that is agreement among themselves rather than agreement with a person. They were calibrated against human-settled pairs before the run, but three models trained on overlapping text can share a blind spot and agree anyway, and the 12 unanswerable questions show exactly that happening: a plausible near-miss gets past some of them.</p>
+      <p>Three language models grade every page, and which of the three you happen to be reading explains only 2.2% of everything that moves in the ratings, so they are not meaningfully arguing with each other about the ranking. However, that is agreement among themselves rather than agreement with a person. They were calibrated against human-settled pairs before the run, but three models trained on overlapping text can share a blind spot and agree anyway, and the 12 unanswerable questions show exactly that happening, because a plausible near-miss still gets past some of them.</p>
     </div>
     <div class="limit">
       <h3>How fast any of them are for you</h3>

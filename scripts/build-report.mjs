@@ -517,8 +517,6 @@ const REPL = {
   __SPREAD_BASE__: String(d.spread.base),
   __SPREAD_HARD__: String(d.spread.hard),
   __SPREAD_PCT__: String(d.spread.widened_pct),
-  __KAPPA_LO__: d.agreement.reduce((a, x) => Math.min(a, x.kappa), 1).toFixed(2),
-  __KAPPA_HI__: d.agreement.reduce((a, x) => Math.max(a, x.kappa), 0).toFixed(2),
   __VAR_JUDGE__: (d.variance_shares.judge * 100).toFixed(1),
   __VAR_PROVIDER__: (d.variance_shares.provider * 100).toFixed(1),
   __OVERLAP_ONE__: String(d.overlap.from_one_provider_pct),
